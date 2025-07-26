@@ -13,67 +13,8 @@
 // Global LittleFS context
 T_littlefs_context g_littlefs_context;
 
-// Global flag to track XIP mode status
-static bool g_xip_mode_active = false;
-
 // External references to OSPI driver
 extern const T_mc80_ospi_instance g_mc80_ospi;
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Enter XIP mode for direct memory access
-
-  Parameters:
-
-  Return: 0 on success, error code on failure
------------------------------------------------------------------------------------------------------*/
-static int _enter_xip_mode(void)
-{
-  if (g_xip_mode_active)
-  {
-    return 0; // Already in XIP mode
-  }
-
-  fsp_err_t err = Mc80_ospi_xip_enter(g_mc80_ospi.p_ctrl);
-  if (FSP_SUCCESS == err)
-  {
-    g_xip_mode_active = true;
-    RTT_printf(0, "XIP mode entered successfully\n");
-    return 0;
-  }
-  else
-  {
-    RTT_err_printf(0, "Failed to enter XIP mode, error: %d\n", err);
-    return -1;
-  }
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Exit XIP mode for write operations
-
-  Parameters:
-
-  Return: 0 on success, error code on failure
------------------------------------------------------------------------------------------------------*/
-static int _exit_xip_mode(void)
-{
-  if (!g_xip_mode_active)
-  {
-    return 0; // Already not in XIP mode
-  }
-
-  fsp_err_t err = Mc80_ospi_xip_exit(g_mc80_ospi.p_ctrl);
-  if (FSP_SUCCESS == err)
-  {
-    g_xip_mode_active = false;
-    RTT_printf(0, "XIP mode exited for write operation\n");
-    return 0;
-  }
-  else
-  {
-    RTT_err_printf(0, "Failed to exit XIP mode, error: %d\n", err);
-    return -1;
-  }
-}
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Wait for flash operation to complete
@@ -95,7 +36,7 @@ static int _wait_flash_ready(T_mc80_ospi_instance_ctrl *p_ctrl, uint32_t timeout
     err = Mc80_ospi_status_get(p_ctrl, &status);
     if (err != FSP_SUCCESS)
     {
-      RTT_err_printf(0, "Failed to get flash status during wait: %u\n", (unsigned int)err);
+      LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to get flash status during wait: %u\n", (unsigned int)err);
       return -1;
     }
 
@@ -110,7 +51,7 @@ static int _wait_flash_ready(T_mc80_ospi_instance_ctrl *p_ctrl, uint32_t timeout
 
   } while (wait_count < max_wait_count);
 
-  RTT_err_printf(0, "Timeout waiting for flash ready (waited %u ms)\n", wait_count);
+  LITTLEFS_DEBUG_ERR_PRINTF(0, "Timeout waiting for flash ready (waited %u ms)\n", wait_count);
   return -1; // Timeout
 }
 
@@ -143,7 +84,7 @@ int Littlefs_initialize(void)
     }
     else
     {
-      RTT_err_printf(0, "OSPI driver open failed: %u\n\r", (unsigned int)err);
+      LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI driver open failed: %u\n\r", (unsigned int)err);
       return -1;
     }
   }
@@ -152,18 +93,11 @@ int Littlefs_initialize(void)
     APP_PRINT("OSPI driver initialized successfully\n\r");
   }
 
-  // Check if flash is ready
-  T_mc80_ospi_status flash_status;
-  err = Mc80_ospi_status_get(g_mc80_ospi.p_ctrl, &flash_status);
+  // Set OSPI protocol as configured
+  err = Mc80_ospi_spi_protocol_set(g_mc80_ospi.p_ctrl, LITTLEFS_OSPI_PROTOCOL);
   if (err != FSP_SUCCESS)
   {
-    RTT_err_printf(0, "Failed to get OSPI flash status: %u\n\r", (unsigned int)err);
-    return -1;
-  }
-
-  if (flash_status.write_in_progress)
-  {
-    APP_ERR_PRINT("OSPI flash is busy (write in progress)\n\r");
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to set OSPI protocol: %u\n\r", (unsigned int)err);
     return -1;
   }
 
@@ -209,7 +143,7 @@ int Littlefs_initialize(void)
   g_littlefs_context.driver_initialized = true;
 
   // Print configuration for debugging
-  RTT_printf(0, "LittleFS config: block_size=%u, block_count=%u, total_size=%u MB\n",
+  LITTLEFS_DEBUG_PRINTF(0, "LittleFS config: block_size=%u, block_count=%u, total_size=%u MB\n",
             g_littlefs_context.cfg.block_size,
             g_littlefs_context.cfg.block_count,
             (g_littlefs_context.cfg.block_size * g_littlefs_context.cfg.block_count) / (1024*1024));
@@ -239,7 +173,7 @@ int Littlefs_mount(void)
 
   if (err != 0)
   {
-    RTT_err_printf(0, "LittleFS mount failed with error: %d\n\r", err);
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS mount failed with error: %d\n\r", err);
     return err;
   }
 
@@ -262,7 +196,7 @@ int Littlefs_format(void)
 
   if (err != 0)
   {
-    RTT_err_printf(0, "LittleFS format failed with error: %d\n\r", err);
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS format failed with error: %d\n\r", err);
     return err;
   }
 
@@ -321,7 +255,7 @@ int Littlefs_unmount(void)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Read data from flash using XIP mode (direct memory access)
+  Description: Read data from flash using memory-mapped read
 
   Parameters: c - LFS configuration
               block - block number to read from
@@ -333,6 +267,9 @@ int Littlefs_unmount(void)
 -----------------------------------------------------------------------------------------------------*/
 int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
+  fsp_err_t err;
+  T_mc80_ospi_instance_ctrl *p_ctrl = (T_mc80_ospi_instance_ctrl *)c->context;
+
   // Calculate absolute address
   uint32_t address = (block * c->block_size) + off;
 
@@ -340,7 +277,7 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   static int debug_count = 0;
   if (debug_count < 5)
   {
-    RTT_printf(0, "LFS XIP read: blk=%u off=%u sz=%u addr=0x%08X\n",
+    LITTLEFS_DEBUG_PRINTF(0, "LFS read: blk=%u off=%u sz=%u addr=0x%08X\n",
               (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
     debug_count++;
   }
@@ -348,28 +285,25 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   // Check buffer validity
   if (buffer == NULL || size == 0)
   {
-    RTT_err_printf(0, "Invalid read parameters: buffer=%p size=%u\n", buffer, size);
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "Invalid read parameters: buffer=%p size=%u\n", buffer, size);
     return -1;
   }
 
-  // Ensure XIP mode is active
-  if (_enter_xip_mode() != 0)
+  // Perform memory-mapped read using OSPI driver
+  err = Mc80_ospi_memory_mapped_read(p_ctrl, (uint8_t *)buffer, address, size);
+
+  if (err != FSP_SUCCESS)
   {
-    RTT_err_printf(0, "Failed to enter XIP mode for read operation\n");
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI read fail addr=0x%08X size=%u err=%u (0x%X)\n",
+                  (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
     return -1;
   }
-
-  // Calculate XIP address by adding flash offset to XIP base
-  uint8_t *xip_address = (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + address);
-
-  // Perform direct memory copy from XIP space
-  memcpy(buffer, xip_address, size);
 
   // Debug for first read
   if (debug_count <= 1)
   {
-    RTT_printf(0, "XIP read success: copied %u bytes from 0x%08X\n",
-              (unsigned int)size, (unsigned int)xip_address);
+    LITTLEFS_DEBUG_PRINTF(0, "OSPI read success: %u bytes from 0x%08X\n",
+              (unsigned int)size, (unsigned int)address);
   }
 
   return 0; // Success
@@ -390,52 +324,22 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
 {
   fsp_err_t err;
   T_mc80_ospi_instance_ctrl *p_ctrl = (T_mc80_ospi_instance_ctrl *)c->context;
-  T_mc80_ospi_status status;
 
   // Calculate absolute address
   uint32_t address = (block * c->block_size) + off;
 
-  RTT_printf(0, "LFS write: blk=%u off=%u sz=%u addr=0x%08X\n",
+  LITTLEFS_DEBUG_PRINTF(0, "LFS write: blk=%u off=%u sz=%u addr=0x%08X\n",
             (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
 
   // Show first few bytes of data for debugging
   if (size > 0 && buffer != NULL)
   {
     const uint8_t *data = (const uint8_t *)buffer;
-    RTT_printf(0, "Write data: %02X %02X %02X %02X...\n",
+    LITTLEFS_DEBUG_PRINTF(0, "Write data: %02X %02X %02X %02X...\n",
               data[0],
               size > 1 ? data[1] : 0,
               size > 2 ? data[2] : 0,
               size > 3 ? data[3] : 0);
-  }
-
-  // Exit XIP mode before write operation
-  if (_exit_xip_mode() != 0)
-  {
-    RTT_err_printf(0, "Failed to exit XIP mode for write operation\n");
-    return -1;
-  }
-
-  // Set SPI protocol for write operations
-  err = Mc80_ospi_spi_protocol_set(p_ctrl, MC80_OSPI_PROTOCOL_1S_1S_1S);
-  if (err != FSP_SUCCESS)
-  {
-    RTT_printf(0, "Warning: Failed to set SPI protocol: %u\n", (unsigned int)err);
-    // Continue anyway, might not be critical
-  }
-
-  // Check flash status before write
-  err = Mc80_ospi_status_get(p_ctrl, &status);
-  if (err != FSP_SUCCESS)
-  {
-    RTT_err_printf(0, "Failed to get flash status before write: %u\n", (unsigned int)err);
-    return -1;
-  }
-
-  if (status.write_in_progress)
-  {
-    RTT_err_printf(0, "Flash is busy, write in progress\n");
-    return -1;
   }
 
   // Write data using OSPI driver with correct base address
@@ -443,7 +347,7 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
 
   if (err != FSP_SUCCESS)
   {
-    RTT_err_printf(0, "OSPI write fail addr=0x%08X size=%u err=%u (0x%X)\n",
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI write fail addr=0x%08X size=%u err=%u (0x%X)\n",
                   (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
     return -1; // Return LFS error
   }
@@ -451,11 +355,11 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
   // Wait for write operation to complete
   if (_wait_flash_ready(p_ctrl, 1000) != 0) // 1 second timeout for write
   {
-    RTT_err_printf(0, "Timeout waiting for write completion\n");
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "Timeout waiting for write completion\n");
     return -1;
   }
 
-  RTT_printf(0, "OSPI write success addr=0x%08X size=%u\n", (unsigned int)address, size);
+  LITTLEFS_DEBUG_PRINTF(0, "OSPI write success addr=0x%08X size=%u\n", (unsigned int)address, size);
   return 0; // Success
 }
 
@@ -471,60 +375,30 @@ int _lfs_erase(const struct lfs_config *c, lfs_block_t block)
 {
   fsp_err_t err;
   T_mc80_ospi_instance_ctrl *p_ctrl = (T_mc80_ospi_instance_ctrl *)c->context;
-  T_mc80_ospi_status status;
 
   // Calculate absolute address
   uint32_t address = block * c->block_size;
 
-  RTT_printf(0, "LFS erase: blk=%u addr=0x%08X size=%u\n",
+  LITTLEFS_DEBUG_PRINTF(0, "LFS erase: blk=%u addr=0x%08X size=%u\n",
             (unsigned int)block, (unsigned int)address, c->block_size);
-
-  // Exit XIP mode before erase operation
-  if (_exit_xip_mode() != 0)
-  {
-    RTT_err_printf(0, "Failed to exit XIP mode for erase operation\n");
-    return -1;
-  }
-
-  // Set SPI protocol for erase operations
-  err = Mc80_ospi_spi_protocol_set(p_ctrl, MC80_OSPI_PROTOCOL_1S_1S_1S);
-  if (err != FSP_SUCCESS)
-  {
-    RTT_printf(0, "Warning: Failed to set SPI protocol for erase: %u\n", (unsigned int)err);
-    // Continue anyway, might not be critical
-  }
-
-  // Check flash status before erase
-  err = Mc80_ospi_status_get(p_ctrl, &status);
-  if (err != FSP_SUCCESS)
-  {
-    RTT_err_printf(0, "Failed to get flash status before erase: %u\n", (unsigned int)err);
-    return -1;
-  }
-
-  if (status.write_in_progress)
-  {
-    RTT_err_printf(0, "Flash is busy, cannot erase\n");
-    return -1;
-  }
 
   // Erase block using OSPI driver with correct base address
   err = Mc80_ospi_erase(p_ctrl, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + address), c->block_size);
 
   if (err != FSP_SUCCESS)
   {
-    RTT_err_printf(0, "OSPI erase fail addr=0x%08X size=%u err=%u\n\r", (unsigned int)address, c->block_size, (unsigned int)err);
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI erase fail addr=0x%08X size=%u err=%u\n\r", (unsigned int)address, c->block_size, (unsigned int)err);
     return -1; // Return LFS error
   }
 
   // Wait for erase operation to complete (erase can take several milliseconds)
   if (_wait_flash_ready(p_ctrl, 5000) != 0) // 5 second timeout
   {
-    RTT_err_printf(0, "Timeout waiting for erase completion\n");
+    LITTLEFS_DEBUG_ERR_PRINTF(0, "Timeout waiting for erase completion\n");
     return -1;
   }
 
-  RTT_printf(0, "OSPI erase success addr=0x%08X size=%u\n", (unsigned int)address, c->block_size);
+  LITTLEFS_DEBUG_PRINTF(0, "OSPI erase success addr=0x%08X size=%u\n", (unsigned int)address, c->block_size);
   return 0; // Success
 }
 

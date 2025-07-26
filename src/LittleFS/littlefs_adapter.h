@@ -15,6 +15,24 @@ extern "C" {
 #define LITTLEFS_BLOCK_CYCLES      100000  // 100,000 erase/program cycles (per datasheet)
 #define LITTLEFS_PROG_SIZE         256     // 256-byte page buffer (per datasheet)
 
+// OSPI protocol configuration for LittleFS operations
+#define LITTLEFS_OSPI_PROTOCOL     MC80_OSPI_PROTOCOL_1S_1S_1S  // Can be changed to MC80_OSPI_PROTOCOL_8D_8D_8D
+
+// Debug output control for LittleFS adapter
+// Set LITTLEFS_DEBUG_ENABLE to 0 to disable all debug output from LittleFS adapter
+// Set LITTLEFS_DEBUG_ENABLE to 1 to enable debug output (default)
+#ifndef LITTLEFS_DEBUG_ENABLE
+#define LITTLEFS_DEBUG_ENABLE 1  // Set to 0 to disable debug output
+#endif
+
+#if LITTLEFS_DEBUG_ENABLE
+#define LITTLEFS_DEBUG_PRINTF(channel, ...) RTT_printf(channel, __VA_ARGS__)
+#define LITTLEFS_DEBUG_ERR_PRINTF(channel, ...) RTT_err_printf(channel, __VA_ARGS__)
+#else
+#define LITTLEFS_DEBUG_PRINTF(channel, ...) do {} while(0)
+#define LITTLEFS_DEBUG_ERR_PRINTF(channel, ...) do {} while(0)
+#endif
+
 // LittleFS instance structure
 typedef struct
 {
