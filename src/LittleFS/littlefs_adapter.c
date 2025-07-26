@@ -30,7 +30,7 @@ int Littlefs_initialize(void)
   // Check if already initialized
   if (g_littlefs_context.driver_initialized)
   {
-    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver already initialized\n\r");
+    LITTLEFS_DEBUG_PRINTF("OSPI driver already initialized\n\r");
     return 0;
   }
 
@@ -41,28 +41,28 @@ int Littlefs_initialize(void)
     // Check if driver is already opened
     if (err == FSP_ERR_ALREADY_OPEN)
     {
-      LITTLEFS_DEBUG_PRINTF(0, "OSPI driver already opened\n\r");
+      LITTLEFS_DEBUG_PRINTF("OSPI driver already opened\n\r");
     }
     else
     {
-      LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI driver open failed: %u\n\r", (unsigned int)err);
+      LITTLEFS_DEBUG_ERR_PRINTF("OSPI driver open failed: %u\n\r", (unsigned int)err);
       return -1;
     }
   }
   else
   {
-    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver initialized successfully\n\r");
+    LITTLEFS_DEBUG_PRINTF("OSPI driver initialized successfully\n\r");
   }
 
   // Set OSPI protocol as configured
   err = Mc80_ospi_spi_protocol_set(g_mc80_ospi.p_ctrl, LITTLEFS_OSPI_PROTOCOL);
   if (err != FSP_SUCCESS)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to set OSPI protocol: %u\n\r", (unsigned int)err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to set OSPI protocol: %u\n\r", (unsigned int)err);
     return -1;
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "OSPI flash is ready for operations\n\r");
+  LITTLEFS_DEBUG_PRINTF("OSPI flash is ready for operations\n\r");
 
   // Zero out the context (except state flags)
   bool driver_was_initialized = g_littlefs_context.driver_initialized;
@@ -104,7 +104,7 @@ int Littlefs_initialize(void)
   g_littlefs_context.driver_initialized   = true;
 
   // Print configuration for debugging
-  LITTLEFS_DEBUG_PRINTF(0, "LittleFS config: block_size=%u, block_count=%u, total_size=%u MB\n",
+  LITTLEFS_DEBUG_PRINTF("LittleFS config: block_size=%u, block_count=%u, total_size=%u MB\n",
                         g_littlefs_context.cfg.block_size,
                         g_littlefs_context.cfg.block_count,
                         (g_littlefs_context.cfg.block_size * g_littlefs_context.cfg.block_count) / (1024 * 1024));
@@ -126,7 +126,7 @@ int Littlefs_mount(void)
   // Check if already mounted
   if (g_littlefs_context.filesystem_mounted)
   {
-    LITTLEFS_DEBUG_PRINTF(0, "LittleFS already mounted\n\r");
+    LITTLEFS_DEBUG_PRINTF("LittleFS already mounted\n\r");
     return 0;
   }
 
@@ -134,13 +134,13 @@ int Littlefs_mount(void)
 
   if (err != 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS mount failed with error: %d\n\r", err);
+    LITTLEFS_DEBUG_ERR_PRINTF("LittleFS mount failed with error: %d\n\r", err);
     return err;
   }
 
   // Mark filesystem as mounted
   g_littlefs_context.filesystem_mounted = true;
-  LITTLEFS_DEBUG_PRINTF(0, "LittleFS mounted successfully\n\r");
+  LITTLEFS_DEBUG_PRINTF("LittleFS mounted successfully\n\r");
   return 0;
 }
 
@@ -157,11 +157,11 @@ int Littlefs_format(void)
 
   if (err != 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS format failed with error: %d\n\r", err);
+    LITTLEFS_DEBUG_ERR_PRINTF("LittleFS format failed with error: %d\n\r", err);
     return err;
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "LittleFS formatted successfully\n\r");
+  LITTLEFS_DEBUG_PRINTF("LittleFS formatted successfully\n\r");
   return 0;
 }
 
@@ -184,15 +184,15 @@ int Littlefs_unmount(void)
     err = lfs_unmount(&g_littlefs_context.lfs);
     if (err != 0)
     {
-      LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS unmount failed with error: %d\n\r", err);
+      LITTLEFS_DEBUG_ERR_PRINTF("LittleFS unmount failed with error: %d\n\r", err);
       return err;
     }
     g_littlefs_context.filesystem_mounted = false;
-    LITTLEFS_DEBUG_PRINTF(0, "LittleFS unmounted successfully\n\r");
+    LITTLEFS_DEBUG_PRINTF("LittleFS unmounted successfully\n\r");
   }
   else
   {
-    LITTLEFS_DEBUG_PRINTF(0, "LittleFS was not mounted\n\r");
+    LITTLEFS_DEBUG_PRINTF("LittleFS was not mounted\n\r");
   }
 
   // Check if driver is initialized and close it
@@ -201,15 +201,15 @@ int Littlefs_unmount(void)
     fsp_err = Mc80_ospi_close(g_mc80_ospi.p_ctrl);
     if (fsp_err != FSP_SUCCESS)
     {
-      LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI driver close failed: %u\n\r", (unsigned int)fsp_err);
+      LITTLEFS_DEBUG_ERR_PRINTF("OSPI driver close failed: %u\n\r", (unsigned int)fsp_err);
       return -1;
     }
     g_littlefs_context.driver_initialized = false;
-    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver closed successfully\n\r");
+    LITTLEFS_DEBUG_PRINTF("OSPI driver closed successfully\n\r");
   }
   else
   {
-    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver was not initialized\n\r");
+    LITTLEFS_DEBUG_PRINTF("OSPI driver was not initialized\n\r");
   }
 
   return 0;
@@ -238,7 +238,7 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   static int debug_count            = 0;
   if (debug_count < 5)
   {
-    LITTLEFS_DEBUG_PRINTF(0, "LFS read: blk=%u off=%u sz=%u addr=0x%08X\n",
+    LITTLEFS_DEBUG_PRINTF("LFS read: blk=%u off=%u sz=%u addr=0x%08X\n",
                           (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
     debug_count++;
   }
@@ -246,7 +246,7 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   // Check buffer validity
   if (buffer == NULL || size == 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Invalid read parameters: buffer=%p size=%u\n", buffer, size);
+    LITTLEFS_DEBUG_ERR_PRINTF("Invalid read parameters: buffer=%p size=%u\n", buffer, size);
     return -1;
   }
 
@@ -255,7 +255,7 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
 
   if (err != FSP_SUCCESS)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI read fail addr=0x%08X size=%u err=%u (0x%X)\n",
+    LITTLEFS_DEBUG_ERR_PRINTF("OSPI read fail addr=0x%08X size=%u err=%u (0x%X)\n",
                               (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
     return -1;
   }
@@ -263,7 +263,7 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   // Debug for first read
   if (debug_count <= 1)
   {
-    LITTLEFS_DEBUG_PRINTF(0, "OSPI read success: %u bytes from 0x%08X\n",
+    LITTLEFS_DEBUG_PRINTF("OSPI read success: %u bytes from 0x%08X\n",
                           (unsigned int)size, (unsigned int)address);
   }
 
@@ -289,14 +289,14 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
   // Calculate absolute address
   uint32_t address                  = (block * c->block_size) + off;
 
-  LITTLEFS_DEBUG_PRINTF(0, "LFS write: blk=%u off=%u sz=%u addr=0x%08X\n",
+  LITTLEFS_DEBUG_PRINTF("LFS write: blk=%u off=%u sz=%u addr=0x%08X\n",
                         (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
 
   // Show first few bytes of data for debugging
   if (size > 0 && buffer != NULL)
   {
     const uint8_t *data = (const uint8_t *)buffer;
-    LITTLEFS_DEBUG_PRINTF(0, "Write data: %02X %02X %02X %02X...\n",
+    LITTLEFS_DEBUG_PRINTF("Write data: %02X %02X %02X %02X...\n",
                           data[0],
                           size > 1 ? data[1] : 0,
                           size > 2 ? data[2] : 0,
@@ -308,12 +308,12 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
 
   if (err != FSP_SUCCESS)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI write fail addr=0x%08X size=%u err=%u (0x%X)\n",
+    LITTLEFS_DEBUG_ERR_PRINTF("OSPI write fail addr=0x%08X size=%u err=%u (0x%X)\n",
                               (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
     return -1;  // Return LFS error
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "OSPI write success addr=0x%08X size=%u\n", (unsigned int)address, size);
+  LITTLEFS_DEBUG_PRINTF("OSPI write success addr=0x%08X size=%u\n", (unsigned int)address, size);
   return 0;  // Success
 }
 
@@ -333,7 +333,7 @@ int _lfs_erase(const struct lfs_config *c, lfs_block_t block)
   // Calculate absolute address
   uint32_t address                  = block * c->block_size;
 
-  LITTLEFS_DEBUG_PRINTF(0, "LFS erase: blk=%u addr=0x%08X size=%u\n",
+  LITTLEFS_DEBUG_PRINTF("LFS erase: blk=%u addr=0x%08X size=%u\n",
                         (unsigned int)block, (unsigned int)address, c->block_size);
 
   // Erase block using OSPI driver with correct base address
@@ -341,11 +341,11 @@ int _lfs_erase(const struct lfs_config *c, lfs_block_t block)
 
   if (err != FSP_SUCCESS)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI erase fail addr=0x%08X size=%u err=%u\n\r", (unsigned int)address, c->block_size, (unsigned int)err);
+    LITTLEFS_DEBUG_ERR_PRINTF("OSPI erase fail addr=0x%08X size=%u err=%u\n\r", (unsigned int)address, c->block_size, (unsigned int)err);
     return -1;  // Return LFS error
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "OSPI erase success addr=0x%08X size=%u\n", (unsigned int)address, c->block_size);
+  LITTLEFS_DEBUG_PRINTF("OSPI erase success addr=0x%08X size=%u\n", (unsigned int)address, c->block_size);
   return 0;  // Success
 }
 

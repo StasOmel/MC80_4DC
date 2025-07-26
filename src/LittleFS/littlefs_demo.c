@@ -28,7 +28,7 @@ int Littlefs_demo_init(void)
   err = Littlefs_initialize();
   if (err != 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS initialization failed: %d\n\r", err);
+    LITTLEFS_DEBUG_ERR_PRINTF("LittleFS initialization failed: %d\n\r", err);
     return err;
   }
 
@@ -36,13 +36,13 @@ int Littlefs_demo_init(void)
   err = Littlefs_mount();
   if (err != 0)
   {
-    LITTLEFS_DEBUG_PRINTF(0, "Mount failed, trying to format...\n\r");
+    LITTLEFS_DEBUG_PRINTF("Mount failed, trying to format...\n\r");
 
     // Format the filesystem if mount fails
     err = Littlefs_format();
     if (err != 0)
     {
-      LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS format failed: %d\n\r", err);
+      LITTLEFS_DEBUG_ERR_PRINTF("LittleFS format failed: %d\n\r", err);
       return err;
     }
 
@@ -50,12 +50,12 @@ int Littlefs_demo_init(void)
     err = Littlefs_mount();
     if (err != 0)
     {
-      LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS mount failed after format: %d\n\r", err);
+      LITTLEFS_DEBUG_ERR_PRINTF("LittleFS mount failed after format: %d\n\r", err);
       return err;
     }
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "LittleFS initialized and mounted successfully\n\r");
+  LITTLEFS_DEBUG_PRINTF("LittleFS initialized and mounted successfully\n\r");
   return 0;
 }
 
@@ -77,7 +77,7 @@ int Littlefs_demo_write_file(const char *filename, const void *data, size_t size
   err = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
   if (err < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to open file %s for writing: %d\n\r", filename, err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to open file %s for writing: %d\n\r", filename, err);
     return err;
   }
 
@@ -85,25 +85,25 @@ int Littlefs_demo_write_file(const char *filename, const void *data, size_t size
   lfs_ssize_t written = lfs_file_write(&g_littlefs_context.lfs, &file, data, size);
   if (written < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to write data to file %s: %d\n\r", filename, (int)written);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to write data to file %s: %d\n\r", filename, (int)written);
     lfs_file_close(&g_littlefs_context.lfs, &file);
     return (int)written;
   }
 
   if ((size_t)written != size)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Partial write to file %s: %d of %u bytes\n\r", filename, (int)written, size);
+    LITTLEFS_DEBUG_ERR_PRINTF("Partial write to file %s: %d of %u bytes\n\r", filename, (int)written, size);
   }
 
   // Close file
   err = lfs_file_close(&g_littlefs_context.lfs, &file);
   if (err < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to close file %s: %d\n\r", filename, err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to close file %s: %d\n\r", filename, err);
     return err;
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "Written %d bytes to file %s\n\r", (int)written, filename);
+  LITTLEFS_DEBUG_PRINTF("Written %d bytes to file %s\n\r", (int)written, filename);
   return 0;
 }
 
@@ -125,7 +125,7 @@ int Littlefs_demo_read_file(const char *filename, void *buffer, size_t buffer_si
   err = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_RDONLY);
   if (err < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to open file %s for reading: %d\n\r", filename, err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to open file %s for reading: %d\n\r", filename, err);
     return err;
   }
 
@@ -133,7 +133,7 @@ int Littlefs_demo_read_file(const char *filename, void *buffer, size_t buffer_si
   lfs_ssize_t read_bytes = lfs_file_read(&g_littlefs_context.lfs, &file, buffer, buffer_size);
   if (read_bytes < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to read data from file %s: %d\n\r", filename, (int)read_bytes);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to read data from file %s: %d\n\r", filename, (int)read_bytes);
     lfs_file_close(&g_littlefs_context.lfs, &file);
     return (int)read_bytes;
   }
@@ -142,11 +142,11 @@ int Littlefs_demo_read_file(const char *filename, void *buffer, size_t buffer_si
   err = lfs_file_close(&g_littlefs_context.lfs, &file);
   if (err < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to close file %s: %d\n\r", filename, err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to close file %s: %d\n\r", filename, err);
     return err;
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "Read %d bytes from file %s\n\r", (int)read_bytes, filename);
+  LITTLEFS_DEBUG_PRINTF("Read %d bytes from file %s\n\r", (int)read_bytes, filename);
   return (int)read_bytes;
 }
 
@@ -168,11 +168,11 @@ int Littlefs_demo_list_files(void)
   err = lfs_dir_open(&g_littlefs_context.lfs, &dir, "/");
   if (err < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to open root directory: %d\n\r", err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to open root directory: %d\n\r", err);
     return err;
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "Files in root directory:\n\r");
+  LITTLEFS_DEBUG_PRINTF("Files in root directory:\n\r");
 
   // Read directory entries
   while (true)
@@ -180,7 +180,7 @@ int Littlefs_demo_list_files(void)
     err = lfs_dir_read(&g_littlefs_context.lfs, &dir, &info);
     if (err < 0)
     {
-      LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to read directory: %d\n\r", err);
+      LITTLEFS_DEBUG_ERR_PRINTF("Failed to read directory: %d\n\r", err);
       lfs_dir_close(&g_littlefs_context.lfs, &dir);
       return err;
     }
@@ -199,11 +199,11 @@ int Littlefs_demo_list_files(void)
 
     if (info.type == LFS_TYPE_REG)
     {
-      LITTLEFS_DEBUG_PRINTF(0, "  File: %s (size: %u bytes)\n\r", info.name, info.size);
+      LITTLEFS_DEBUG_PRINTF("  File: %s (size: %u bytes)\n\r", info.name, info.size);
     }
     else if (info.type == LFS_TYPE_DIR)
     {
-      LITTLEFS_DEBUG_PRINTF(0, "  Dir:  %s\n\r", info.name);
+      LITTLEFS_DEBUG_PRINTF("  Dir:  %s\n\r", info.name);
     }
 
     file_count++;
@@ -213,11 +213,11 @@ int Littlefs_demo_list_files(void)
   err = lfs_dir_close(&g_littlefs_context.lfs, &dir);
   if (err < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to close directory: %d\n\r", err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to close directory: %d\n\r", err);
     return err;
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "Total entries: %d\n\r", file_count);
+  LITTLEFS_DEBUG_PRINTF("Total entries: %d\n\r", file_count);
   return 0;
 }
 
@@ -235,11 +235,11 @@ int Littlefs_demo_delete_file(const char *filename)
   err = lfs_remove(&g_littlefs_context.lfs, filename);
   if (err < 0)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to delete file %s: %d\n\r", filename, err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to delete file %s: %d\n\r", filename, err);
     return err;
   }
 
-  LITTLEFS_DEBUG_PRINTF(0, "File %s deleted successfully\n\r", filename);
+  LITTLEFS_DEBUG_PRINTF("File %s deleted successfully\n\r", filename);
   return 0;
 }
 
@@ -257,7 +257,7 @@ int Littlefs_demo_test(void)
   const char *test_data = "Hello LittleFS! This is a test file.";
   char read_buffer[100];
 
-  LITTLEFS_DEBUG_PRINTF(0, "Starting LittleFS test...\n\r");
+  LITTLEFS_DEBUG_PRINTF("Starting LittleFS test...\n\r");
 
   // Initialize filesystem
   err = Littlefs_demo_init();
@@ -267,7 +267,7 @@ int Littlefs_demo_test(void)
   }
 
   // List files before test
-  LITTLEFS_DEBUG_PRINTF(0, "Files before test:\n\r");
+  LITTLEFS_DEBUG_PRINTF("Files before test:\n\r");
   Littlefs_demo_list_files();
 
   // Write test file
@@ -288,18 +288,18 @@ int Littlefs_demo_test(void)
   // Verify data
   if (strcmp(test_data, read_buffer) == 0)
   {
-    LITTLEFS_DEBUG_PRINTF(0, "Data verification SUCCESS!\n\r");
+    LITTLEFS_DEBUG_PRINTF("Data verification SUCCESS!\n\r");
   }
   else
   {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Data verification FAILED!\n\r");
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Expected: %s\n\r", test_data);
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Read:     %s\n\r", read_buffer);
+    LITTLEFS_DEBUG_ERR_PRINTF("Data verification FAILED!\n\r");
+    LITTLEFS_DEBUG_ERR_PRINTF("Expected: %s\n\r", test_data);
+    LITTLEFS_DEBUG_ERR_PRINTF("Read:     %s\n\r", read_buffer);
     return -1;
   }
 
   // List files after test
-  LITTLEFS_DEBUG_PRINTF(0, "Files after test:\n\r");
+  LITTLEFS_DEBUG_PRINTF("Files after test:\n\r");
   Littlefs_demo_list_files();
 
   // Delete test file
@@ -310,9 +310,9 @@ int Littlefs_demo_test(void)
   }
 
   // List files after delete
-  LITTLEFS_DEBUG_PRINTF(0, "Files after delete:\n\r");
+  LITTLEFS_DEBUG_PRINTF("Files after delete:\n\r");
   Littlefs_demo_list_files();
 
-  LITTLEFS_DEBUG_PRINTF(0, "LittleFS test completed successfully!\n\r");
+  LITTLEFS_DEBUG_PRINTF("LittleFS test completed successfully!\n\r");
   return 0;
 }

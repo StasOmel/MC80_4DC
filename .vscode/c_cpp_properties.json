@@ -7,10 +7,10 @@
         "${workspaceFolder}/ra_cfg/**",
         "${workspaceFolder}/ra_gen/**",
         "${workspaceFolder}/src/**",
-        "C:/iar/ewarm-9.60.3/arm/inc/c/**",
-        "C:/iar/ewarm-9.60.3/arm/inc/cpp/**",
-        "C:/iar/ewarm-9.60.3/arm/CMSIS/Core/Include/**",
-        "C:/iar/ewarm-9.60.3/arm/inc/Renesas/**"
+        "C:/iar/ewarm-9.70.1/arm/inc/c/**",
+        "C:/iar/ewarm-9.70.1/arm/inc/cpp/**",
+        "C:/iar/ewarm-9.70.1/arm/CMSIS/Core/Include/**",
+        "C:/iar/ewarm-9.70.1/arm/inc/Renesas/**"
       ],
       "defines": [
         "__ICCARM__",
@@ -32,7 +32,7 @@
         "NX_INCLUDE_USER_DEFINE_FILE",
         "UX_INCLUDE_USER_DEFINE_FILE"
       ],
-      "compilerPath": "C:/iar/ewarm-9.60.3/arm/bin/iccarm.exe",
+      "compilerPath": "C:/iar/ewarm-9.70.1/arm/bin/iccarm.exe",
       "cStandard": "c99",
       "cppStandard": "c++17",
       "intelliSenseMode": "gcc-arm",
