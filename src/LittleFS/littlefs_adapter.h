@@ -16,7 +16,7 @@ extern "C" {
 #define LITTLEFS_PROG_SIZE         256     // 256-byte page buffer (per datasheet)
 
 // OSPI protocol configuration for LittleFS operations
-#define LITTLEFS_OSPI_PROTOCOL     MC80_OSPI_PROTOCOL_1S_1S_1S  // Can be changed to MC80_OSPI_PROTOCOL_8D_8D_8D
+#define LITTLEFS_OSPI_PROTOCOL     MC80_OSPI_PROTOCOL_8D_8D_8D  // Can be changed to MC80_OSPI_PROTOCOL_8D_8D_8D
 
 // Debug output control for LittleFS adapter
 // Set LITTLEFS_DEBUG_ENABLE to 0 to disable all debug output from LittleFS adapter

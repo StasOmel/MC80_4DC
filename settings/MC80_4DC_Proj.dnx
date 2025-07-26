@@ -40,8 +40,8 @@
         <MultiCoreRunAll>1</MultiCoreRunAll>
     </Simulator>
     <PlDriver>
-        <FirstRun>0</FirstRun>
         <MemConfigValue>D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\R7FA8M1AH.ddf</MemConfigValue>
+        <FirstRun>0</FirstRun>
     </PlDriver>
     <JLinkDriver>
         <jlinkResetStyle>13</jlinkResetStyle>
@@ -55,7 +55,7 @@
         <EnforceMemoryConfiguration>0</EnforceMemoryConfiguration>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>1007685487</Checksum>
+        <Checksum>3829231902</Checksum>
     </DebugChecksum>
     <InterruptStripe>
         <Title0>DMAC3_INT</Title0>

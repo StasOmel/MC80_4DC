@@ -17,45 +17,6 @@ T_littlefs_context g_littlefs_context;
 extern const T_mc80_ospi_instance g_mc80_ospi;
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Wait for flash operation to complete
-
-  Parameters: p_spi_flash - SPI flash instance
-              timeout_ms - timeout in milliseconds
-
-  Return: 0 on success, error code on failure
------------------------------------------------------------------------------------------------------*/
-static int _wait_flash_ready(T_mc80_ospi_instance_ctrl *p_ctrl, uint32_t timeout_ms)
-{
-  T_mc80_ospi_status status;
-  fsp_err_t err;
-  uint32_t wait_count = 0;
-  const uint32_t max_wait_count = timeout_ms; // 1ms per iteration
-
-  do
-  {
-    err = Mc80_ospi_status_get(p_ctrl, &status);
-    if (err != FSP_SUCCESS)
-    {
-      LITTLEFS_DEBUG_ERR_PRINTF(0, "Failed to get flash status during wait: %u\n", (unsigned int)err);
-      return -1;
-    }
-
-    if (!status.write_in_progress)
-    {
-      return 0; // Flash is ready
-    }
-
-    // Wait 1ms
-    R_BSP_SoftwareDelay(1, BSP_DELAY_UNITS_MILLISECONDS);
-    wait_count++;
-
-  } while (wait_count < max_wait_count);
-
-  LITTLEFS_DEBUG_ERR_PRINTF(0, "Timeout waiting for flash ready (waited %u ms)\n", wait_count);
-  return -1; // Timeout
-}
-
-/*-----------------------------------------------------------------------------------------------------
   Description: Initialize LittleFS configuration
 
   Parameters:
@@ -352,13 +313,6 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
     return -1; // Return LFS error
   }
 
-  // Wait for write operation to complete
-  if (_wait_flash_ready(p_ctrl, 1000) != 0) // 1 second timeout for write
-  {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Timeout waiting for write completion\n");
-    return -1;
-  }
-
   LITTLEFS_DEBUG_PRINTF(0, "OSPI write success addr=0x%08X size=%u\n", (unsigned int)address, size);
   return 0; // Success
 }
@@ -389,13 +343,6 @@ int _lfs_erase(const struct lfs_config *c, lfs_block_t block)
   {
     LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI erase fail addr=0x%08X size=%u err=%u\n\r", (unsigned int)address, c->block_size, (unsigned int)err);
     return -1; // Return LFS error
-  }
-
-  // Wait for erase operation to complete (erase can take several milliseconds)
-  if (_wait_flash_ready(p_ctrl, 5000) != 0) // 5 second timeout
-  {
-    LITTLEFS_DEBUG_ERR_PRINTF(0, "Timeout waiting for erase completion\n");
-    return -1;
   }
 
   LITTLEFS_DEBUG_PRINTF(0, "OSPI erase success addr=0x%08X size=%u\n", (unsigned int)address, c->block_size);
