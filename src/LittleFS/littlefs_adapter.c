@@ -30,7 +30,7 @@ int Littlefs_initialize(void)
   // Check if already initialized
   if (g_littlefs_context.driver_initialized)
   {
-    APP_PRINT("OSPI driver already initialized\n\r");
+    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver already initialized\n\r");
     return 0;
   }
 
@@ -41,7 +41,7 @@ int Littlefs_initialize(void)
     // Check if driver is already opened
     if (err == FSP_ERR_ALREADY_OPEN)
     {
-      APP_PRINT("OSPI driver already opened\n\r");
+      LITTLEFS_DEBUG_PRINTF(0, "OSPI driver already opened\n\r");
     }
     else
     {
@@ -51,7 +51,7 @@ int Littlefs_initialize(void)
   }
   else
   {
-    APP_PRINT("OSPI driver initialized successfully\n\r");
+    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver initialized successfully\n\r");
   }
 
   // Set OSPI protocol as configured
@@ -62,7 +62,7 @@ int Littlefs_initialize(void)
     return -1;
   }
 
-  APP_PRINT("OSPI flash is ready for operations\n\r");
+  LITTLEFS_DEBUG_PRINTF(0, "OSPI flash is ready for operations\n\r");
 
   // Zero out the context (except state flags)
   bool driver_was_initialized = g_littlefs_context.driver_initialized;
@@ -78,36 +78,36 @@ int Littlefs_initialize(void)
   {
     g_littlefs_context.filesystem_mounted = true;
   }  // Configure LittleFS
-  g_littlefs_context.cfg.context = (void *)g_mc80_ospi.p_ctrl;
+  g_littlefs_context.cfg.context          = (void *)g_mc80_ospi.p_ctrl;
 
   // Block device operations
-  g_littlefs_context.cfg.read = _lfs_read;
-  g_littlefs_context.cfg.prog = _lfs_prog;
-  g_littlefs_context.cfg.erase = _lfs_erase;
-  g_littlefs_context.cfg.sync = _lfs_sync;
+  g_littlefs_context.cfg.read             = _lfs_read;
+  g_littlefs_context.cfg.prog             = _lfs_prog;
+  g_littlefs_context.cfg.erase            = _lfs_erase;
+  g_littlefs_context.cfg.sync             = _lfs_sync;
 
   // Block device configuration
-  g_littlefs_context.cfg.read_size = 1;                       // Minimum read size
-  g_littlefs_context.cfg.prog_size = 1;                       // Minimum program size (start with 1 for testing)
-  g_littlefs_context.cfg.block_size = LITTLEFS_BLOCK_SIZE;    // Block size (4KB)
-  g_littlefs_context.cfg.block_count = LITTLEFS_BLOCK_COUNT;  // Number of blocks
-  g_littlefs_context.cfg.cache_size = LITTLEFS_CACHE_SIZE;    // Cache size
-  g_littlefs_context.cfg.lookahead_size = LITTLEFS_LOOKAHEAD_SIZE; // Lookahead buffer size
-  g_littlefs_context.cfg.block_cycles = LITTLEFS_BLOCK_CYCLES; // Block wear leveling threshold
+  g_littlefs_context.cfg.read_size        = 1;                        // Minimum read size
+  g_littlefs_context.cfg.prog_size        = 1;                        // Minimum program size (start with 1 for testing)
+  g_littlefs_context.cfg.block_size       = LITTLEFS_BLOCK_SIZE;      // Block size (4KB)
+  g_littlefs_context.cfg.block_count      = LITTLEFS_BLOCK_COUNT;     // Number of blocks
+  g_littlefs_context.cfg.cache_size       = LITTLEFS_CACHE_SIZE;      // Cache size
+  g_littlefs_context.cfg.lookahead_size   = LITTLEFS_LOOKAHEAD_SIZE;  // Lookahead buffer size
+  g_littlefs_context.cfg.block_cycles     = LITTLEFS_BLOCK_CYCLES;    // Block wear leveling threshold
 
   // Buffers for caching - important for performance
-  g_littlefs_context.cfg.read_buffer = g_littlefs_context.read_buffer;
-  g_littlefs_context.cfg.prog_buffer = g_littlefs_context.prog_buffer;
+  g_littlefs_context.cfg.read_buffer      = g_littlefs_context.read_buffer;
+  g_littlefs_context.cfg.prog_buffer      = g_littlefs_context.prog_buffer;
   g_littlefs_context.cfg.lookahead_buffer = g_littlefs_context.lookahead_buffer;
 
   // Mark driver as initialized
-  g_littlefs_context.driver_initialized = true;
+  g_littlefs_context.driver_initialized   = true;
 
   // Print configuration for debugging
   LITTLEFS_DEBUG_PRINTF(0, "LittleFS config: block_size=%u, block_count=%u, total_size=%u MB\n",
-            g_littlefs_context.cfg.block_size,
-            g_littlefs_context.cfg.block_count,
-            (g_littlefs_context.cfg.block_size * g_littlefs_context.cfg.block_count) / (1024*1024));
+                        g_littlefs_context.cfg.block_size,
+                        g_littlefs_context.cfg.block_count,
+                        (g_littlefs_context.cfg.block_size * g_littlefs_context.cfg.block_count) / (1024 * 1024));
 
   return 0;
 }
@@ -126,7 +126,7 @@ int Littlefs_mount(void)
   // Check if already mounted
   if (g_littlefs_context.filesystem_mounted)
   {
-    APP_PRINT("LittleFS already mounted\n\r");
+    LITTLEFS_DEBUG_PRINTF(0, "LittleFS already mounted\n\r");
     return 0;
   }
 
@@ -140,7 +140,7 @@ int Littlefs_mount(void)
 
   // Mark filesystem as mounted
   g_littlefs_context.filesystem_mounted = true;
-  APP_PRINT("LittleFS mounted successfully\n\r");
+  LITTLEFS_DEBUG_PRINTF(0, "LittleFS mounted successfully\n\r");
   return 0;
 }
 
@@ -161,7 +161,7 @@ int Littlefs_format(void)
     return err;
   }
 
-  APP_PRINT("LittleFS formatted successfully\n\r");
+  LITTLEFS_DEBUG_PRINTF(0, "LittleFS formatted successfully\n\r");
   return 0;
 }
 
@@ -175,7 +175,7 @@ int Littlefs_format(void)
 int Littlefs_unmount(void)
 {
   fsp_err_t fsp_err;
-  int err;
+  int       err;
 
   // Check if filesystem is mounted
   if (g_littlefs_context.filesystem_mounted)
@@ -184,15 +184,15 @@ int Littlefs_unmount(void)
     err = lfs_unmount(&g_littlefs_context.lfs);
     if (err != 0)
     {
-      APP_ERR_PRINT("LittleFS unmount failed with error: %d\n\r", err);
+      LITTLEFS_DEBUG_ERR_PRINTF(0, "LittleFS unmount failed with error: %d\n\r", err);
       return err;
     }
     g_littlefs_context.filesystem_mounted = false;
-    APP_PRINT("LittleFS unmounted successfully\n\r");
+    LITTLEFS_DEBUG_PRINTF(0, "LittleFS unmounted successfully\n\r");
   }
   else
   {
-    APP_PRINT("LittleFS was not mounted\n\r");
+    LITTLEFS_DEBUG_PRINTF(0, "LittleFS was not mounted\n\r");
   }
 
   // Check if driver is initialized and close it
@@ -201,15 +201,15 @@ int Littlefs_unmount(void)
     fsp_err = Mc80_ospi_close(g_mc80_ospi.p_ctrl);
     if (fsp_err != FSP_SUCCESS)
     {
-      APP_ERR_PRINT("OSPI driver close failed: %u\n\r", (unsigned int)fsp_err);
+      LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI driver close failed: %u\n\r", (unsigned int)fsp_err);
       return -1;
     }
     g_littlefs_context.driver_initialized = false;
-    APP_PRINT("OSPI driver closed successfully\n\r");
+    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver closed successfully\n\r");
   }
   else
   {
-    APP_PRINT("OSPI driver was not initialized\n\r");
+    LITTLEFS_DEBUG_PRINTF(0, "OSPI driver was not initialized\n\r");
   }
 
   return 0;
@@ -228,18 +228,18 @@ int Littlefs_unmount(void)
 -----------------------------------------------------------------------------------------------------*/
 int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void *buffer, lfs_size_t size)
 {
-  fsp_err_t err;
+  fsp_err_t                  err;
   T_mc80_ospi_instance_ctrl *p_ctrl = (T_mc80_ospi_instance_ctrl *)c->context;
 
   // Calculate absolute address
-  uint32_t address = (block * c->block_size) + off;
+  uint32_t address                  = (block * c->block_size) + off;
 
   // Debug info for first few reads
-  static int debug_count = 0;
+  static int debug_count            = 0;
   if (debug_count < 5)
   {
     LITTLEFS_DEBUG_PRINTF(0, "LFS read: blk=%u off=%u sz=%u addr=0x%08X\n",
-              (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
+                          (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
     debug_count++;
   }
 
@@ -256,7 +256,7 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   if (err != FSP_SUCCESS)
   {
     LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI read fail addr=0x%08X size=%u err=%u (0x%X)\n",
-                  (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
+                              (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
     return -1;
   }
 
@@ -264,10 +264,10 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   if (debug_count <= 1)
   {
     LITTLEFS_DEBUG_PRINTF(0, "OSPI read success: %u bytes from 0x%08X\n",
-              (unsigned int)size, (unsigned int)address);
+                          (unsigned int)size, (unsigned int)address);
   }
 
-  return 0; // Success
+  return 0;  // Success
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -283,24 +283,24 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
 -----------------------------------------------------------------------------------------------------*/
 int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, const void *buffer, lfs_size_t size)
 {
-  fsp_err_t err;
+  fsp_err_t                  err;
   T_mc80_ospi_instance_ctrl *p_ctrl = (T_mc80_ospi_instance_ctrl *)c->context;
 
   // Calculate absolute address
-  uint32_t address = (block * c->block_size) + off;
+  uint32_t address                  = (block * c->block_size) + off;
 
   LITTLEFS_DEBUG_PRINTF(0, "LFS write: blk=%u off=%u sz=%u addr=0x%08X\n",
-            (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
+                        (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
 
   // Show first few bytes of data for debugging
   if (size > 0 && buffer != NULL)
   {
     const uint8_t *data = (const uint8_t *)buffer;
     LITTLEFS_DEBUG_PRINTF(0, "Write data: %02X %02X %02X %02X...\n",
-              data[0],
-              size > 1 ? data[1] : 0,
-              size > 2 ? data[2] : 0,
-              size > 3 ? data[3] : 0);
+                          data[0],
+                          size > 1 ? data[1] : 0,
+                          size > 2 ? data[2] : 0,
+                          size > 3 ? data[3] : 0);
   }
 
   // Write data using OSPI driver with correct base address
@@ -309,12 +309,12 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
   if (err != FSP_SUCCESS)
   {
     LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI write fail addr=0x%08X size=%u err=%u (0x%X)\n",
-                  (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
-    return -1; // Return LFS error
+                              (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
+    return -1;  // Return LFS error
   }
 
   LITTLEFS_DEBUG_PRINTF(0, "OSPI write success addr=0x%08X size=%u\n", (unsigned int)address, size);
-  return 0; // Success
+  return 0;  // Success
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -327,14 +327,14 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
 -----------------------------------------------------------------------------------------------------*/
 int _lfs_erase(const struct lfs_config *c, lfs_block_t block)
 {
-  fsp_err_t err;
+  fsp_err_t                  err;
   T_mc80_ospi_instance_ctrl *p_ctrl = (T_mc80_ospi_instance_ctrl *)c->context;
 
   // Calculate absolute address
-  uint32_t address = block * c->block_size;
+  uint32_t address                  = block * c->block_size;
 
   LITTLEFS_DEBUG_PRINTF(0, "LFS erase: blk=%u addr=0x%08X size=%u\n",
-            (unsigned int)block, (unsigned int)address, c->block_size);
+                        (unsigned int)block, (unsigned int)address, c->block_size);
 
   // Erase block using OSPI driver with correct base address
   err = Mc80_ospi_erase(p_ctrl, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + address), c->block_size);
@@ -342,11 +342,11 @@ int _lfs_erase(const struct lfs_config *c, lfs_block_t block)
   if (err != FSP_SUCCESS)
   {
     LITTLEFS_DEBUG_ERR_PRINTF(0, "OSPI erase fail addr=0x%08X size=%u err=%u\n\r", (unsigned int)address, c->block_size, (unsigned int)err);
-    return -1; // Return LFS error
+    return -1;  // Return LFS error
   }
 
   LITTLEFS_DEBUG_PRINTF(0, "OSPI erase success addr=0x%08X size=%u\n", (unsigned int)address, c->block_size);
-  return 0; // Success
+  return 0;  // Success
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -361,7 +361,7 @@ int _lfs_sync(const struct lfs_config *c)
   // For this implementation, sync is not needed as writes are synchronous
   // But we can add status checking if needed
   (void)c;
-  return 0; // Success
+  return 0;  // Success
 }
 
 /*-----------------------------------------------------------------------------------------------------
