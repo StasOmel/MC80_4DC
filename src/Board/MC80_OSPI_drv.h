@@ -19,7 +19,7 @@
 #define MC80_OSPI_MAX_WRITE_ENABLE_POLLING_LOOPS     (5)
 
 // Hardware-specific constants (independent from FSP BSP)
-#define MC80_OSPI_PERIPHERAL_CHANNEL_MASK            (0x03U)  // OSPI units 0 and 1 available
+#define MC80_OSPI_PERIPHERAL_CHANNEL_MASK            (0x03U)         // OSPI units 0 and 1 available
 #define MC80_OSPI_DEVICE_0_START_ADDRESS             (0x80000000UL)  // Memory-mapped address for device 0 (must match BSP_FEATURE_OSPI_B_DEVICE_0_START_ADDRESS)
 #define MC80_OSPI_DEVICE_1_START_ADDRESS             (0x90000000UL)  // Memory-mapped address for device 1 (must match BSP_FEATURE_OSPI_B_DEVICE_1_START_ADDRESS)
 
@@ -245,16 +245,17 @@ typedef enum e_mc80_ospi_combination_function
 
 /*-----------------------------------------------------------------------------------------------------
   MC80 OSPI Protocol modes (custom implementation)
+  Note: Only protocols actually supported by MX25UM25645G chip are marked as supported
 -----------------------------------------------------------------------------------------------------*/
 typedef enum e_mc80_ospi_protocol
 {
-  MC80_OSPI_PROTOCOL_1S_1S_1S = 0x000,  // Standard 1-bit serial mode
-  MC80_OSPI_PROTOCOL_1S_2S_2S = 0x048,  // Dual address and data mode
-  MC80_OSPI_PROTOCOL_1S_4S_4S = 0x090,  // Quad address and data mode
-  MC80_OSPI_PROTOCOL_2S_2S_2S = 0x049,  // Dual command, address and data mode
-  MC80_OSPI_PROTOCOL_4S_4S_4S = 0x092,  // Quad command, address and data mode
-  MC80_OSPI_PROTOCOL_4S_4D_4D = 0x3B2,  // 4S-4D-4D mode
-  MC80_OSPI_PROTOCOL_8D_8D_8D = 0x3FF,  // OctalFlash DTR mode
+  MC80_OSPI_PROTOCOL_1S_1S_1S = 0x000,  // Standard 1-bit serial mode                   [SUPPORTED     by MX25UM25645G]
+  MC80_OSPI_PROTOCOL_1S_2S_2S = 0x048,  // Dual address and data mode                   [NOT SUPPORTED by MX25UM25645G]
+  MC80_OSPI_PROTOCOL_1S_4S_4S = 0x090,  // Quad address and data mode                   [NOT SUPPORTED by MX25UM25645G]
+  MC80_OSPI_PROTOCOL_2S_2S_2S = 0x049,  // Dual command, address and data mode          [NOT SUPPORTED by MX25UM25645G]
+  MC80_OSPI_PROTOCOL_4S_4S_4S = 0x092,  // Quad command, address and data mode          [NOT SUPPORTED by MX25UM25645G]
+  MC80_OSPI_PROTOCOL_4S_4D_4D = 0x3B2,  // 4S-4D-4D mode                                [NOT SUPPORTED by MX25UM25645G]
+  MC80_OSPI_PROTOCOL_8D_8D_8D = 0x3FF,  // OctalFlash DTR mode                          [SUPPORTED     by MX25UM25645G]
 } T_mc80_ospi_protocol;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -263,8 +264,8 @@ typedef enum e_mc80_ospi_protocol
 typedef enum e_mc80_ospi_address_bytes
 {
   MC80_OSPI_ADDRESS_BYTES_NONE = 0,  // No address bytes (not used)
-  MC80_OSPI_ADDRESS_BYTES_3 = 2,     // 3 address bytes
-  MC80_OSPI_ADDRESS_BYTES_4 = 3,     // 4 address bytes
+  MC80_OSPI_ADDRESS_BYTES_3    = 2,  // 3 address bytes
+  MC80_OSPI_ADDRESS_BYTES_4    = 3,  // 4 address bytes
 } T_mc80_ospi_address_bytes;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -305,8 +306,8 @@ typedef struct st_mc80_ospi_calibration_data
     uint32_t casttcs_value;     // Calibration status - success flags for OM_DQS shift values
   } after_calibration;          // Parameters after calibration
 
-  bool     calibration_success; // Overall calibration result (true = success, false = failed)
-  uint8_t  channel;             // OSPI channel (0 or 1)
+  bool    calibration_success;  // Overall calibration result (true = success, false = failed)
+  uint8_t channel;              // OSPI channel (0 or 1)
 } T_mc80_ospi_calibration_data;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -315,72 +316,72 @@ typedef struct st_mc80_ospi_calibration_data
 typedef struct st_mc80_ospi_register_snapshot
 {
   // Metadata
-  uint32_t timestamp;                    // RTOS timestamp when snapshot was taken
-  uint8_t  channel;                      // Current active channel (0 or 1)
-  T_mc80_ospi_protocol current_protocol; // Current protocol setting
+  uint32_t             timestamp;         // RTOS timestamp when snapshot was taken
+  uint8_t              channel;           // Current active channel (0 or 1)
+  T_mc80_ospi_protocol current_protocol;  // Current protocol setting
 
   // Control and Configuration Registers
-  uint32_t lioctl;                       // Line I/O Control Register
-  uint32_t wrapcfg;                      // Wrap Configuration Register
-  uint32_t comcfg;                       // Common Configuration Register
-  uint32_t bmcfgch[2];                   // Bridge Map Configuration Register for CH0/CH1
-  uint32_t bmctl0;                       // Bus Mode Control Register 0
-  uint32_t bmctl1;                       // Bus Mode Control Register 1
-  uint32_t abmcfg;                       // AXI Bridge Map Configuration Register
+  uint32_t lioctl;      // Line I/O Control Register
+  uint32_t wrapcfg;     // Wrap Configuration Register
+  uint32_t comcfg;      // Common Configuration Register
+  uint32_t bmcfgch[2];  // Bridge Map Configuration Register for CH0/CH1
+  uint32_t bmctl0;      // Bus Mode Control Register 0
+  uint32_t bmctl1;      // Bus Mode Control Register 1
+  uint32_t abmcfg;      // AXI Bridge Map Configuration Register
 
   // Channel Configuration Registers (Both Channels)
-  uint32_t liocfgcs[2];                  // Line I/O Configuration Register for CS0/CS1
+  uint32_t liocfgcs[2];  // Line I/O Configuration Register for CS0/CS1
 
   struct
   {
-    uint32_t cmcfg0;                     // Command Configuration Register 0
-    uint32_t cmcfg1;                     // Command Configuration Register 1 (Read)
-    uint32_t cmcfg2;                     // Command Configuration Register 2 (Write)
-  } cmcfgcs[2];                          // Command Configuration for CS0/CS1
+    uint32_t cmcfg0;  // Command Configuration Register 0
+    uint32_t cmcfg1;  // Command Configuration Register 1 (Read)
+    uint32_t cmcfg2;  // Command Configuration Register 2 (Write)
+  } cmcfgcs[2];       // Command Configuration for CS0/CS1
 
   // Calibration Control Registers (Both Channels)
   struct
   {
-    uint32_t ccctl0;                     // Calibration Control Register 0
-    uint32_t ccctl1;                     // Calibration Control Register 1
-    uint32_t ccctl2;                     // Calibration Control Register 2
-    uint32_t ccctl3;                     // Calibration Control Register 3 (Address)
-    uint32_t ccctl4;                     // Calibration Control Register 4 (Pattern 0)
-    uint32_t ccctl5;                     // Calibration Control Register 5 (Pattern 1)
-    uint32_t ccctl6;                     // Calibration Control Register 6 (Pattern 2)
-    uint32_t ccctl7;                     // Calibration Control Register 7 (Pattern 3)
-  } ccctlcs[2];                          // Calibration Control for CS0/CS1
+    uint32_t ccctl0;  // Calibration Control Register 0
+    uint32_t ccctl1;  // Calibration Control Register 1
+    uint32_t ccctl2;  // Calibration Control Register 2
+    uint32_t ccctl3;  // Calibration Control Register 3 (Address)
+    uint32_t ccctl4;  // Calibration Control Register 4 (Pattern 0)
+    uint32_t ccctl5;  // Calibration Control Register 5 (Pattern 1)
+    uint32_t ccctl6;  // Calibration Control Register 6 (Pattern 2)
+    uint32_t ccctl7;  // Calibration Control Register 7 (Pattern 3)
+  } ccctlcs[2];       // Calibration Control for CS0/CS1
 
   // Status and Interrupt Registers
-  uint32_t ints;                         // Interrupt Status Register
-  uint32_t intc;                         // Interrupt Clear Register (write-only, captured for reference)
-  uint32_t inte;                         // Interrupt Enable Register
-  uint32_t comstt;                       // Communication Status Register
-  uint32_t verstt;                       // Version Register
+  uint32_t ints;    // Interrupt Status Register
+  uint32_t intc;    // Interrupt Clear Register (write-only, captured for reference)
+  uint32_t inte;    // Interrupt Enable Register
+  uint32_t comstt;  // Communication Status Register
+  uint32_t verstt;  // Version Register
 
   // Calibration Status Registers
-  uint32_t casttcs[2];                   // Calibration Status Register for CS0/CS1
+  uint32_t casttcs[2];  // Calibration Status Register for CS0/CS1
 
   // Command Buffer Registers (Both Channels)
   struct
   {
-    uint32_t cdt;                        // Command Data Transaction Register
-    uint32_t cda;                        // Command Data Address Register
-    uint32_t cdd0;                       // Command Data Register 0 (Lower 32 bits)
-    uint32_t cdd1;                       // Command Data Register 1 (Upper 32 bits)
-  } cdbuf[2];                            // Command Buffer for CS0/CS1
+    uint32_t cdt;   // Command Data Transaction Register
+    uint32_t cda;   // Command Data Address Register
+    uint32_t cdd0;  // Command Data Register 0 (Lower 32 bits)
+    uint32_t cdd1;  // Command Data Register 1 (Upper 32 bits)
+  } cdbuf[2];       // Command Buffer for CS0/CS1
 
   // Manual Command Control
-  uint32_t cdctl0;                       // Command Control Register 0
-  uint32_t cdctl1;                       // Command Control Register 1
-  uint32_t cdctl2;                       // Command Control Register 2
+  uint32_t cdctl0;  // Command Control Register 0
+  uint32_t cdctl1;  // Command Control Register 1
+  uint32_t cdctl2;  // Command Control Register 2
 
   // Link Pattern Control Registers
-  uint32_t lpctl0;                       // Link Pattern Control Register 0
-  uint32_t lpctl1;                       // Link Pattern Control Register 1
+  uint32_t lpctl0;  // Link Pattern Control Register 0
+  uint32_t lpctl1;  // Link Pattern Control Register 1
 
   // XIP Control Registers
-  uint32_t cmctlch[2];                   // Command Control Channel Register for CH0/CH1
+  uint32_t cmctlch[2];  // Command Control Channel Register for CH0/CH1
 } T_mc80_ospi_register_snapshot;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -390,16 +391,16 @@ typedef struct st_mc80_ospi_direct_transfer
 {
   union
   {
-    uint64_t data_u64;     // Data as 64-bit value
-    uint8_t  data_bytes[8]; // Data as byte array
-    uint32_t data;         // Data as 32-bit value (for compatibility)
+    uint64_t data_u64;       // Data as 64-bit value
+    uint8_t  data_bytes[8];  // Data as byte array
+    uint32_t data;           // Data as 32-bit value (for compatibility)
   };
-  uint32_t address;        // Address for the transfer
-  uint16_t command;        // Command code
-  uint8_t  command_length; // Number of command bytes (1 or 2)
-  uint8_t  address_length; // Number of address bytes
-  uint8_t  data_length;    // Number of data bytes
-  uint8_t  dummy_cycles;   // Number of dummy cycles
+  uint32_t address;          // Address for the transfer
+  uint16_t command;          // Command code
+  uint8_t  command_length;   // Number of command bytes (1 or 2)
+  uint8_t  address_length;   // Number of address bytes
+  uint8_t  data_length;      // Number of data bytes
+  uint8_t  dummy_cycles;     // Number of dummy cycles
 } T_mc80_ospi_direct_transfer;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -479,13 +480,13 @@ typedef struct st_mc80_ospi_extended_cfg
 -----------------------------------------------------------------------------------------------------*/
 typedef struct st_mc80_ospi_cfg
 {
-  T_mc80_ospi_protocol              spi_protocol;         // SPI protocol to use for memory device operations
-  uint32_t                          page_size_bytes;      // Page size for memory device
-  uint8_t                           write_status_bit;     // Bit position for write-in-progress status
-  uint8_t                           write_enable_bit;     // Bit position for write-enable status
-  uint16_t                          xip_enter_command;    // Command to enter XIP mode
-  uint16_t                          xip_exit_command;     // Command to exit XIP mode
-  T_mc80_ospi_extended_cfg const*   p_extend;             // Extension configuration
+  T_mc80_ospi_protocol            spi_protocol;       // SPI protocol to use for memory device operations
+  uint32_t                        page_size_bytes;    // Page size for memory device
+  uint8_t                         write_status_bit;   // Bit position for write-in-progress status
+  uint8_t                         write_enable_bit;   // Bit position for write-enable status
+  uint16_t                        xip_enter_command;  // Command to enter XIP mode
+  uint16_t                        xip_exit_command;   // Command to exit XIP mode
+  T_mc80_ospi_extended_cfg const* p_extend;           // Extension configuration
 } T_mc80_ospi_cfg;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -507,19 +508,19 @@ typedef struct st_mc80_ospi_instance_ctrl
 -----------------------------------------------------------------------------------------------------*/
 typedef struct st_mc80_ospi_api
 {
-  fsp_err_t (* open)(T_mc80_ospi_instance_ctrl * const p_ctrl, T_mc80_ospi_cfg const * const p_cfg);
-  fsp_err_t (* close)(T_mc80_ospi_instance_ctrl * const p_ctrl);
-  fsp_err_t (* write)(T_mc80_ospi_instance_ctrl * const p_ctrl, uint8_t const * const p_src, uint8_t * const p_dest, uint32_t byte_count);
-  fsp_err_t (* erase)(T_mc80_ospi_instance_ctrl * const p_ctrl, uint8_t * const p_device_address, uint32_t byte_count);
-  fsp_err_t (* statusGet)(T_mc80_ospi_instance_ctrl * const p_ctrl, T_mc80_ospi_status * const p_status);
-  fsp_err_t (* spiProtocolSet)(T_mc80_ospi_instance_ctrl * const p_ctrl, T_mc80_ospi_protocol spi_protocol);
-  fsp_err_t (* spiProtocolSwitchSafe)(T_mc80_ospi_instance_ctrl * const p_ctrl, T_mc80_ospi_protocol new_protocol);
-  fsp_err_t (* xipEnter)(T_mc80_ospi_instance_ctrl * const p_ctrl);
-  fsp_err_t (* xipExit)(T_mc80_ospi_instance_ctrl * const p_ctrl);
-  fsp_err_t (* directWrite)(T_mc80_ospi_instance_ctrl * const p_ctrl, uint8_t const * const p_src, uint32_t const address, uint32_t const bytes, bool const read_after_write);
-  fsp_err_t (* directRead)(T_mc80_ospi_instance_ctrl * const p_ctrl, uint8_t * const p_dest, uint32_t const address, uint32_t const bytes);
-  fsp_err_t (* directTransfer)(T_mc80_ospi_instance_ctrl * const p_ctrl, T_mc80_ospi_direct_transfer * const p_transfer, T_mc80_ospi_direct_transfer_dir direction);
-  fsp_err_t (* bankSet)(T_mc80_ospi_instance_ctrl * const p_ctrl, uint32_t bank);
+  fsp_err_t (*open)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_cfg const* const p_cfg);
+  fsp_err_t (*close)(T_mc80_ospi_instance_ctrl* const p_ctrl);
+  fsp_err_t (*write)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t const* const p_src, uint8_t* const p_dest, uint32_t byte_count);
+  fsp_err_t (*erase)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t* const p_device_address, uint32_t byte_count);
+  fsp_err_t (*statusGet)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_status* const p_status);
+  fsp_err_t (*spiProtocolSet)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_protocol spi_protocol);
+  fsp_err_t (*spiProtocolSwitchSafe)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_protocol new_protocol);
+  fsp_err_t (*xipEnter)(T_mc80_ospi_instance_ctrl* const p_ctrl);
+  fsp_err_t (*xipExit)(T_mc80_ospi_instance_ctrl* const p_ctrl);
+  fsp_err_t (*directWrite)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t const* const p_src, uint32_t const address, uint32_t const bytes, bool const read_after_write);
+  fsp_err_t (*directRead)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t* const p_dest, uint32_t const address, uint32_t const bytes);
+  fsp_err_t (*directTransfer)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_direct_transfer* const p_transfer, T_mc80_ospi_direct_transfer_dir direction);
+  fsp_err_t (*bankSet)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint32_t bank);
 } T_mc80_ospi_api;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -527,9 +528,9 @@ typedef struct st_mc80_ospi_api
 -----------------------------------------------------------------------------------------------------*/
 typedef struct st_mc80_ospi_instance
 {
-  T_mc80_ospi_instance_ctrl * p_ctrl;  // Pointer to the control structure
-  T_mc80_ospi_cfg const *     p_cfg;   // Pointer to the configuration structure
-  T_mc80_ospi_api const *     p_api;   // Pointer to the API function structure
+  T_mc80_ospi_instance_ctrl* p_ctrl;  // Pointer to the control structure
+  T_mc80_ospi_cfg const*     p_cfg;   // Pointer to the configuration structure
+  T_mc80_ospi_api const*     p_api;   // Pointer to the API function structure
 } T_mc80_ospi_instance;
 
 /*-----------------------------------------------------------------------------------------------------
@@ -560,21 +561,21 @@ fsp_err_t Mc80_ospi_capture_register_snapshot(T_mc80_ospi_instance_ctrl* const p
 void Mc80_ospi_dma_transfer_reset_flags(void);
 
 // RTOS-based DMA synchronization functions (automatically initialized when driver opens)
-fsp_err_t Mc80_ospi_dma_get_event_flags(TX_EVENT_FLAGS_GROUP **pp_event_flags);
+fsp_err_t Mc80_ospi_dma_get_event_flags(TX_EVENT_FLAGS_GROUP** pp_event_flags);
 fsp_err_t Mc80_ospi_dma_wait_for_completion(ULONG timeout_ticks);
 
 // RTOS-based periodic status polling functions
 fsp_err_t Mc80_ospi_cmdcmp_wait_for_completion(ULONG timeout_ticks);
 
 // DMA event flag constants for task synchronization
-#define OSPI_DMA_EVENT_TRANSFER_COMPLETE  (0x00000001UL)
-#define OSPI_DMA_EVENT_TRANSFER_ERROR     (0x00000002UL)
-#define OSPI_DMA_EVENT_ALL_EVENTS         (OSPI_DMA_EVENT_TRANSFER_COMPLETE | OSPI_DMA_EVENT_TRANSFER_ERROR)
+#define OSPI_DMA_EVENT_TRANSFER_COMPLETE (0x00000001UL)
+#define OSPI_DMA_EVENT_TRANSFER_ERROR    (0x00000002UL)
+#define OSPI_DMA_EVENT_ALL_EVENTS        (OSPI_DMA_EVENT_TRANSFER_COMPLETE | OSPI_DMA_EVENT_TRANSFER_ERROR)
 
 // Periodic polling event flag constants (using same event group as DMA)
-#define OSPI_CMDCMP_EVENT_COMPLETE        (0x00000004UL)
-#define OSPI_CMDCMP_EVENT_ERROR           (0x00000008UL)
-#define OSPI_CMDCMP_EVENT_ALL_EVENTS      (OSPI_CMDCMP_EVENT_COMPLETE | OSPI_CMDCMP_EVENT_ERROR)
+#define OSPI_CMDCMP_EVENT_COMPLETE       (0x00000004UL)
+#define OSPI_CMDCMP_EVENT_ERROR          (0x00000008UL)
+#define OSPI_CMDCMP_EVENT_ALL_EVENTS     (OSPI_CMDCMP_EVENT_COMPLETE | OSPI_CMDCMP_EVENT_ERROR)
 
 /*-----------------------------------------------------------------------------------------------------
   OSPI Wait Loop Debug System - Function declarations (only available when debugging enabled)
@@ -585,11 +586,11 @@ fsp_err_t Mc80_ospi_cmdcmp_wait_for_completion(ULONG timeout_ticks);
 typedef struct T_ospi_debug_structure T_ospi_debug_structure;
 
 // Debug function declarations
-void                     Mc80_ospi_debug_reset_statistics(void);
-bool                     Mc80_ospi_debug_enable_measurements(bool enable);
-T_ospi_debug_structure  *Mc80_ospi_debug_get_statistics(void);
-float                    Mc80_ospi_debug_cycles_to_microseconds(uint32_t cycles);
+void                    Mc80_ospi_debug_reset_statistics(void);
+bool                    Mc80_ospi_debug_enable_measurements(bool enable);
+T_ospi_debug_structure* Mc80_ospi_debug_get_statistics(void);
+float                   Mc80_ospi_debug_cycles_to_microseconds(uint32_t cycles);
 
-#endif // MC80_OSPI_DEBUG_WAIT_LOOPS
+#endif  // MC80_OSPI_DEBUG_WAIT_LOOPS
 
 #endif  // MC80_OSPI_DRV_H

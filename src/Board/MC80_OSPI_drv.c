@@ -757,6 +757,14 @@ fsp_err_t Mc80_ospi_xip_exit(T_mc80_ospi_instance_ctrl *p_ctrl)
   for maximum performance. The function processes data in blocks to handle any size transfer
   while respecting DMA limitations.
 
+  Protocol-Specific Alignment Requirements:
+  - For MC80_OSPI_PROTOCOL_1S_1S_1S (Standard SPI): No alignment restrictions
+  - For MC80_OSPI_PROTOCOL_8D_8D_8D (Octal DDR):
+    * Address must be even-aligned (aligned to 2-byte boundary)
+    * Number of bytes must be even (multiple of 2)
+    * These restrictions are hardware requirements for DDR mode operation
+    * Violating alignment may result in corrupted data or transfer failures
+
   Block-Based Read Operation:
   - Data is processed in optimized blocks (32KB) for maximum DMA performance
   - Block size (MC80_OSPI_BLOCK_READ_SIZE) is chosen to maximize throughput while staying within DMA limits
