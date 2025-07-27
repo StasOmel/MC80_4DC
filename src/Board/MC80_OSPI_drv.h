@@ -510,8 +510,8 @@ typedef struct st_mc80_ospi_api
 {
   fsp_err_t (*open)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_cfg const* const p_cfg);
   fsp_err_t (*close)(T_mc80_ospi_instance_ctrl* const p_ctrl);
-  fsp_err_t (*write)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t const* const p_src, uint8_t* const p_dest, uint32_t byte_count);
-  fsp_err_t (*erase)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t* const p_device_address, uint32_t byte_count);
+  fsp_err_t (*write)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t const* const p_src, uint32_t const address, uint32_t byte_count);
+  fsp_err_t (*erase)(T_mc80_ospi_instance_ctrl* const p_ctrl, uint32_t const address, uint32_t byte_count);
   fsp_err_t (*statusGet)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_status* const p_status);
   fsp_err_t (*spiProtocolSet)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_protocol spi_protocol);
   fsp_err_t (*spiProtocolSwitchSafe)(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_protocol new_protocol);
