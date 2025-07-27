@@ -4,8 +4,8 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #include "App.h"
 
-const char *days_abbrev[]   = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-const char *months_abbrev[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+const char *days_abbrev[]   = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+const char *months_abbrev[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 /*-------------------------------------------------------------------------------------------------------------
   Clear monitor screen
@@ -116,7 +116,7 @@ int32_t VT100_edit_string_in_pos(char *buf, int buf_len, int row, char *instr)
   int     indx = 0;
   uint8_t b;
   int     res;
-  uint8_t bs_seq[] = {VT100_BCKSP, ' ', VT100_BCKSP, 0};
+  uint8_t bs_seq[] = { VT100_BCKSP, ' ', VT100_BCKSP, 0 };
   GET_MCBL;
 
   indx = 0;
@@ -195,7 +195,7 @@ int32_t VT100_edit_string(char *buf, uint32_t buf_len, char *instr)
   int     indx = 0;
   uint8_t b;
   int     res;
-  uint8_t bs_seq[] = {VT100_BCKSP, ' ', VT100_BCKSP, 0};
+  uint8_t bs_seq[] = { VT100_BCKSP, ' ', VT100_BCKSP, 0 };
   GET_MCBL;
 
   indx = 0;
@@ -420,7 +420,7 @@ bool VT100_input_uint32(uint32_t *result, uint32_t min_value, uint32_t max_value
   memset(input_buffer, 0, sizeof(input_buffer));
   uint32_t value = 0;
 
-  uint8_t pos = 0;
+  uint8_t pos    = 0;
   while (pos < 15)
   {
     uint8_t key;
@@ -689,49 +689,181 @@ uint32_t VT100_input_size(uint32_t max_size)
   return size;
 }
 
+/*-----------------------------------------------------------------------------------------------------
+  Description: Get filename input from user
+
+  This function provides convenient filename input with validation.
+
+  Parameters:
+    filename    - buffer to store the filename
+    max_length  - maximum length of filename including null terminator
+    default_name - default filename (can be NULL)
+
+  Return:
+    true if filename was entered successfully, false if cancelled
+-----------------------------------------------------------------------------------------------------*/
+bool VT100_input_filename(char *filename, uint32_t max_length, const char *default_name)
+{
+  GET_MCBL;
+
+  if (default_name != NULL)
+  {
+    MPRINTF("Enter filename [default: %s]: ", default_name);
+  }
+  else
+  {
+    MPRINTF("Enter filename: ");
+  }
+
+  char input_buffer[256];
+  memset(input_buffer, 0, sizeof(input_buffer));
+  uint32_t pos       = 0;
+  uint32_t max_input = (max_length - 1 < sizeof(input_buffer) - 1) ? max_length - 1 : sizeof(input_buffer) - 1;
+
+  while (pos < max_input)
+  {
+    uint8_t key;
+    if (WAIT_CHAR(&key, ms_to_ticks(30000)) != RES_OK)
+    {
+      MPRINTF("TIMEOUT\n\r");
+      return false;  // Exit on timeout
+    }
+
+    if (key == '\r' || key == '\n')
+    {
+      break;
+    }
+    else if (key == VT100_ESC)
+    {
+      MPRINTF("ESC - cancelled\n\r");
+      return false;
+    }
+    else if (key == '\b' || key == 0x7F)  // Backspace
+    {
+      if (pos > 0)
+      {
+        pos--;
+        input_buffer[pos] = 0;
+        MPRINTF("\b \b");
+      }
+    }
+    else if (key >= 32 && key <= 126)  // Printable characters
+    {
+      input_buffer[pos] = key;
+      pos++;
+      MPRINTF("%c", key);
+    }
+  }
+
+  MPRINTF("\n\r");
+
+  // If no input and default provided, use default
+  if (pos == 0 && default_name != NULL)
+  {
+    strncpy(filename, default_name, max_length - 1);
+    filename[max_length - 1] = '\0';
+    MPRINTF("Using default filename: %s\n\r", filename);
+    return true;
+  }
+
+  // If no input and no default, fail
+  if (pos == 0)
+  {
+    MPRINTF("No filename entered\n\r");
+    return false;
+  }
+
+  // Copy input to output buffer
+  strncpy(filename, input_buffer, max_length - 1);
+  filename[max_length - 1] = '\0';
+
+  return true;
+}
+
 /*------------------------------------------------------------------------------
-  Memory dump output
+  Memory dump output with hex and ASCII display
 
   Parameters:
     addr       - displayed starting address of dump
     buf        - pointer to memory
     buf_len    - number of bytes
-    sym_in_str - number of bytes displayed per dump line
 
   Return:
-    int32_t
+    none
  ------------------------------------------------------------------------------*/
-void VT100_print_dump(uint32_t addr, void *buf, uint32_t buf_len, uint8_t sym_in_str)
+void VT100_print_dump(uint32_t addr, void *buf, uint32_t buf_len)
 {
-  uint32_t i;
-  uint32_t scnt;
+  uint32_t i, j;
   uint8_t *pbuf;
+  uint32_t lines_printed = 0;
   GET_MCBL;
 
   pbuf = (uint8_t *)buf;
-  scnt = 0;
-  for (i = 0; i < buf_len; i++)
+
+  if (buf_len > 0)
   {
-    if (scnt == 0)
+    MPRINTF("\n\rData contents (%u bytes):\n\r", buf_len);
+  }
+
+  // Display data in hex format (16 bytes per line)
+  for (i = 0; i < buf_len; i += 16)
+  {
+    // Print address
+    MPRINTF("0x%08X: ", addr + i);
+
+    // Print hex values
+    for (j = 0; j < 16; j++)
     {
-      MPRINTF("%08X: ", addr);
+      if (i + j < buf_len)
+      {
+        MPRINTF("%02X ", pbuf[i + j]);
+      }
+      else
+      {
+        MPRINTF("   ");
+      }
     }
 
-    MPRINTF("%02X ", pbuf[i]);
+    MPRINTF(" | ");
 
-    addr++;
-    scnt++;
-    if (scnt >= sym_in_str)
+    // Print ASCII representation
+    for (j = 0; j < 16; j++)
     {
-      scnt = 0;
-      MPRINTF("\r\n");
+      if (i + j < buf_len)
+      {
+        uint8_t byte_val = pbuf[i + j];
+        if (byte_val >= 32 && byte_val <= 126)  // Printable ASCII
+        {
+          MPRINTF("%c", byte_val);
+        }
+        else
+        {
+          MPRINTF(".");
+        }
+      }
+    }
+
+    MPRINTF("\n\r");
+    lines_printed++;
+
+    // Check for ESC key every 20 lines to allow user to interrupt
+    if (lines_printed % 20 == 0)
+    {
+      uint8_t key;
+      if (WAIT_CHAR(&key, 1) == RES_OK)  // Non-blocking check (1 tick timeout)
+      {
+        if (key == VT100_ESC)
+        {
+          MPRINTF("\n\r--- Output interrupted by ESC key ---\n\r");
+          MPRINTF("Displayed %u lines (%u bytes of %u total)\n\r",
+                  lines_printed, i + 16, buf_len);
+          return;
+        }
+      }
     }
   }
 
-  if (scnt != 0)
-  {
-    MPRINTF("\r\n");
-  }
+  MPRINTF("\n\r--- End of dump (%u bytes total) ---\n\r", buf_len);
 }
 
 /*-----------------------------------------------------------------------------------------------------

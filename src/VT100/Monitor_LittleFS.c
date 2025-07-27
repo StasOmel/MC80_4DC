@@ -1,59 +1,59 @@
 #include "App.h"
 
-#define MAX_PATH_LENGTH 256
-#define MAX_DIRS_IN_STACK 32
+#define MAX_PATH_LENGTH              256
+#define MAX_DIRS_IN_STACK            32
 
 // Performance test configuration
-#define LFS_TEST_FILES_COUNT_DEFAULT    10      // Default number of files
-#define LFS_TEST_FILE_SIZE_DEFAULT      10240   // Default file size (10 KB)
-#define LFS_TEST_BLOCK_SIZE_DEFAULT     65536   // Default block size (64 KB)
-#define LFS_TEST_FILE_PREFIX            "test_" // File name prefix
-#define LFS_MAX_FILENAME_LENGTH         64      // Maximum filename length
+#define LFS_TEST_FILES_COUNT_DEFAULT 10       // Default number of files
+#define LFS_TEST_FILE_SIZE_DEFAULT   10240    // Default file size (10 KB)
+#define LFS_TEST_BLOCK_SIZE_DEFAULT  65536    // Default block size (64 KB)
+#define LFS_TEST_FILE_PREFIX         "test_"  // File name prefix
+#define LFS_MAX_FILENAME_LENGTH      64       // Maximum filename length
 
 // Data integrity and pattern definitions
-#define CRC32_SIZE                      4       // CRC32 size in bytes
-#define DATA_PATTERN_CONSTANT           0       // Fill with constant value
-#define DATA_PATTERN_COUNTER            1       // Fill with 32-bit counter
-#define DATA_PATTERN_RANDOM             2       // Fill with pseudo-random data
-#define DEFAULT_FILL_CONSTANT           0x5A    // Default constant for pattern fill
+#define CRC32_SIZE                   4     // CRC32 size in bytes
+#define DATA_PATTERN_CONSTANT        0     // Fill with constant value
+#define DATA_PATTERN_COUNTER         1     // Fill with 32-bit counter
+#define DATA_PATTERN_RANDOM          2     // Fill with pseudo-random data
+#define DEFAULT_FILL_CONSTANT        0x5A  // Default constant for pattern fill
 
 // Performance test parameters (configurable)
-static uint32_t g_test_files_count = LFS_TEST_FILES_COUNT_DEFAULT;
-static uint32_t g_test_file_size = LFS_TEST_FILE_SIZE_DEFAULT;
-static uint32_t g_test_block_size = LFS_TEST_BLOCK_SIZE_DEFAULT;
-static uint32_t g_data_pattern = DATA_PATTERN_CONSTANT;
-static uint32_t g_fill_constant = DEFAULT_FILL_CONSTANT;
-static bool g_enable_data_verification = true;
+static uint32_t g_test_files_count         = LFS_TEST_FILES_COUNT_DEFAULT;
+static uint32_t g_test_file_size           = LFS_TEST_FILE_SIZE_DEFAULT;
+static uint32_t g_test_block_size          = LFS_TEST_BLOCK_SIZE_DEFAULT;
+static uint32_t g_data_pattern             = DATA_PATTERN_CONSTANT;
+static uint32_t g_fill_constant            = DEFAULT_FILL_CONSTANT;
+static bool     g_enable_data_verification = true;
 
 // Structure for directory stack (non-recursive tree traversal)
 typedef struct
 {
-  char path[MAX_PATH_LENGTH];
+  char    path[MAX_PATH_LENGTH];
   uint8_t depth;
 } T_dir_stack_item;
 
 // Structure for operation statistics
 typedef struct
 {
-  uint32_t min_time;           // Minimum time
-  uint32_t max_time;           // Maximum time
-  uint32_t avg_time;           // Average time
-  uint32_t total_time;         // Total time of all operations
-  uint32_t success_count;      // Number of successful operations
-  uint32_t error_count;        // Number of failed operations
-  uint32_t total_bytes;        // Total bytes processed
-  uint32_t min_speed_kbps;     // Minimum speed in KB/s
-  uint32_t max_speed_kbps;     // Maximum speed in KB/s
-  uint32_t avg_speed_kbps;     // Average speed in KB/s
-  uint32_t total_open_time;    // Total time for file open operations
-  uint32_t total_close_time;   // Total time for file close operations
-  uint32_t crc_errors;         // Number of CRC verification errors
-  uint32_t pattern_errors;     // Number of data pattern errors
-  uint32_t size_errors;        // Number of file size errors
+  uint32_t min_time;          // Minimum time
+  uint32_t max_time;          // Maximum time
+  uint32_t avg_time;          // Average time
+  uint32_t total_time;        // Total time of all operations
+  uint32_t success_count;     // Number of successful operations
+  uint32_t error_count;       // Number of failed operations
+  uint32_t total_bytes;       // Total bytes processed
+  uint32_t min_speed_kbps;    // Minimum speed in KB/s
+  uint32_t max_speed_kbps;    // Maximum speed in KB/s
+  uint32_t avg_speed_kbps;    // Average speed in KB/s
+  uint32_t total_open_time;   // Total time for file open operations
+  uint32_t total_close_time;  // Total time for file close operations
+  uint32_t crc_errors;        // Number of CRC verification errors
+  uint32_t pattern_errors;    // Number of data pattern errors
+  uint32_t size_errors;       // Number of file size errors
 } T_operation_stats;
 
 static T_dir_stack_item g_dir_stack[MAX_DIRS_IN_STACK];
-static uint8_t g_stack_top;
+static uint8_t          g_stack_top;
 
 // External global LittleFS context
 extern T_littlefs_context g_littlefs_context;
@@ -62,11 +62,13 @@ extern T_littlefs_context g_littlefs_context;
 void Do_LittleFS_init(uint8_t keycode);
 void Do_LittleFS_list_files(uint8_t keycode);
 void Do_LittleFS_performance_test(uint8_t keycode);
+void Do_LittleFS_read_file_hex(uint8_t keycode);
 
 const T_VT100_Menu_item MENU_LittleFS_items[] = {
   { '1', Do_LittleFS_init, NULL },
   { '2', Do_LittleFS_list_files, NULL },
   { '3', Do_LittleFS_performance_test, NULL },
+  { '4', Do_LittleFS_read_file_hex, NULL },
   { 'R', NULL, NULL },
   { 0 }  // End of menu
 };
@@ -77,6 +79,7 @@ const T_VT100_Menu MENU_LittleFS = {
   "\033[5C <1> - Initialize LittleFS (auto-format if needed)\r\n"
   "\033[5C <2> - List files\r\n"
   "\033[5C <3> - Performance test\r\n"
+  "\033[5C <4> - Read file as HEX dump\r\n"
   "\033[5C <R> - Return to previous menu\r\n",
   MENU_LittleFS_items
 };
@@ -92,12 +95,12 @@ static bool _Push_dir_to_stack(const char *path, uint8_t depth)
 {
   if (g_stack_top >= MAX_DIRS_IN_STACK)
   {
-    return false; // Stack full
+    return false;  // Stack full
   }
 
   strncpy(g_dir_stack[g_stack_top].path, path, MAX_PATH_LENGTH - 1);
   g_dir_stack[g_stack_top].path[MAX_PATH_LENGTH - 1] = '\0';
-  g_dir_stack[g_stack_top].depth = depth;
+  g_dir_stack[g_stack_top].depth                     = depth;
   g_stack_top++;
   return true;
 }
@@ -113,7 +116,7 @@ static bool _Pop_dir_from_stack(char *path, uint8_t *depth)
 {
   if (g_stack_top == 0)
   {
-    return false; // Stack empty
+    return false;  // Stack empty
   }
 
   g_stack_top--;
@@ -137,11 +140,11 @@ static void _Print_tree_indent(uint8_t depth)
   {
     if (i == depth - 1)
     {
-      MPRINTF("├── ");
+      MPRINTF("+-- ");
     }
     else
     {
-      MPRINTF("│   ");
+      MPRINTF("|   ");
     }
   }
 }
@@ -285,41 +288,41 @@ static void _Fill_buffer_with_pattern(uint8_t *buffer, uint32_t size, uint32_t p
       break;
 
     case DATA_PATTERN_COUNTER:
+    {
+      uint32_t *word_ptr   = (uint32_t *)buffer;
+      uint32_t  counter    = start_offset / 4;
+      uint32_t  word_count = size / 4;
+
+      // Fill with 32-bit counter values
+      for (uint32_t i = 0; i < word_count; i++)
       {
-        uint32_t *word_ptr = (uint32_t *)buffer;
-        uint32_t counter = start_offset / 4;
-        uint32_t word_count = size / 4;
+        word_ptr[i] = counter + i;
+      }
 
-        // Fill with 32-bit counter values
-        for (uint32_t i = 0; i < word_count; i++)
+      // Fill remaining bytes
+      uint32_t remaining_bytes = size % 4;
+      if (remaining_bytes > 0)
+      {
+        uint32_t last_value = counter + word_count;
+        uint8_t *byte_ptr   = &buffer[word_count * 4];
+        for (uint32_t i = 0; i < remaining_bytes; i++)
         {
-          word_ptr[i] = counter + i;
-        }
-
-        // Fill remaining bytes
-        uint32_t remaining_bytes = size % 4;
-        if (remaining_bytes > 0)
-        {
-          uint32_t last_value = counter + word_count;
-          uint8_t *byte_ptr = &buffer[word_count * 4];
-          for (uint32_t i = 0; i < remaining_bytes; i++)
-          {
-            byte_ptr[i] = (uint8_t)((last_value >> (i * 8)) & 0xFF);
-          }
+          byte_ptr[i] = (uint8_t)((last_value >> (i * 8)) & 0xFF);
         }
       }
-      break;
+    }
+    break;
 
     case DATA_PATTERN_RANDOM:
+    {
+      uint32_t seed = 0x12345678 + start_offset;
+      for (uint32_t i = 0; i < size; i++)
       {
-        uint32_t seed = 0x12345678 + start_offset;
-        for (uint32_t i = 0; i < size; i++)
-        {
-          seed = seed * 1103515245 + 12345; // Simple LCG
-          buffer[i] = (uint8_t)(seed >> 16);
-        }
+        seed      = seed * 1103515245 + 12345;  // Simple LCG
+        buffer[i] = (uint8_t)(seed >> 16);
       }
-      break;
+    }
+    break;
 
     default:
       memset(buffer, 0x00, size);
@@ -342,7 +345,7 @@ static bool _Verify_buffer_pattern(const uint8_t *buffer, uint32_t size, uint32_
   uint8_t *expected_buffer = (uint8_t *)App_malloc(size);
   if (expected_buffer == NULL)
   {
-    return false; // Cannot verify without memory
+    return false;  // Cannot verify without memory
   }
 
   _Fill_buffer_with_pattern(expected_buffer, size, pattern, start_offset);
@@ -455,7 +458,7 @@ void Do_LittleFS_list_files(uint8_t keycode)
   struct lfs_info info;
   int             result;
   int             total_files = 0;
-  int             total_dirs = 0;
+  int             total_dirs  = 0;
   char            current_path[MAX_PATH_LENGTH];
   uint8_t         current_depth;
 
@@ -563,12 +566,16 @@ void Do_LittleFS_list_files(uint8_t keycode)
   if (result == 0)
   {
     uint32_t total_size = fsinfo.block_count * fsinfo.block_size;
-    uint32_t used_size = fsinfo.block_count * fsinfo.block_size;
+
+    // Get actual used size
+    lfs_size_t used_blocks = lfs_fs_size(&g_littlefs_context.lfs);
+    uint32_t used_size = used_blocks * fsinfo.block_size;
     uint32_t free_size = total_size - used_size;
 
     MPRINTF("\nFilesystem statistics:\n\r");
     MPRINTF("  Total space: %u KB (%u blocks x %u bytes)\n\r",
             total_size / 1024, fsinfo.block_count, fsinfo.block_size);
+    MPRINTF("  Used space:  %u KB (%u blocks)\n\r", used_size / 1024, (uint32_t)used_blocks);
     MPRINTF("  Free space:  %u KB\n\r", free_size / 1024);
   }
 
@@ -576,6 +583,44 @@ exit:
   MPRINTF("\n\rPress any key to continue...\n\r");
   uint8_t dummy_key;
   WAIT_CHAR(&dummy_key, ms_to_ticks(100000));
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Check filesystem consistency before tests
+
+  Parameters: none
+
+  Return: true if filesystem is OK, false if corrupted
+-----------------------------------------------------------------------------------------------------*/
+static bool _Check_filesystem_integrity(void)
+{
+  GET_MCBL;
+  int result;
+
+  // Try to read root directory
+  lfs_dir_t dir;
+  result = lfs_dir_open(&g_littlefs_context.lfs, &dir, "/");
+  if (result < 0)
+  {
+    MPRINTF("Filesystem integrity check FAILED: Cannot open root directory - %s\n\r",
+            _Littlefs_error_to_string(result));
+    return false;
+  }
+
+  lfs_dir_close(&g_littlefs_context.lfs, &dir);
+
+  // Try to get filesystem statistics
+  struct lfs_fsinfo fsinfo;
+  result = lfs_fs_stat(&g_littlefs_context.lfs, &fsinfo);
+  if (result < 0)
+  {
+    MPRINTF("Filesystem integrity check FAILED: Cannot get filesystem statistics - %s\n\r",
+            _Littlefs_error_to_string(result));
+    return false;
+  }
+
+  MPRINTF("Filesystem integrity check: OK\n\r");
+  return true;
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -588,21 +633,29 @@ exit:
 static void _Do_write_test(void)
 {
   GET_MCBL;
-  uint8_t *buffer = NULL;
+  uint8_t          *buffer = NULL;
   T_operation_stats stats;
-  char filename[LFS_MAX_FILENAME_LENGTH];
-  lfs_file_t file;
-  int result;
-  uint32_t start_time, end_time, open_time, close_time;
-  uint32_t open_start, open_end, close_start, close_end;
-  uint32_t bytes_written;
-  uint32_t blocks_per_file;
-  uint32_t operation_time;
-  uint32_t speed_kbps;
-  uint32_t data_size; // Data size without CRC
-  uint32_t crc32_value;
+  char              filename[LFS_MAX_FILENAME_LENGTH];
+  lfs_file_t        file;
+  int               result;
+  uint32_t          start_time, end_time, open_time, close_time;
+  uint32_t          open_start, open_end, close_start, close_end;
+  uint32_t          bytes_written;
+  uint32_t          blocks_per_file;
+  uint32_t          operation_time;
+  uint32_t          speed_kbps;
+  uint32_t          data_size;  // Data size without CRC
+  uint32_t          crc32_value;
 
   MPRINTF("=== Write Test ===\n\r");
+
+  // Check filesystem integrity first
+  if (!_Check_filesystem_integrity())
+  {
+    MPRINTF("Aborting write test due to filesystem integrity failure\n\r");
+    return;
+  }
+
   MPRINTF("Writing %u files, %u bytes each, %u byte blocks\n\r",
           g_test_files_count, g_test_file_size, g_test_block_size);
   MPRINTF("Data pattern: %s", _Get_pattern_name(g_data_pattern));
@@ -613,26 +666,26 @@ static void _Do_write_test(void)
   MPRINTF(", Verification: %s\n\r", g_enable_data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
+  data_size              = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
 
   // Initialize statistics
-  stats.min_time = UINT32_MAX;
-  stats.max_time = 0;
-  stats.total_time = 0;
-  stats.success_count = 0;
-  stats.error_count = 0;
-  stats.total_bytes = 0;
-  stats.min_speed_kbps = UINT32_MAX;
-  stats.max_speed_kbps = 0;
-  stats.avg_speed_kbps = 0;
-  stats.total_open_time = 0;
+  stats.min_time         = UINT32_MAX;
+  stats.max_time         = 0;
+  stats.total_time       = 0;
+  stats.success_count    = 0;
+  stats.error_count      = 0;
+  stats.total_bytes      = 0;
+  stats.min_speed_kbps   = UINT32_MAX;
+  stats.max_speed_kbps   = 0;
+  stats.avg_speed_kbps   = 0;
+  stats.total_open_time  = 0;
   stats.total_close_time = 0;
-  stats.crc_errors = 0;
-  stats.pattern_errors = 0;
-  stats.size_errors = 0;
+  stats.crc_errors       = 0;
+  stats.pattern_errors   = 0;
+  stats.size_errors      = 0;
 
   // Allocate memory for buffer
-  buffer = (uint8_t *)App_malloc(g_test_block_size);
+  buffer                 = (uint8_t *)App_malloc(g_test_block_size);
   if (buffer == NULL)
   {
     MPRINTF("Memory allocation failed\n\r");
@@ -651,13 +704,13 @@ static void _Do_write_test(void)
 
     // Open file with timing
     open_start = _Get_time_ms();
-    result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
-    open_end = _Get_time_ms();
-    open_time = open_end - open_start;
+    result     = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
+    open_end   = _Get_time_ms();
+    open_time  = open_end - open_start;
 
     if (result < 0)
     {
-      end_time = _Get_time_ms();
+      end_time       = _Get_time_ms();
       operation_time = end_time - start_time;
       MPRINTF("FAILED (open): %s (open: %u ms, total: %u ms)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
@@ -668,7 +721,7 @@ static void _Do_write_test(void)
     MPRINTF("opened in %u ms, ", open_time);
 
     // Initialize CRC calculation
-    uint32_t crc = 0xFFFFFFFF;
+    uint32_t crc  = 0xFFFFFFFF;
 
     // Write file data in blocks
     bytes_written = 0;
@@ -708,7 +761,8 @@ static void _Do_write_test(void)
       {
         MPRINTF("FAILED (write block %u): %s\n\r", block, _Littlefs_error_to_string((int)written));
         lfs_file_close(&g_littlefs_context.lfs, &file);
-        end_time = _Get_time_ms();
+        lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
+        end_time       = _Get_time_ms();
         operation_time = end_time - start_time;
         stats.error_count++;
         goto next_file;
@@ -724,13 +778,14 @@ static void _Do_write_test(void)
     // Write CRC32 at the end of file
     if (g_enable_data_verification && g_test_file_size >= CRC32_SIZE)
     {
-      crc32_value = ~crc;
+      crc32_value         = ~crc;
       lfs_ssize_t written = lfs_file_write(&g_littlefs_context.lfs, &file, &crc32_value, CRC32_SIZE);
       if (written < 0)
       {
         MPRINTF("FAILED (write CRC): %s\n\r", _Littlefs_error_to_string((int)written));
         lfs_file_close(&g_littlefs_context.lfs, &file);
-        end_time = _Get_time_ms();
+        lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
+        end_time       = _Get_time_ms();
         operation_time = end_time - start_time;
         stats.error_count++;
         goto next_file;
@@ -738,12 +793,25 @@ static void _Do_write_test(void)
       bytes_written += written;
     }
 
+    // Sync file data to storage before closing
+    result = lfs_file_sync(&g_littlefs_context.lfs, &file);
+    if (result < 0)
+    {
+      MPRINTF("FAILED (sync): %s\n\r", _Littlefs_error_to_string(result));
+      lfs_file_close(&g_littlefs_context.lfs, &file);
+      lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
+      end_time       = _Get_time_ms();
+      operation_time = end_time - start_time;
+      stats.error_count++;
+      goto next_file;
+    }
+
     // Close file with timing
-    close_start = _Get_time_ms();
-    result = lfs_file_close(&g_littlefs_context.lfs, &file);
-    close_end = _Get_time_ms();
-    close_time = close_end - close_start;
-    end_time = _Get_time_ms();
+    close_start    = _Get_time_ms();
+    result         = lfs_file_close(&g_littlefs_context.lfs, &file);
+    close_end      = _Get_time_ms();
+    close_time     = close_end - close_start;
+    end_time       = _Get_time_ms();
     operation_time = end_time - start_time;
 
     if (result < 0)
@@ -804,7 +872,7 @@ static void _Do_write_test(void)
       stats.error_count++;
     }
 
-next_file:
+  next_file:
     continue;
   }
 
@@ -823,8 +891,8 @@ next_file:
   }
   else
   {
-    stats.min_time = 0;
-    stats.avg_time = 0;
+    stats.min_time       = 0;
+    stats.avg_time       = 0;
     stats.min_speed_kbps = 0;
   }
 
@@ -843,24 +911,32 @@ next_file:
 static void _Do_read_test(void)
 {
   GET_MCBL;
-  uint8_t *buffer = NULL;
+  uint8_t          *buffer = NULL;
   T_operation_stats stats;
-  char filename[LFS_MAX_FILENAME_LENGTH];
-  lfs_file_t file;
-  int result;
-  uint32_t start_time, end_time, open_time, close_time;
-  uint32_t open_start, open_end, close_start, close_end;
-  uint32_t bytes_read;
-  uint32_t blocks_per_file;
-  uint32_t operation_time;
-  uint32_t speed_kbps;
-  uint32_t data_size; // Data size without CRC
-  uint32_t file_crc32, calculated_crc32;
-  bool crc_valid = true;
-  bool pattern_valid = true;
-  bool size_valid = true;
+  char              filename[LFS_MAX_FILENAME_LENGTH];
+  lfs_file_t        file;
+  int               result;
+  uint32_t          start_time, end_time, open_time, close_time;
+  uint32_t          open_start, open_end, close_start, close_end;
+  uint32_t          bytes_read;
+  uint32_t          blocks_per_file;
+  uint32_t          operation_time;
+  uint32_t          speed_kbps;
+  uint32_t          data_size;  // Data size without CRC
+  uint32_t          file_crc32, calculated_crc32;
+  bool              crc_valid     = true;
+  bool              pattern_valid = true;
+  bool              size_valid    = true;
 
   MPRINTF("=== Read Test ===\n\r");
+
+  // Check filesystem integrity first
+  if (!_Check_filesystem_integrity())
+  {
+    MPRINTF("Aborting read test due to filesystem integrity failure\n\r");
+    return;
+  }
+
   MPRINTF("Reading %u files, %u byte blocks\n\r", g_test_files_count, g_test_block_size);
   MPRINTF("Data pattern: %s", _Get_pattern_name(g_data_pattern));
   if (g_data_pattern == DATA_PATTERN_CONSTANT)
@@ -870,26 +946,26 @@ static void _Do_read_test(void)
   MPRINTF(", Verification: %s\n\r", g_enable_data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
+  data_size              = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
 
   // Initialize statistics
-  stats.min_time = UINT32_MAX;
-  stats.max_time = 0;
-  stats.total_time = 0;
-  stats.success_count = 0;
-  stats.error_count = 0;
-  stats.total_bytes = 0;
-  stats.min_speed_kbps = UINT32_MAX;
-  stats.max_speed_kbps = 0;
-  stats.avg_speed_kbps = 0;
-  stats.total_open_time = 0;
+  stats.min_time         = UINT32_MAX;
+  stats.max_time         = 0;
+  stats.total_time       = 0;
+  stats.success_count    = 0;
+  stats.error_count      = 0;
+  stats.total_bytes      = 0;
+  stats.min_speed_kbps   = UINT32_MAX;
+  stats.max_speed_kbps   = 0;
+  stats.avg_speed_kbps   = 0;
+  stats.total_open_time  = 0;
   stats.total_close_time = 0;
-  stats.crc_errors = 0;
-  stats.pattern_errors = 0;
-  stats.size_errors = 0;
+  stats.crc_errors       = 0;
+  stats.pattern_errors   = 0;
+  stats.size_errors      = 0;
 
   // Allocate memory for buffer
-  buffer = (uint8_t *)App_malloc(g_test_block_size);
+  buffer                 = (uint8_t *)App_malloc(g_test_block_size);
   if (buffer == NULL)
   {
     MPRINTF("Memory allocation failed\n\r");
@@ -904,20 +980,20 @@ static void _Do_read_test(void)
     snprintf(filename, LFS_MAX_FILENAME_LENGTH, "/%s%03u.bin", LFS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Reading %s... ", filename);
 
-    start_time = _Get_time_ms();
-    crc_valid = true;
+    start_time    = _Get_time_ms();
+    crc_valid     = true;
     pattern_valid = true;
-    size_valid = true;
+    size_valid    = true;
 
     // Open file with timing
-    open_start = _Get_time_ms();
-    result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_RDONLY);
-    open_end = _Get_time_ms();
-    open_time = open_end - open_start;
+    open_start    = _Get_time_ms();
+    result        = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_RDONLY);
+    open_end      = _Get_time_ms();
+    open_time     = open_end - open_start;
 
     if (result < 0)
     {
-      end_time = _Get_time_ms();
+      end_time       = _Get_time_ms();
       operation_time = end_time - start_time;
       MPRINTF("FAILED (open): %s (open: %u ms, total: %u ms)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
@@ -931,7 +1007,7 @@ static void _Do_read_test(void)
     uint32_t crc = 0xFFFFFFFF;
 
     // Read file data in blocks
-    bytes_read = 0;
+    bytes_read   = 0;
     for (uint32_t block = 0; block < blocks_per_file; block++)
     {
       uint32_t bytes_to_read = g_test_block_size;
@@ -945,7 +1021,7 @@ static void _Do_read_test(void)
       {
         MPRINTF("FAILED (read block %u): %s\n\r", block, _Littlefs_error_to_string((int)read_result));
         lfs_file_close(&g_littlefs_context.lfs, &file);
-        end_time = _Get_time_ms();
+        end_time       = _Get_time_ms();
         operation_time = end_time - start_time;
         stats.error_count++;
         goto next_file;
@@ -1017,11 +1093,11 @@ static void _Do_read_test(void)
     }
 
     // Close file with timing
-    close_start = _Get_time_ms();
-    result = lfs_file_close(&g_littlefs_context.lfs, &file);
-    close_end = _Get_time_ms();
-    close_time = close_end - close_start;
-    end_time = _Get_time_ms();
+    close_start    = _Get_time_ms();
+    result         = lfs_file_close(&g_littlefs_context.lfs, &file);
+    close_end      = _Get_time_ms();
+    close_time     = close_end - close_start;
+    end_time       = _Get_time_ms();
     operation_time = end_time - start_time;
 
     if (result < 0)
@@ -1091,7 +1167,7 @@ static void _Do_read_test(void)
       }
     }
 
-next_file:
+  next_file:
     continue;
   }
 
@@ -1110,8 +1186,8 @@ next_file:
   }
   else
   {
-    stats.min_time = 0;
-    stats.avg_time = 0;
+    stats.min_time       = 0;
+    stats.avg_time       = 0;
     stats.min_speed_kbps = 0;
   }
 
@@ -1131,29 +1207,29 @@ static void _Do_delete_test(void)
 {
   GET_MCBL;
   T_operation_stats stats;
-  char filename[LFS_MAX_FILENAME_LENGTH];
-  int result;
-  uint32_t start_time, end_time;
-  uint32_t operation_time;
+  char              filename[LFS_MAX_FILENAME_LENGTH];
+  int               result;
+  uint32_t          start_time, end_time;
+  uint32_t          operation_time;
 
   MPRINTF("=== Delete Test ===\n\r");
   MPRINTF("Deleting %u files\n\r", g_test_files_count);
 
   // Initialize statistics
-  stats.min_time = UINT32_MAX;
-  stats.max_time = 0;
-  stats.total_time = 0;
-  stats.success_count = 0;
-  stats.error_count = 0;
-  stats.total_bytes = 0;              // Not applicable for delete
-  stats.min_speed_kbps = 0;          // Not applicable for delete
-  stats.max_speed_kbps = 0;          // Not applicable for delete
-  stats.avg_speed_kbps = 0;          // Not applicable for delete
-  stats.total_open_time = 0;         // Not applicable for delete
-  stats.total_close_time = 0;        // Not applicable for delete
-  stats.crc_errors = 0;              // Not applicable for delete
-  stats.pattern_errors = 0;          // Not applicable for delete
-  stats.size_errors = 0;             // Not applicable for delete
+  stats.min_time         = UINT32_MAX;
+  stats.max_time         = 0;
+  stats.total_time       = 0;
+  stats.success_count    = 0;
+  stats.error_count      = 0;
+  stats.total_bytes      = 0;  // Not applicable for delete
+  stats.min_speed_kbps   = 0;  // Not applicable for delete
+  stats.max_speed_kbps   = 0;  // Not applicable for delete
+  stats.avg_speed_kbps   = 0;  // Not applicable for delete
+  stats.total_open_time  = 0;  // Not applicable for delete
+  stats.total_close_time = 0;  // Not applicable for delete
+  stats.crc_errors       = 0;  // Not applicable for delete
+  stats.pattern_errors   = 0;  // Not applicable for delete
+  stats.size_errors      = 0;  // Not applicable for delete
 
   // Delete files
   for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
@@ -1162,9 +1238,9 @@ static void _Do_delete_test(void)
     MPRINTF("Deleting %s... ", filename);
 
     // Delete file
-    start_time = _Get_time_ms();
-    result = lfs_remove(&g_littlefs_context.lfs, filename);
-    end_time = _Get_time_ms();
+    start_time     = _Get_time_ms();
+    result         = lfs_remove(&g_littlefs_context.lfs, filename);
+    end_time       = _Get_time_ms();
     operation_time = end_time - start_time;
 
     if (result < 0)
@@ -1214,7 +1290,7 @@ static void _Do_delete_test(void)
 static void _Do_format_test(void)
 {
   GET_MCBL;
-  int result;
+  int      result;
   uint32_t start_time, end_time, format_time;
 
   MPRINTF("=== Format Test ===\n\r");
@@ -1235,9 +1311,9 @@ static void _Do_format_test(void)
 
   // Format filesystem
   MPRINTF("Formatting... ");
-  start_time = _Get_time_ms();
-  result = Littlefs_format();
-  end_time = _Get_time_ms();
+  start_time  = _Get_time_ms();
+  result      = Littlefs_format();
+  end_time    = _Get_time_ms();
   format_time = end_time - start_time;
 
   if (result != 0)
@@ -1318,7 +1394,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
 {
   GET_MCBL;
   uint8_t choice;
-  bool exit_menu = false;
+  bool    exit_menu = false;
 
   while (!exit_menu)
   {
@@ -1464,11 +1540,11 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           break;
 
         case '9':
-          g_test_files_count = LFS_TEST_FILES_COUNT_DEFAULT;
-          g_test_file_size = LFS_TEST_FILE_SIZE_DEFAULT;
-          g_test_block_size = LFS_TEST_BLOCK_SIZE_DEFAULT;
-          g_data_pattern = DATA_PATTERN_CONSTANT;
-          g_fill_constant = 0xAA;
+          g_test_files_count         = LFS_TEST_FILES_COUNT_DEFAULT;
+          g_test_file_size           = LFS_TEST_FILE_SIZE_DEFAULT;
+          g_test_block_size          = LFS_TEST_BLOCK_SIZE_DEFAULT;
+          g_data_pattern             = DATA_PATTERN_CONSTANT;
+          g_fill_constant            = 0xAA;
           g_enable_data_verification = true;
           MPRINTF("\n\rParameters reset to defaults\n\r");
           MPRINTF("Press any key to continue...\n\r");
@@ -1550,4 +1626,112 @@ void Do_LittleFS_performance_test(uint8_t keycode)
       }
     }
   }
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Read and display file contents as HEX dump
+
+  Parameters: keycode - input key code
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Do_LittleFS_read_file_hex(uint8_t keycode)
+{
+  GET_MCBL;
+  char filename[LFS_MAX_FILENAME_LENGTH];
+  lfs_file_t file;
+  int result;
+  uint8_t *buffer = NULL;
+  uint32_t file_size;
+  int32_t bytes_read;  // Changed to signed to properly handle lfs_file_read errors
+  uint32_t max_display_size = 128 * 1024; // 128KB maximum display
+  uint32_t display_size;  // Moved here to avoid bypass warnings
+
+  MPRINTF(VT100_CLEAR_AND_HOME);
+  MPRINTF("=== Read File as HEX Dump ===\n\r");
+
+  // Check if filesystem is mounted
+  if (!Littlefs_is_mounted())
+  {
+    MPRINTF("Filesystem not mounted. Please initialize first.\n\r");
+    goto exit;
+  }
+
+  // Get filename from user
+  if (!VT100_input_filename(filename, LFS_MAX_FILENAME_LENGTH, "test_001.bin"))
+  {
+    MPRINTF("Operation cancelled\n\r");
+    goto exit;
+  }
+
+  // Add leading slash if not present
+  char full_filename[LFS_MAX_FILENAME_LENGTH + 1];
+  if (filename[0] != '/')
+  {
+    snprintf(full_filename, sizeof(full_filename), "/%s", filename);
+  }
+  else
+  {
+    strncpy(full_filename, filename, sizeof(full_filename) - 1);
+    full_filename[sizeof(full_filename) - 1] = '\0';
+  }
+
+  MPRINTF("Opening file: %s\n\r", full_filename);
+
+  // Open file for reading
+  result = lfs_file_open(&g_littlefs_context.lfs, &file, full_filename, LFS_O_RDONLY);
+  if (result < 0)
+  {
+    MPRINTF("Failed to open file: %s\n\r", _Littlefs_error_to_string(result));
+    goto exit;
+  }
+
+  // Get file size
+  file_size = lfs_file_size(&g_littlefs_context.lfs, &file);
+  MPRINTF("File size: %u bytes\n\r", file_size);
+
+  if (file_size == 0)
+  {
+    MPRINTF("File is empty\n\r");
+    lfs_file_close(&g_littlefs_context.lfs, &file);
+    goto exit;
+  }
+
+  // Limit display size
+  display_size = (file_size > max_display_size) ? max_display_size : file_size;
+
+  // Allocate buffer for file content
+  buffer = (uint8_t *)App_malloc(display_size);
+  if (buffer == NULL)
+  {
+    MPRINTF("Memory allocation failed\n\r");
+    lfs_file_close(&g_littlefs_context.lfs, &file);
+    goto exit;
+  }
+
+  // Read file content
+  bytes_read = lfs_file_read(&g_littlefs_context.lfs, &file, buffer, display_size);
+  if (bytes_read < 0)
+  {
+    MPRINTF("Failed to read file: %s\n\r", _Littlefs_error_to_string((int)bytes_read));
+    lfs_file_close(&g_littlefs_context.lfs, &file);
+    App_free(buffer);
+    goto exit;
+  }
+
+  // Close file
+  lfs_file_close(&g_littlefs_context.lfs, &file);
+
+  MPRINTF("Successfully read %d bytes\n\r", bytes_read);
+
+  // Display file content as HEX dump using unified function
+  VT100_print_dump(0, buffer, (uint32_t)bytes_read);
+
+  // Free buffer
+  App_free(buffer);
+
+exit:
+  MPRINTF("\n\rPress any key to continue...\n\r");
+  uint8_t dummy_key;
+  WAIT_CHAR(&dummy_key, ms_to_ticks(100000));
 }

@@ -154,7 +154,6 @@ static T_ospi_alignment_type _Ospi_select_alignment_type(void);
 static T_ospi_pattern_type   _Ospi_get_pattern_type(void);
 static uint8_t               _Ospi_get_pattern_value(void);
 static void                  _Ospi_generate_pattern(uint8_t *buffer, uint32_t size, T_ospi_pattern_type type, uint8_t base_value);
-static void                  _Ospi_display_data(uint8_t *data, uint32_t size, uint32_t start_address);
 static void                  _Ospi_display_speed(uint32_t bytes, uint32_t time_us);
 static void                  _Ospi_display_custom_menu(T_ospi_operation_settings *settings, T_ospi_operation_results *results);
 static bool                  _Ospi_verify_write_data(uint8_t *original_data, uint32_t address, uint32_t size);
@@ -1167,7 +1166,7 @@ void OSPI_test_custom_operations(uint8_t keycode)
           _Ospi_display_speed(settings.size, elapsed_us);
 
           // Display data (limited to prevent excessive output)
-          _Ospi_display_data(read_buffer, settings.size, settings.address);
+          VT100_print_dump(settings.address, read_buffer, settings.size);
 
           // Calculate and display checksum
           uint32_t checksum = _Ospi_calculate_checksum(read_buffer, settings.size);
@@ -1227,7 +1226,7 @@ void OSPI_test_custom_operations(uint8_t keycode)
           _Ospi_display_speed(settings.size, elapsed_us);
 
           // Display data (limited to prevent excessive output)
-          _Ospi_display_data(read_buffer, settings.size, settings.address);
+          VT100_print_dump(settings.address, read_buffer, settings.size);
 
           // Calculate and display checksum
           uint32_t checksum = _Ospi_calculate_checksum(read_buffer, settings.size);
@@ -1717,76 +1716,6 @@ static void _Ospi_generate_pattern(uint8_t *buffer, uint32_t size, T_ospi_patter
       }
       break;
     }
-  }
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Display data in hex format with ASCII representation
-
-  Parameters: data - Data buffer to display
-              size - Size of data to display
-              start_address - Starting address for display offset
-
-  Return:
------------------------------------------------------------------------------------------------------*/
-static void _Ospi_display_data(uint8_t *data, uint32_t size, uint32_t start_address)
-{
-  GET_MCBL;
-
-  // Limit display size to prevent excessive output
-  uint32_t display_size = size;
-  if (display_size > OSPI_DISPLAY_MAX_SIZE)
-  {
-    display_size = OSPI_DISPLAY_MAX_SIZE;
-    MPRINTF("Displaying first %u bytes of %u total bytes:\n\r", OSPI_DISPLAY_MAX_SIZE, size);
-  }
-
-  MPRINTF("\n\rData contents:\n\r");
-
-  // Display data in hex format (16 bytes per line)
-  for (uint32_t i = 0; i < display_size; i += OSPI_DISPLAY_BYTES_PER_LINE)
-  {
-    // Print address
-    MPRINTF("0x%08X: ", start_address + i);
-
-    // Print hex values
-    for (uint32_t j = 0; j < OSPI_DISPLAY_BYTES_PER_LINE; j++)
-    {
-      if (i + j < display_size)
-      {
-        MPRINTF("%02X ", data[i + j]);
-      }
-      else
-      {
-        MPRINTF("   ");
-      }
-    }
-
-    MPRINTF(" | ");
-
-    // Print ASCII representation
-    for (uint32_t j = 0; j < OSPI_DISPLAY_BYTES_PER_LINE; j++)
-    {
-      if (i + j < display_size)
-      {
-        uint8_t byte_val = data[i + j];
-        if (byte_val >= 32 && byte_val <= 126)  // Printable ASCII
-        {
-          MPRINTF("%c", byte_val);
-        }
-        else
-        {
-          MPRINTF(".");
-        }
-      }
-    }
-
-    MPRINTF("\n\r");
-  }
-
-  if (size > display_size)
-  {
-    MPRINTF("... (%u more bytes not shown)\n\r", size - display_size);
   }
 }
 
