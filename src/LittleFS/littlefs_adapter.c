@@ -6,9 +6,7 @@
 
   Return:
 -----------------------------------------------------------------------------------------------------*/
-
 #include "App.h"
-#include "littlefs_adapter.h"
 
 // Global LittleFS context
 T_littlefs_context g_littlefs_context;

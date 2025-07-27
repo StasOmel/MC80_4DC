@@ -15028,12 +15028,6 @@
                 <file>
                     <name>$PROJ_DIR$\src\LittleFS\littlefs_adapter.h</name>
                 </file>
-                <file>
-                    <name>$PROJ_DIR$\src\LittleFS\littlefs_demo.c</name>
-                </file>
-                <file>
-                    <name>$PROJ_DIR$\src\LittleFS\littlefs_demo.h</name>
-                </file>
             </group>
             <group>
                 <name>Logger</name>

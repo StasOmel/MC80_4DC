@@ -43,6 +43,10 @@
 #include "rm_filex_block_media_api.h"
 #include "hal_data.h"
 
+#include "lfs.h"
+#include "littlefs_adapter.h"
+
+
 #define SEGGER_INDEX            (0)
 #define LVL_ERR                 (1u)  /* error conditions   */
 #define APP_PRINT(fn_, ...)     (SEGGER_RTT_printf(SEGGER_INDEX, (fn_), ##__VA_ARGS__))
