@@ -392,6 +392,303 @@ int32_t VT100_edit_uinteger_val_mode(uint32_t row, uint32_t *value, uint32_t min
   return RES_ERROR;
 }
 
+/*-----------------------------------------------------------------------------------------------------
+  Description: Interactive integer input with validation (supports decimal and hex)
+
+  This function provides a unified interface for inputting integers with:
+  - Support for both decimal (123) and hexadecimal (0x7B) formats
+  - Automatic range validation with min/max limits
+  - ESC to cancel input
+  - Backspace for editing
+  - Empty input uses current/default value
+  - Timeout protection (30 seconds)
+
+  Parameters:
+    result        - pointer to store the entered value
+    min_value     - minimum allowed value
+    max_value     - maximum allowed value
+    current_value - current/default value (used if input is empty)
+
+  Return:
+    true if input was successful and value was changed
+    false if input was cancelled (ESC) or timeout occurred
+-----------------------------------------------------------------------------------------------------*/
+bool VT100_input_uint32(uint32_t *result, uint32_t min_value, uint32_t max_value, uint32_t current_value)
+{
+  GET_MCBL;
+  char input_buffer[16];
+  memset(input_buffer, 0, sizeof(input_buffer));
+  uint32_t value = 0;
+
+  uint8_t pos = 0;
+  while (pos < 15)
+  {
+    uint8_t key;
+    if (WAIT_CHAR(&key, ms_to_ticks(30000)) != RES_OK)
+    {
+      MPRINTF("TIMEOUT\n\r");
+      return false;  // Exit on timeout
+    }
+
+    if (key == '\r' || key == '\n')
+    {
+      break;
+    }
+    else if (key == VT100_ESC)
+    {
+      MPRINTF("ESC - cancelled\n\r");
+      return false;
+    }
+    else if (key == '\b' || key == 0x7F)  // Backspace
+    {
+      if (pos > 0)
+      {
+        pos--;
+        input_buffer[pos] = 0;
+        MPRINTF("\b \b");
+      }
+    }
+    else if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'F') || (key >= 'a' && key <= 'f') || key == 'x' || key == 'X')
+    {
+      input_buffer[pos] = key;
+      pos++;
+      MPRINTF("%c", key);
+    }
+  }
+
+  MPRINTF("\n\r");
+
+  // If no input, use current value
+  if (pos == 0)
+  {
+    *result = current_value;
+    return true;
+  }
+
+  // Check if input is hexadecimal (starts with 0x or 0X)
+  bool    is_hex       = false;
+  char   *parse_start  = input_buffer;
+  uint8_t parse_length = pos;
+
+  if (pos >= 2 && (input_buffer[0] == '0') && (input_buffer[1] == 'x' || input_buffer[1] == 'X'))
+  {
+    is_hex       = true;
+    parse_start  = &input_buffer[2];
+    parse_length = pos - 2;
+  }
+
+  // Check if we have any valid digits to process
+  if (parse_length == 0)
+  {
+    MPRINTF("No valid digits entered, using current value\n\r");
+    *result = current_value;
+    return true;
+  }
+
+  // Convert string to number
+  if (is_hex)
+  {
+    // Convert hex string to number with overflow check
+    for (uint8_t i = 0; i < parse_length; i++)
+    {
+      char c = parse_start[i];
+      if (c == 0) break;  // End of string
+
+      // Check for potential overflow
+      if (value > (UINT32_MAX / 16))
+      {
+        MPRINTF("WARNING: Value too large, using maximum allowed\n\r");
+        value = max_value;
+        break;
+      }
+
+      value = value * 16;
+      if (c >= '0' && c <= '9')
+      {
+        value += c - '0';
+      }
+      else if (c >= 'A' && c <= 'F')
+      {
+        value += c - 'A' + 10;
+      }
+      else if (c >= 'a' && c <= 'f')
+      {
+        value += c - 'a' + 10;
+      }
+    }
+  }
+  else
+  {
+    // Convert decimal string to number
+    for (uint8_t i = 0; i < parse_length; i++)
+    {
+      char c = parse_start[i];
+      if (c < '0' || c > '9') break;  // Only process decimal digits
+
+      // Check for potential overflow
+      if (value > (UINT32_MAX / 10))
+      {
+        MPRINTF("WARNING: Value too large, using maximum allowed\n\r");
+        value = max_value;
+        break;
+      }
+
+      value = value * 10 + (c - '0');
+    }
+  }
+
+  // Validate range
+  if (value < min_value)
+  {
+    MPRINTF("Value %u is below minimum %u, using minimum\n\r", value, min_value);
+    value = min_value;
+  }
+  else if (value > max_value)
+  {
+    MPRINTF("Value %u exceeds maximum %u, using maximum\n\r", value, max_value);
+    value = max_value;
+  }
+
+  *result = value;
+  return true;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Get memory address input from user with quick presets
+
+  This function provides convenient address input with predefined quick options
+  and supports both decimal and hexadecimal formats.
+
+  Parameters:
+    max_address - maximum allowed address value
+
+  Return:
+    Address value entered by user
+-----------------------------------------------------------------------------------------------------*/
+uint32_t VT100_input_address(uint32_t max_address)
+{
+  GET_MCBL;
+  uint32_t address = 0;
+
+  MPRINTF("Quick addresses:\n\r");
+  MPRINTF("  <1> - 0x00000000 (Start)\n\r");
+  MPRINTF("  <2> - 0x00001000 (4KB offset)\n\r");
+  MPRINTF("  <3> - 0x00010000 (64KB offset)\n\r");
+  MPRINTF("  <4> - 0x00100000 (1MB offset)\n\r");
+  MPRINTF("  <5> - 0x01000000 (16MB offset)\n\r");
+  MPRINTF("  <C> - Custom address\n\r");
+  MPRINTF("Choice: ");
+
+  uint8_t choice = 0;
+  if (WAIT_CHAR(&choice, ms_to_ticks(30000)) != RES_OK)
+  {
+    MPRINTF("TIMEOUT - using custom input\n\r");
+    choice = 'c';  // Default to custom
+  }
+  MPRINTF("%c\n\r", choice);
+
+  switch (choice)
+  {
+    case '1':
+      return 0x00000000;
+    case '2':
+      return (0x00001000 <= max_address) ? 0x00001000 : max_address;
+    case '3':
+      return (0x00010000 <= max_address) ? 0x00010000 : max_address;
+    case '4':
+      return (0x00100000 <= max_address) ? 0x00100000 : max_address;
+    case '5':
+      return (0x01000000 <= max_address) ? 0x01000000 : max_address;
+    case 'C':
+    case 'c':
+      break;
+    default:
+      MPRINTF("Invalid choice, using custom input\n\r");
+      break;
+  }
+
+  MPRINTF("Enter address (decimal or hex with 0x prefix, max 0x%08X): ", max_address);
+  if (VT100_input_uint32(&address, 0, max_address, 0))
+  {
+    MPRINTF("Selected address: 0x%08X\n\r", address);
+  }
+  else
+  {
+    MPRINTF("Input cancelled, using 0x00000000\n\r");
+    address = 0;
+  }
+
+  return address;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Get size input from user with quick presets
+
+  This function provides convenient size input with predefined quick options
+  and supports both decimal and hexadecimal formats.
+
+  Parameters:
+    max_size - maximum allowed size value
+
+  Return:
+    Size value entered by user
+-----------------------------------------------------------------------------------------------------*/
+uint32_t VT100_input_size(uint32_t max_size)
+{
+  GET_MCBL;
+  uint32_t size = 0;
+
+  MPRINTF("Quick sizes:\n\r");
+  MPRINTF("  <1> - 256 bytes (Page size)\n\r");
+  MPRINTF("  <2> - 4096 bytes (Sector size)\n\r");
+  MPRINTF("  <3> - 65536 bytes (Block size)\n\r");
+  MPRINTF("  <4> - 1048576 bytes (1MB)\n\r");
+  MPRINTF("  <5> - 16777216 bytes (16MB)\n\r");
+  MPRINTF("  <C> - Custom size\n\r");
+  MPRINTF("Choice: ");
+
+  uint8_t choice = 0;
+  if (WAIT_CHAR(&choice, ms_to_ticks(30000)) != RES_OK)
+  {
+    MPRINTF("TIMEOUT - using custom input\n\r");
+    choice = 'c';  // Default to custom
+  }
+  MPRINTF("%c\n\r", choice);
+
+  switch (choice)
+  {
+    case '1':
+      return (256 <= max_size) ? 256 : max_size;
+    case '2':
+      return (4096 <= max_size) ? 4096 : max_size;
+    case '3':
+      return (65536 <= max_size) ? 65536 : max_size;
+    case '4':
+      return (1048576 <= max_size) ? 1048576 : max_size;
+    case '5':
+      return (16777216 <= max_size) ? 16777216 : max_size;
+    case 'C':
+    case 'c':
+      break;
+    default:
+      MPRINTF("Invalid choice, using custom input\n\r");
+      break;
+  }
+
+  MPRINTF("Enter size in bytes (decimal or hex with 0x prefix, max %u): ", max_size);
+  if (VT100_input_uint32(&size, 1, max_size, 1024))
+  {
+    MPRINTF("Selected size: %u bytes\n\r", size);
+  }
+  else
+  {
+    MPRINTF("Input cancelled, using 1024 bytes\n\r");
+    size = 1024;
+  }
+
+  return size;
+}
+
 /*------------------------------------------------------------------------------
   Memory dump output
 

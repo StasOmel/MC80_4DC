@@ -23,6 +23,13 @@ void         VT100_print_dump(uint32_t addr, void *buf, uint32_t buf_len, uint8_
 int32_t      VT100_edit_uinteger_hex_val(uint32_t row, uint32_t *value, uint32_t minv, uint32_t maxv);
 int32_t      VT100_edit_uinteger_val_mode(uint32_t row, uint32_t *value, uint32_t minv, uint32_t maxv, bool hex_mode);
 
+// Unified input function for interactive integer input with decimal/hex support
+bool         VT100_input_uint32(uint32_t *result, uint32_t min_value, uint32_t max_value, uint32_t current_value);
+
+// Unified input functions for addresses and sizes with quick presets
+uint32_t     VT100_input_address(uint32_t max_address);
+uint32_t     VT100_input_size(uint32_t max_size);
+
 // Функция для обработки специальных клавиш VT100
 int          VT100_wait_special_key(uint8_t *key, int timeout);
 
