@@ -2,10 +2,6 @@
 #define LITTLEFS_ADAPTER_H
 
 
-// LittleFS memory allocation macros using project memory management
-#define LFS_MALLOC(size) App_malloc(size)
-#define LFS_FREE(ptr)    App_free(ptr)
-
 #ifdef __cplusplus
 extern "C"
 {

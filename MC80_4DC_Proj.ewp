@@ -2494,14 +2494,10 @@
                         <workingDirectory>$PROJ_DIR$</workingDirectory>
                         <buildSequence>preCompile</buildSequence>
                         <outputs>
-                            <file>
                                 <name>$BUILD_FILES_DIR$/$TARGET_BNAME$.rasc</name>
-                            </file>
                         </outputs>
                         <dependencies>
-                            <file>
                                 <name>configuration.xml</name>
-                            </file>
                         </dependencies>
                     </buildAction>
                     <buildAction>
@@ -2509,14 +2505,10 @@
                         <workingDirectory>$PROJ_DIR$</workingDirectory>
                         <buildSequence>postLink</buildSequence>
                         <outputs>
-                            <file>
                                 <name>$TARGET_BPATH$.sbd</name>
-                            </file>
                         </outputs>
                         <dependencies>
-                            <file>
                                 <name>$TARGET_PATH$</name>
-                            </file>
                         </dependencies>
                     </buildAction>
                 </buildActions>
@@ -14422,7 +14414,4 @@
    <name>$PROJ_DIR$\src\tx_user_extension.h</name>
   </file>
  </group>
- <file>
-  <name>$PROJ_DIR$\temp_rtt_addr.c</name>
- </file>
 </group></project>

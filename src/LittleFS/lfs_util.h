@@ -50,12 +50,20 @@
   #ifndef LFS_NO_ASSERT
     #include <assert.h>
   #endif
+
   #if !defined(LFS_NO_DEBUG) || \
   !defined(LFS_NO_WARN) ||      \
   !defined(LFS_NO_ERROR) ||     \
   defined(LFS_YES_TRACE)
     #include <stdio.h>
   #endif
+
+
+  extern void*    App_malloc(uint32_t size);
+  extern void     App_free(void* block_ptr);
+  // LittleFS memory allocation macros using project memory management
+  #define LFS_MALLOC(size) App_malloc(size)
+  #define LFS_FREE(ptr)    App_free(ptr)
 
   #ifdef __cplusplus
 extern "C"
