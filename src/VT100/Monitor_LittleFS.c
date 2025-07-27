@@ -576,18 +576,18 @@ void Do_LittleFS_list_files(uint8_t keycode)
     MPRINTF("  Free space:  %u KB\n\r", free_size / 1024);
   }
 
-  // Offer option to read a file
-  MPRINTF("\n\rOptions:\n\r");
-  MPRINTF("<R> - Read file as HEX dump\n\r");
-  MPRINTF("<ESC> - Return to menu\n\r");
-  MPRINTF("Choice: ");
-
   uint8_t choice;
   while (true)
   {
+    // Show menu at the top
+    MPRINTF("\n\rOptions:\n\r");
+    MPRINTF("<1> - Read file as HEX dump\n\r");
+    MPRINTF("<ESC> - Return to menu\n\r");
+    MPRINTF("Choice: ");
+
     if (WAIT_CHAR(&choice, ms_to_ticks(30000)) == RES_OK)
     {
-      if (choice == 'R' || choice == 'r')
+      if (choice == '1')
       {
         // Get filename from user
         char filename[LFS_MAX_FILENAME_LENGTH];
@@ -639,8 +639,6 @@ void Do_LittleFS_list_files(uint8_t keycode)
               }
               else
               {
-                MPRINTF("Reading file in %u byte blocks...\n\r", block_size);
-
                 // Read file block by block
                 while (current_offset < file_size)
                 {
@@ -693,12 +691,6 @@ void Do_LittleFS_list_files(uint8_t keycode)
             lfs_file_close(&g_littlefs_context.lfs, &file);
           }
         }
-
-        // After file operation, show options again
-        MPRINTF("\n\rOptions:\n\r");
-        MPRINTF("<R> - Read file as HEX dump\n\r");
-        MPRINTF("<ESC> - Return to menu\n\r");
-        MPRINTF("Choice: ");
       }
       else if (choice == VT100_ESC)
       {
@@ -708,7 +700,7 @@ void Do_LittleFS_list_files(uint8_t keycode)
       else
       {
         // Invalid choice, continue waiting
-        MPRINTF("Invalid choice. Press R to read file or ESC to return to menu.\n\r");
+        MPRINTF("Invalid choice. Press 1 to read file or ESC to return to menu.\n\r");
         MPRINTF("Choice: ");
       }
     }
