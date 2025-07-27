@@ -579,6 +579,96 @@ void Do_LittleFS_list_files(uint8_t keycode)
     MPRINTF("  Free space:  %u KB\n\r", free_size / 1024);
   }
 
+  // Offer option to read a file
+  MPRINTF("\n\rOptions:\n\r");
+  MPRINTF("<R> - Read file as HEX dump\n\r");
+  MPRINTF("<Any other key> - Return to menu\n\r");
+  MPRINTF("Choice: ");
+
+  uint8_t choice;
+  if (WAIT_CHAR(&choice, ms_to_ticks(30000)) == RES_OK)
+  {
+    if (choice == 'R' || choice == 'r')
+    {
+      // Get filename from user
+      char filename[LFS_MAX_FILENAME_LENGTH];
+      if (VT100_input_filename(filename, LFS_MAX_FILENAME_LENGTH, "test_001.bin"))
+      {
+        // Add leading slash if not present
+        char full_filename[LFS_MAX_FILENAME_LENGTH + 1];
+        if (filename[0] != '/')
+        {
+          snprintf(full_filename, sizeof(full_filename), "/%s", filename);
+        }
+        else
+        {
+          strncpy(full_filename, filename, sizeof(full_filename) - 1);
+          full_filename[sizeof(full_filename) - 1] = '\0';
+        }
+
+        MPRINTF("Opening file: %s\n\r", full_filename);
+
+        // Open file for reading
+        lfs_file_t file;
+        int result = lfs_file_open(&g_littlefs_context.lfs, &file, full_filename, LFS_O_RDONLY);
+        if (result < 0)
+        {
+          MPRINTF("Failed to open file: %s\n\r", _Littlefs_error_to_string(result));
+        }
+        else
+        {
+          // Get file size
+          uint32_t file_size = lfs_file_size(&g_littlefs_context.lfs, &file);
+          MPRINTF("File size: %u bytes\n\r", file_size);
+
+          if (file_size == 0)
+          {
+            MPRINTF("File is empty\n\r");
+          }
+          else
+          {
+            // Limit display size
+            uint32_t max_display_size = 128 * 1024; // 128KB maximum display
+            uint32_t display_size = (file_size > max_display_size) ? max_display_size : file_size;
+
+            // Allocate buffer for file content
+            uint8_t *buffer = (uint8_t *)App_malloc(display_size);
+            if (buffer == NULL)
+            {
+              MPRINTF("Memory allocation failed\n\r");
+            }
+            else
+            {
+              // Read file content
+              int32_t bytes_read = lfs_file_read(&g_littlefs_context.lfs, &file, buffer, display_size);
+              if (bytes_read < 0)
+              {
+                MPRINTF("Failed to read file: %s\n\r", _Littlefs_error_to_string((int)bytes_read));
+              }
+              else
+              {
+                MPRINTF("Successfully read %d bytes\n\r", bytes_read);
+
+                // Display file content as HEX dump using unified function
+                VT100_print_dump(0, buffer, (uint32_t)bytes_read);
+              }
+
+              // Free buffer
+              App_free(buffer);
+            }
+          }
+
+          // Close file
+          lfs_file_close(&g_littlefs_context.lfs, &file);
+        }
+      }
+    }
+  }
+  else
+  {
+    MPRINTF("TIMEOUT\n\r");
+  }
+
 exit:
   MPRINTF("\n\rPress any key to continue...\n\r");
   uint8_t dummy_key;
