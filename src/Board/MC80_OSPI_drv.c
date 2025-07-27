@@ -940,12 +940,13 @@ fsp_err_t Mc80_ospi_memory_mapped_read(T_mc80_ospi_instance_ctrl *const p_ctrl, 
      - Write directly from source buffer to flash without temporary buffer
   3. Continue until all data is written with proper address progression
 
-  Example: Write 100 bytes starting at address 0x800000E0 (32 bytes into 64-byte block)
-  - Block 1: temp_buffer[0-31]=0xFF, temp_buffer[32-63]=data[0-31] → write 64 bytes at 0x800000C0
-  - Block 2: temp_buffer[0-35]=data[32-67], temp_buffer[36-63]=0xFF → write 64 bytes at 0x80000100
-  - Block 3: temp_buffer[0-31]=data[68-99], temp_buffer[32-63]=0xFF → write 64 bytes at 0x80000140
+  Example: Write 100 bytes starting at relative address 0x000000E0 (32 bytes into 64-byte block)
+  - Block 1: temp_buffer[0-31]=0xFF, temp_buffer[32-63]=data[0-31] → write 64 bytes at relative address 0x000000C0
+  - Block 2: temp_buffer[0-35]=data[32-67], temp_buffer[36-63]=0xFF → write 64 bytes at relative address 0x00000100
+  - Block 3: temp_buffer[0-31]=data[68-99], temp_buffer[32-63]=0xFF → write 64 bytes at relative address 0x00000140
   Protocol and Operation Method:
   - Uses memory-mapped write mode where flash appears as regular system memory
+  - Function accepts relative addresses (0x00000000-based) and internally maps to hardware addresses
   - Flash device is accessed via memory-mapped addresses (0x80000000 for Device 0, 0x90000000 for Device 1)
   - Automatically uses the current active protocol's write commands configured in hardware registers
   - Protocol commands are pre-configured in CMCFG2 register during driver initialization
@@ -964,12 +965,12 @@ fsp_err_t Mc80_ospi_memory_mapped_read(T_mc80_ospi_instance_ctrl *const p_ctrl, 
   Parameters:
     p_ctrl     - Pointer to the control structure
     p_src      - Source data buffer
-    p_dest     - Destination address in flash (memory-mapped address, any alignment)
+    address    - Destination relative address in flash (0x00000000-based, any alignment)
     byte_count - Number of bytes to write (any size, no restrictions)
 
   Return:
     FSP_SUCCESS            - The flash was programmed successfully
-    FSP_ERR_ASSERTION      - p_ctrl, p_dest or p_src is NULL
+    FSP_ERR_ASSERTION      - p_ctrl or p_src is NULL
     FSP_ERR_NOT_OPEN       - Driver is not opened
     FSP_ERR_DEVICE_BUSY    - Another Write/Erase transaction is in progress
     FSP_ERR_WRITE_FAILED   - Write operation failed
@@ -977,7 +978,7 @@ fsp_err_t Mc80_ospi_memory_mapped_read(T_mc80_ospi_instance_ctrl *const p_ctrl, 
     FSP_ERR_TRANSFER_ABORTED - DMA transfer did not complete properly
     FSP_ERR_NOT_INITIALIZED - RTOS event flags not initialized
 -----------------------------------------------------------------------------------------------------*/
-fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8_t const *const p_src, uint8_t *const p_dest, uint32_t byte_count)
+fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8_t const *const p_src, uint32_t const address, uint32_t byte_count)
 {
   // Variable declarations
   fsp_err_t                       err = FSP_SUCCESS;
@@ -993,13 +994,13 @@ fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8
   fsp_err_t                       status_err;
 
   // 64-byte alignment handling variables
-  uint32_t dest_addr = (uint32_t)p_dest;
+  uint32_t dest_addr = address;  // Start with relative address
   uint8_t  temp_buffer[MC80_OSPI_BLOCK_WRITE_SIZE];  // 64-byte temporary buffer
   uint32_t src_offset = 0;
 
   if (MC80_OSPI_CFG_PARAM_CHECKING_ENABLE)
   {
-    if (NULL == p_ctrl || NULL == p_src || NULL == p_dest || 0 == byte_count)
+    if (NULL == p_ctrl || NULL == p_src || 0 == byte_count)
     {
       return FSP_ERR_ASSERTION;
     }
@@ -1027,6 +1028,17 @@ fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8
 
   // Process data with 64-byte alignment for optimal performance
   bytes_remaining            = byte_count;
+
+  // Calculate memory-mapped base address based on channel
+  uint32_t memory_mapped_base_address;
+  if (p_ctrl->channel == MC80_OSPI_DEVICE_NUMBER_0)
+  {
+    memory_mapped_base_address = MC80_OSPI_DEVICE_0_START_ADDRESS;
+  }
+  else
+  {
+    memory_mapped_base_address = MC80_OSPI_DEVICE_1_START_ADDRESS;
+  }
 
   // Handle data transfer with automatic 64-byte alignment
   uint32_t current_dest_addr = dest_addr;  // Track current destination address
@@ -1057,7 +1069,7 @@ fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8
       memcpy(&temp_buffer[current_alignment_offset], &p_src[src_offset], bytes_to_copy);
 
       write_src  = temp_buffer;
-      write_dest = (uint8_t *)current_aligned_addr;
+      write_dest = (uint8_t *)(memory_mapped_base_address + current_aligned_addr);
 
       // Update for next iteration
       src_offset += bytes_to_copy;
@@ -1068,7 +1080,7 @@ fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8
     {
       // Direct transfer for aligned full blocks
       write_src          = p_src + src_offset;
-      write_dest         = (uint8_t *)current_dest_addr;
+      write_dest         = (uint8_t *)(memory_mapped_base_address + current_dest_addr);
       current_block_size = MC80_OSPI_BLOCK_WRITE_SIZE;
 
       // Update for next iteration
@@ -1192,7 +1204,7 @@ fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8
 
   Parameters:
     p_ctrl           - Pointer to the control structure
-    p_device_address - Starting address in flash memory (will be aligned down to sector boundary)
+    address          - Starting relative address in flash memory (0x00000000-based, will be aligned down to sector boundary)
     byte_count       - Number of bytes to erase (region will be expanded to sector boundaries)
 
   Return:
@@ -1202,11 +1214,10 @@ fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl *p_ctrl, uint8
     FSP_ERR_DEVICE_BUSY - Flash device is busy with another operation
     FSP_ERR_WRITE_FAILED - Erase operation failed or timeout occurred
 -----------------------------------------------------------------------------------------------------*/
-fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl *p_ctrl, uint8_t *const p_device_address, uint32_t byte_count)
+fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl *p_ctrl, uint32_t const address, uint32_t byte_count)
 {
   // Variable declarations
-  uint32_t                            chip_address_base;
-  uint32_t                            start_address;  // Combined start address (raw and aligned)
+  uint32_t                            start_address;  // Start address (raw and aligned)
   uint32_t                            total_erase_size;
   uint32_t                            current_address;
   T_mc80_ospi_xspi_command_set const *p_cmd_set;
@@ -1224,7 +1235,7 @@ fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl *p_ctrl, uint8_t *const p_de
 
   if (MC80_OSPI_CFG_PARAM_CHECKING_ENABLE)
   {
-    if (NULL == p_ctrl || NULL == p_device_address || 0 == byte_count)
+    if (NULL == p_ctrl || 0 == byte_count)
     {
       return FSP_ERR_ASSERTION;
     }
@@ -1234,18 +1245,8 @@ fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl *p_ctrl, uint8_t *const p_de
     }
   }
 
-  // Calculate chip address base for proper addressing
-  if (p_ctrl->channel)
-  {
-    chip_address_base = MC80_OSPI_DEVICE_1_START_ADDRESS;
-  }
-  else
-  {
-    chip_address_base = MC80_OSPI_DEVICE_0_START_ADDRESS;
-  }
-
-  // Convert memory-mapped address to chip address and align to sector boundaries
-  start_address        = (uint32_t)p_device_address - chip_address_base;
+  // Use relative address directly for chip operations
+  start_address        = address;
 
   // Calculate aligned erase region (align start down, end up to sector boundaries)
   uint32_t end_address = start_address + byte_count;

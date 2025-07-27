@@ -705,9 +705,9 @@ void OSPI_chip_erase_full(uint8_t keycode)
     // Record block start time
     uint32_t block_start_time = tx_time_get();
 
-    // Perform block erase
+    // Perform block erase using relative address
     err = Mc80_ospi_erase(g_mc80_ospi.p_ctrl,
-                         (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + block_address),
+                         block_address,
                          block_size);
 
     // Calculate block erase time
@@ -1336,10 +1336,10 @@ void OSPI_test_custom_operations(uint8_t keycode)
         // Generate pattern
         _Ospi_generate_pattern(write_buffer, settings.size, settings.pattern_type, settings.pattern_value);
 
-        // Measure time and perform write
+        // Measure time and perform write using relative address
         T_sys_timestump start_time;
         Get_hw_timestump(&start_time);
-        fsp_err_t       err = Mc80_ospi_memory_mapped_write(g_mc80_ospi.p_ctrl, write_buffer, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + settings.address), settings.size);
+        fsp_err_t       err = Mc80_ospi_memory_mapped_write(g_mc80_ospi.p_ctrl, write_buffer, settings.address, settings.size);
         T_sys_timestump end_time;
         Get_hw_timestump(&end_time);
         uint32_t elapsed_us = Timestump_diff_to_usec(&start_time, &end_time);
@@ -1406,10 +1406,10 @@ void OSPI_test_custom_operations(uint8_t keycode)
           break;
         }
 
-        // Measure time and perform erase
+        // Measure time and perform erase using relative address
         T_sys_timestump start_time;
         Get_hw_timestump(&start_time);
-        fsp_err_t       err = Mc80_ospi_erase(g_mc80_ospi.p_ctrl, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + settings.address), settings.size);
+        fsp_err_t       err = Mc80_ospi_erase(g_mc80_ospi.p_ctrl, settings.address, settings.size);
         T_sys_timestump end_time;
         Get_hw_timestump(&end_time);
         uint32_t elapsed_us = Timestump_diff_to_usec(&start_time, &end_time);
@@ -2205,7 +2205,7 @@ void OSPI_test_comprehensive_memory(uint8_t keycode)
 
       T_sys_timestump start_time;
       Get_hw_timestump(&start_time);
-      erase_err = Mc80_ospi_erase(g_mc80_ospi.p_ctrl, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + test_address), test_size);
+      erase_err = Mc80_ospi_erase(g_mc80_ospi.p_ctrl, test_address, test_size);
       T_sys_timestump end_time;
       Get_hw_timestump(&end_time);
       uint32_t current_erase_time_us = Timestump_diff_to_usec(&start_time, &end_time);
@@ -2273,7 +2273,7 @@ void OSPI_test_comprehensive_memory(uint8_t keycode)
 
       T_sys_timestump start_time;
       Get_hw_timestump(&start_time);
-      fsp_err_t       err = Mc80_ospi_memory_mapped_write(g_mc80_ospi.p_ctrl, write_buffer, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + test_address), test_size);
+      fsp_err_t       err = Mc80_ospi_memory_mapped_write(g_mc80_ospi.p_ctrl, write_buffer, test_address, test_size);
       T_sys_timestump end_time;
       Get_hw_timestump(&end_time);
       result.write_time_us = Timestump_diff_to_usec(&start_time, &end_time);

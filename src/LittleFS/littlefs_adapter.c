@@ -232,14 +232,8 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
   // Calculate absolute address
   uint32_t address                  = (block * c->block_size) + off;
 
-  // Debug info for first few reads
-  static int debug_count            = 0;
-  if (debug_count < 5)
-  {
     LITTLEFS_DEBUG_PRINTF("LFS read: blk=%u off=%u sz=%u addr=0x%08X\n",
                           (unsigned int)block, (unsigned int)off, (unsigned int)size, (unsigned int)address);
-    debug_count++;
-  }
 
   // Check buffer validity
   if (buffer == NULL || size == 0)
@@ -248,7 +242,7 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
     return -1;
   }
 
-  // Perform memory-mapped read using OSPI driver
+  // Perform memory-mapped read using OSPI driver - function expects relative address
   err = Mc80_ospi_memory_mapped_read(p_ctrl, (uint8_t *)buffer, address, size);
 
   if (err != FSP_SUCCESS)
@@ -256,13 +250,6 @@ int _lfs_read(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, void
     LITTLEFS_DEBUG_ERR_PRINTF("OSPI read fail addr=0x%08X size=%u err=%u (0x%X)\n",
                               (unsigned int)address, size, (unsigned int)err, (unsigned int)err);
     return -1;
-  }
-
-  // Debug for first read
-  if (debug_count <= 1)
-  {
-    LITTLEFS_DEBUG_PRINTF("OSPI read success: %u bytes from 0x%08X\n",
-                          (unsigned int)size, (unsigned int)address);
   }
 
   return 0;  // Success
@@ -301,8 +288,8 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
                           size > 3 ? data[3] : 0);
   }
 
-  // Write data using OSPI driver with correct base address
-  err = Mc80_ospi_memory_mapped_write(p_ctrl, (uint8_t *)buffer, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + address), size);
+  // Write data using OSPI driver - function now expects relative address
+  err = Mc80_ospi_memory_mapped_write(p_ctrl, (uint8_t *)buffer, address, size);
 
   if (err != FSP_SUCCESS)
   {
@@ -334,8 +321,8 @@ int _lfs_erase(const struct lfs_config *c, lfs_block_t block)
   LITTLEFS_DEBUG_PRINTF("LFS erase: blk=%u addr=0x%08X size=%u\n",
                         (unsigned int)block, (unsigned int)address, c->block_size);
 
-  // Erase block using OSPI driver with correct base address
-  err = Mc80_ospi_erase(p_ctrl, (uint8_t *)(MC80_OSPI_DEVICE_0_START_ADDRESS + address), c->block_size);
+  // Erase block using OSPI driver - function now expects relative address
+  err = Mc80_ospi_erase(p_ctrl, address, c->block_size);
 
   if (err != FSP_SUCCESS)
   {

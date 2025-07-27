@@ -545,8 +545,8 @@ fsp_err_t Mc80_ospi_spi_protocol_set(T_mc80_ospi_instance_ctrl* const p_ctrl, T_
 fsp_err_t Mc80_ospi_spi_protocol_switch_safe(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_protocol new_protocol);
 fsp_err_t Mc80_ospi_xip_enter(T_mc80_ospi_instance_ctrl* const p_ctrl);
 fsp_err_t Mc80_ospi_xip_exit(T_mc80_ospi_instance_ctrl* const p_ctrl);
-fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t const* const p_src, uint8_t* const p_dest, uint32_t byte_count);
-fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t* const p_device_address, uint32_t byte_count);
+fsp_err_t Mc80_ospi_memory_mapped_write(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t const* const p_src, uint32_t const address, uint32_t byte_count);
+fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl* const p_ctrl, uint32_t const address, uint32_t byte_count);
 fsp_err_t Mc80_ospi_status_get(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_status* const p_status);
 fsp_err_t Mc80_ospi_read_id(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t* const p_id, uint32_t id_length);
 fsp_err_t Mc80_ospi_bank_set(T_mc80_ospi_instance_ctrl* const p_ctrl, uint32_t bank);
