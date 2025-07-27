@@ -1,7 +1,6 @@
 #ifndef LITTLEFS_ADAPTER_H
 #define LITTLEFS_ADAPTER_H
 
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -9,12 +8,24 @@ extern "C"
 
 // Maximum size for LittleFS configuration based on MX25UM25645G datasheet
 // MX25UM25645G: 256Mbit (32MB) OSPI NOR Flash Memory
-#define LITTLEFS_BLOCK_SIZE     4096    // 4KB sectors (matches flash erase sector size)
-#define LITTLEFS_BLOCK_COUNT    8192    // 32MB total = 8192 blocks of 4KB each (32MB / 4KB = 8192)
-#define LITTLEFS_CACHE_SIZE     256     // Cache size (matches 256-byte page buffer)
-#define LITTLEFS_LOOKAHEAD_SIZE 128     // Lookahead buffer size (8192/64 = 128, must be multiple of 8)
-#define LITTLEFS_BLOCK_CYCLES   100000  // 100,000 erase/program cycles (per datasheet)
-#define LITTLEFS_PROG_SIZE      256     // 256-byte page buffer (per datasheet)
+#define LITTLEFS_BLOCK_SIZE     4096        // 4KB sectors (matches flash erase sector size)
+#define LITTLEFS_BLOCK_COUNT    8192        // 32MB total = 8192 blocks of 4KB each (32MB / 4KB = 8192)
+#define LITTLEFS_CACHE_SIZE     1024        // Cache size (must be <= block_size and multiple of read/prog sizes)
+#define LITTLEFS_LOOKAHEAD_SIZE 1024        // Lookahead buffer size (8192/8 = 1024)
+#define LITTLEFS_BLOCK_CYCLES   1000        //
+#define LITTLEFS_READ_SIZE      64           // Minimum read size (optimized for OSPI flash)
+#define LITTLEFS_PROG_SIZE      64          //
+
+// Data integrity and performance settings
+#define LITTLEFS_NAME_MAX       LFS_NAME_MAX  // Maximum filename length (default 255)
+#define LITTLEFS_FILE_MAX       LFS_FILE_MAX  // Maximum file size (default 2147483647)
+#define LITTLEFS_ATTR_MAX       LFS_ATTR_MAX  // Maximum custom attribute size (default 1022)
+
+// Note: LittleFS automatically handles:
+// - Block-level CRC32 checksums for metadata integrity
+// - Copy-on-write semantics to prevent corruption
+// - Wear leveling across flash blocks
+// - Bad block management and error recovery
 
 // OSPI protocol configuration for LittleFS operations
 #define LITTLEFS_OSPI_PROTOCOL  MC80_OSPI_PROTOCOL_1S_1S_1S  // Can be changed to MC80_OSPI_PROTOCOL_8D_8D_8D

@@ -85,13 +85,18 @@ int Littlefs_initialize(void)
   g_littlefs_context.cfg.sync             = _lfs_sync;
 
   // Block device configuration
-  g_littlefs_context.cfg.read_size        = 1;                        // Minimum read size
-  g_littlefs_context.cfg.prog_size        = 1;                        // Minimum program size (start with 1 for testing)
+  g_littlefs_context.cfg.read_size        = LITTLEFS_READ_SIZE;       // Minimum read size
+  g_littlefs_context.cfg.prog_size        = LITTLEFS_PROG_SIZE;       // Program size (256 bytes - matches flash page size)
   g_littlefs_context.cfg.block_size       = LITTLEFS_BLOCK_SIZE;      // Block size (4KB)
   g_littlefs_context.cfg.block_count      = LITTLEFS_BLOCK_COUNT;     // Number of blocks
   g_littlefs_context.cfg.cache_size       = LITTLEFS_CACHE_SIZE;      // Cache size
   g_littlefs_context.cfg.lookahead_size   = LITTLEFS_LOOKAHEAD_SIZE;  // Lookahead buffer size
   g_littlefs_context.cfg.block_cycles     = LITTLEFS_BLOCK_CYCLES;    // Block wear leveling threshold
+
+  // Data integrity and performance settings
+  g_littlefs_context.cfg.name_max         = LITTLEFS_NAME_MAX;        // Maximum filename length
+  g_littlefs_context.cfg.file_max         = LITTLEFS_FILE_MAX;        // Maximum file size
+  g_littlefs_context.cfg.attr_max         = LITTLEFS_ATTR_MAX;        // Maximum custom attribute size
 
   // Buffers for caching - important for performance
   g_littlefs_context.cfg.read_buffer      = g_littlefs_context.read_buffer;
