@@ -172,8 +172,7 @@ int Littlefs_format(void)
 -----------------------------------------------------------------------------------------------------*/
 int Littlefs_unmount(void)
 {
-  fsp_err_t fsp_err;
-  int       err;
+  int err;
 
   // Check if filesystem is mounted
   if (g_littlefs_context.filesystem_mounted)
@@ -193,21 +192,12 @@ int Littlefs_unmount(void)
     LITTLEFS_DEBUG_PRINTF("LittleFS was not mounted\n\r");
   }
 
-  // Check if driver is initialized and close it
+  // Note: OSPI driver is not closed here as it may be used by other parts of the system
+  // Only mark our internal state as uninitialized for LittleFS context
   if (g_littlefs_context.driver_initialized)
   {
-    fsp_err = Mc80_ospi_close(g_mc80_ospi.p_ctrl);
-    if (fsp_err != FSP_SUCCESS)
-    {
-      LITTLEFS_DEBUG_ERR_PRINTF("OSPI driver close failed: %u\n\r", (unsigned int)fsp_err);
-      return -1;
-    }
     g_littlefs_context.driver_initialized = false;
-    LITTLEFS_DEBUG_PRINTF("OSPI driver closed successfully\n\r");
-  }
-  else
-  {
-    LITTLEFS_DEBUG_PRINTF("OSPI driver was not initialized\n\r");
+    LITTLEFS_DEBUG_PRINTF("LittleFS context marked as uninitialized\n\r");
   }
 
   return 0;

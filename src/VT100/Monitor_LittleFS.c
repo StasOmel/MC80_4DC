@@ -147,17 +147,6 @@ static void _Print_tree_indent(uint8_t depth)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Get current time in milliseconds
-
-  Parameters: none
-
-  Return: current time in milliseconds
------------------------------------------------------------------------------------------------------*/
-static uint32_t _Get_time_ms(void)
-{
-  return tx_time_get() * (1000 / TX_TIMER_TICKS_PER_SECOND);
-}
-
 /*-----------------------------------------------------------------------------------------------------
   Description: Print operation statistics
 
@@ -770,8 +759,7 @@ static void _Do_write_test(void)
   char              filename[LFS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
-  uint32_t          start_time, end_time, open_time, close_time;
-  uint32_t          open_start, open_end, close_start, close_end;
+  uint32_t          open_time, close_time;
   uint32_t          bytes_written;
   uint32_t          blocks_per_file;
   uint32_t          operation_time;
@@ -832,18 +820,20 @@ static void _Do_write_test(void)
     snprintf(filename, LFS_MAX_FILENAME_LENGTH, "/%s%03u.bin", LFS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Writing %s... ", filename);
 
-    start_time = _Get_time_ms();
+    T_sys_timestump start_ts, end_ts, open_start_ts, open_end_ts, close_start_ts, close_end_ts;
+
+    Get_hw_timestump(&start_ts);
 
     // Open file with timing
-    open_start = _Get_time_ms();
-    result     = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
-    open_end   = _Get_time_ms();
-    open_time  = open_end - open_start;
+    Get_hw_timestump(&open_start_ts);
+    result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
+    Get_hw_timestump(&open_end_ts);
+    open_time = Timestump_diff_to_msec(&open_start_ts, &open_end_ts);
 
     if (result < 0)
     {
-      end_time       = _Get_time_ms();
-      operation_time = end_time - start_time;
+      Get_hw_timestump(&end_ts);
+      operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
       MPRINTF("FAILED (open): %s (open: %u ms, total: %u ms)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
       stats.error_count++;
@@ -894,8 +884,8 @@ static void _Do_write_test(void)
         MPRINTF("FAILED (write block %u): %s\n\r", block, _Littlefs_error_to_string((int)written));
         lfs_file_close(&g_littlefs_context.lfs, &file);
         lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
-        end_time       = _Get_time_ms();
-        operation_time = end_time - start_time;
+        Get_hw_timestump(&end_ts);
+        operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
         stats.error_count++;
         goto next_file;
       }
@@ -917,8 +907,8 @@ static void _Do_write_test(void)
         MPRINTF("FAILED (write CRC): %s\n\r", _Littlefs_error_to_string((int)written));
         lfs_file_close(&g_littlefs_context.lfs, &file);
         lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
-        end_time       = _Get_time_ms();
-        operation_time = end_time - start_time;
+        Get_hw_timestump(&end_ts);
+        operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
         stats.error_count++;
         goto next_file;
       }
@@ -932,19 +922,19 @@ static void _Do_write_test(void)
       MPRINTF("FAILED (sync): %s\n\r", _Littlefs_error_to_string(result));
       lfs_file_close(&g_littlefs_context.lfs, &file);
       lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
-      end_time       = _Get_time_ms();
-      operation_time = end_time - start_time;
+      Get_hw_timestump(&end_ts);
+      operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
       stats.error_count++;
       goto next_file;
     }
 
     // Close file with timing
-    close_start    = _Get_time_ms();
-    result         = lfs_file_close(&g_littlefs_context.lfs, &file);
-    close_end      = _Get_time_ms();
-    close_time     = close_end - close_start;
-    end_time       = _Get_time_ms();
-    operation_time = end_time - start_time;
+    Get_hw_timestump(&close_start_ts);
+    result = lfs_file_close(&g_littlefs_context.lfs, &file);
+    Get_hw_timestump(&close_end_ts);
+    close_time = Timestump_diff_to_msec(&close_start_ts, &close_end_ts);
+    Get_hw_timestump(&end_ts);
+    operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
 
     if (result < 0)
     {
@@ -1048,8 +1038,7 @@ static void _Do_read_test(void)
   char              filename[LFS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
-  uint32_t          start_time, end_time, open_time, close_time;
-  uint32_t          open_start, open_end, close_start, close_end;
+  uint32_t          open_time, close_time;
   uint32_t          bytes_read;
   uint32_t          blocks_per_file;
   uint32_t          operation_time;
@@ -1112,21 +1101,23 @@ static void _Do_read_test(void)
     snprintf(filename, LFS_MAX_FILENAME_LENGTH, "/%s%03u.bin", LFS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Reading %s... ", filename);
 
-    start_time    = _Get_time_ms();
+    T_sys_timestump start_ts, end_ts, open_start_ts, open_end_ts, close_start_ts, close_end_ts;
+
+    Get_hw_timestump(&start_ts);
     crc_valid     = true;
     pattern_valid = true;
     size_valid    = true;
 
     // Open file with timing
-    open_start    = _Get_time_ms();
-    result        = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_RDONLY);
-    open_end      = _Get_time_ms();
-    open_time     = open_end - open_start;
+    Get_hw_timestump(&open_start_ts);
+    result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_RDONLY);
+    Get_hw_timestump(&open_end_ts);
+    open_time = Timestump_diff_to_msec(&open_start_ts, &open_end_ts);
 
     if (result < 0)
     {
-      end_time       = _Get_time_ms();
-      operation_time = end_time - start_time;
+      Get_hw_timestump(&end_ts);
+      operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
       MPRINTF("FAILED (open): %s (open: %u ms, total: %u ms)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
       stats.error_count++;
@@ -1153,8 +1144,8 @@ static void _Do_read_test(void)
       {
         MPRINTF("FAILED (read block %u): %s\n\r", block, _Littlefs_error_to_string((int)read_result));
         lfs_file_close(&g_littlefs_context.lfs, &file);
-        end_time       = _Get_time_ms();
-        operation_time = end_time - start_time;
+        Get_hw_timestump(&end_ts);
+        operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
         stats.error_count++;
         goto next_file;
       }
@@ -1225,12 +1216,12 @@ static void _Do_read_test(void)
     }
 
     // Close file with timing
-    close_start    = _Get_time_ms();
-    result         = lfs_file_close(&g_littlefs_context.lfs, &file);
-    close_end      = _Get_time_ms();
-    close_time     = close_end - close_start;
-    end_time       = _Get_time_ms();
-    operation_time = end_time - start_time;
+    Get_hw_timestump(&close_start_ts);
+    result = lfs_file_close(&g_littlefs_context.lfs, &file);
+    Get_hw_timestump(&close_end_ts);
+    close_time = Timestump_diff_to_msec(&close_start_ts, &close_end_ts);
+    Get_hw_timestump(&end_ts);
+    operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
 
     if (result < 0)
     {
@@ -1341,7 +1332,6 @@ static void _Do_delete_test(void)
   T_operation_stats stats;
   char              filename[LFS_MAX_FILENAME_LENGTH];
   int               result;
-  uint32_t          start_time, end_time;
   uint32_t          operation_time;
 
   MPRINTF("=== Delete Test ===\n\r");
@@ -1370,10 +1360,11 @@ static void _Do_delete_test(void)
     MPRINTF("Deleting %s... ", filename);
 
     // Delete file
-    start_time     = _Get_time_ms();
-    result         = lfs_remove(&g_littlefs_context.lfs, filename);
-    end_time       = _Get_time_ms();
-    operation_time = end_time - start_time;
+    T_sys_timestump start_ts, end_ts;
+    Get_hw_timestump(&start_ts);
+    result = lfs_remove(&g_littlefs_context.lfs, filename);
+    Get_hw_timestump(&end_ts);
+    operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
 
     if (result < 0)
     {
@@ -1423,30 +1414,26 @@ static void _Do_format_test(void)
 {
   GET_MCBL;
   int      result;
-  uint32_t start_time, end_time, format_time;
+  uint32_t format_time;
 
   MPRINTF("=== Format Test ===\n\r");
   MPRINTF("Formatting filesystem...\n\r");
 
-  // Unmount first if mounted
+  // Unmount first if mounted (ensures clean state)
   if (Littlefs_is_mounted())
   {
     MPRINTF("Unmounting filesystem... ");
-    result = Littlefs_unmount();
-    if (result != 0)
-    {
-      MPRINTF("FAILED: %s\n\r", _Littlefs_error_to_string(result));
-      return;
-    }
+    Littlefs_unmount();  // Always succeeds - just resets internal state
     MPRINTF("OK\n\r");
   }
 
   // Format filesystem
   MPRINTF("Formatting... ");
-  start_time  = _Get_time_ms();
-  result      = Littlefs_format();
-  end_time    = _Get_time_ms();
-  format_time = end_time - start_time;
+  T_sys_timestump start_ts, end_ts;
+  Get_hw_timestump(&start_ts);
+  result = Littlefs_format();
+  Get_hw_timestump(&end_ts);
+  format_time = Timestump_diff_to_msec(&start_ts, &end_ts);
 
   if (result != 0)
   {
@@ -1480,13 +1467,14 @@ static void _Do_format_test(void)
 static void _Do_full_test(void)
 {
   GET_MCBL;
-  uint32_t total_start_time, total_end_time;
+  uint32_t total_test_time;
 
   MPRINTF("=== Full Test (Write + Read + Delete) ===\n\r");
   MPRINTF("Configuration: %u files × %u bytes, %u byte blocks\n\r",
           g_test_files_count, g_test_file_size, g_test_block_size);
 
-  total_start_time = _Get_time_ms();
+  T_sys_timestump total_start_ts, total_end_ts;
+  Get_hw_timestump(&total_start_ts);
 
   // Step 1: Write test
   MPRINTF("\n[1/3] Write Test\n\r");
@@ -1507,12 +1495,13 @@ static void _Do_full_test(void)
   MPRINTF("\n[3/3] Delete Test\n\r");
   _Do_delete_test();
 
-  total_end_time = _Get_time_ms();
+  Get_hw_timestump(&total_end_ts);
+  total_test_time = Timestump_diff_to_msec(&total_start_ts, &total_end_ts);
 
   MPRINTF("\n=== Full Test Summary ===\n\r");
-  MPRINTF("Total test duration: %u ms\n\r", total_end_time - total_start_time);
+  MPRINTF("Total test duration: %u ms\n\r", total_test_time);
   MPRINTF("Average time per file (all operations): %.1f ms\n\r",
-          (float)(total_end_time - total_start_time) / g_test_files_count);
+          (float)total_test_time / g_test_files_count);
 }
 
 /*-----------------------------------------------------------------------------------------------------
