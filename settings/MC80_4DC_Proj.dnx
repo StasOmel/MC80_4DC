@@ -55,7 +55,7 @@
         <EnforceMemoryConfiguration>0</EnforceMemoryConfiguration>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>3932548909</Checksum>
+        <Checksum>1130371408</Checksum>
     </DebugChecksum>
     <InterruptStripe>
         <Title0>DMAC1_INT</Title0>
