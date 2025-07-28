@@ -9,6 +9,7 @@
 #define MAX_FILENAME_LENGTH                64
 #define MAX_DIR_STACK_DEPTH                32
 #define FILEX_MEMORY_BUFFER_SIZE           (32 * 1024)   // 32KB
+#define FILEX_TEST_BUFFER_SIZE             (16 * 1024)   // 16KB for test operations
 
 // Test data patterns
 enum
@@ -55,6 +56,9 @@ extern FX_MEDIA g_fx_spi_nor_media;
 // Global pointer to FileX memory buffer
 static uint8_t *g_filex_memory_buffer = NULL;
 
+// Global pointer to test buffer for file operations
+static uint8_t *g_test_buffer = NULL;
+
 // Menu definition
 const T_VT100_Menu_item MENU_FileX_items[] = {
   { '1', Do_FileX_init, NULL },
@@ -73,8 +77,6 @@ const T_VT100_Menu MENU_FileX = {
   "\033[5C <R> - Return to previous menu\r\n",
   MENU_FileX_items
 };
-
-static uint8_t g_test_buffer[8192];  // Test buffer for file operations
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Static function declarations
@@ -99,6 +101,8 @@ static void _Print_tree_indent(uint8_t depth);
 static void _List_directory_tree(const char *root_path, uint8_t max_depth);
 static const char *_Get_pattern_name(uint32_t pattern);
 static const char *_Get_filex_error_description(UINT status);
+static bool _Allocate_test_buffer(void);
+static void _Free_test_buffer(void);
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Helper function to push directory to stack
@@ -230,6 +234,42 @@ static const char *_Get_filex_error_description(UINT status)
 }
 
 /*-----------------------------------------------------------------------------------------------------
+  Description: Allocate test buffer for file operations
+
+  Parameters: none
+
+  Return: true if allocation successful, false otherwise
+-----------------------------------------------------------------------------------------------------*/
+static bool _Allocate_test_buffer(void)
+{
+  if (g_test_buffer == NULL)
+  {
+    g_test_buffer = App_malloc(FILEX_TEST_BUFFER_SIZE);
+    if (g_test_buffer == NULL)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Free test buffer
+
+  Parameters: none
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+static void _Free_test_buffer(void)
+{
+  if (g_test_buffer != NULL)
+  {
+    App_free(g_test_buffer);
+    g_test_buffer = NULL;
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------------
   Description: Helper function to print tree indentation
 
   Parameters: depth - depth level
@@ -349,16 +389,29 @@ static void _Print_filex_info(void)
     sectors_per_cluster = g_fx_spi_nor_media.fx_media_sectors_per_cluster;
     bytes_per_sector = g_fx_spi_nor_media.fx_media_bytes_per_sector;
 
-    MPRINTF("Media ID: 0x%lX\n\r", g_fx_spi_nor_media.fx_media_id);
-    MPRINTF("Total clusters: %lu\n\r", total_clusters);
-    MPRINTF("Available clusters: %lu\n\r", available_clusters);
-    MPRINTF("Used clusters: %lu\n\r", total_clusters - available_clusters);
-    MPRINTF("Sectors per cluster: %lu\n\r", sectors_per_cluster);
-    MPRINTF("Bytes per sector: %lu\n\r", bytes_per_sector);
-    MPRINTF("Cluster size: %lu bytes\n\r", sectors_per_cluster * bytes_per_sector);
-    MPRINTF("Total space: %lu KB\n\r", (total_clusters * sectors_per_cluster * bytes_per_sector) / 1024);
-    MPRINTF("Available space: %lu KB\n\r", (available_clusters * sectors_per_cluster * bytes_per_sector) / 1024);
-    MPRINTF("Used space: %lu KB\n\r", ((total_clusters - available_clusters) * sectors_per_cluster * bytes_per_sector) / 1024);
+    // Calculate sizes in bytes first to avoid overflow
+    ULONG cluster_size_bytes = sectors_per_cluster * bytes_per_sector;
+    ULONG total_size_bytes = total_clusters * cluster_size_bytes;
+    ULONG available_size_bytes = available_clusters * cluster_size_bytes;
+    ULONG used_size_bytes = total_size_bytes - available_size_bytes;
+
+    MPRINTF("Media ID             : 0x%lX\n\r", g_fx_spi_nor_media.fx_media_id);
+    MPRINTF("Total clusters       : %lu\n\r", total_clusters);
+    MPRINTF("Available clusters   : %lu\n\r", available_clusters);
+    MPRINTF("Used clusters        : %lu\n\r", total_clusters - available_clusters);
+    MPRINTF("Sectors per cluster  : %lu\n\r", sectors_per_cluster);
+    MPRINTF("Bytes per sector     : %lu\n\r", bytes_per_sector);
+    MPRINTF("Cluster size         : %lu bytes\n\r", cluster_size_bytes);
+    MPRINTF("Total space          : %lu KB (%lu MB)\n\r", total_size_bytes / 1024, total_size_bytes / (1024 * 1024));
+    MPRINTF("Available space      : %lu KB (%lu MB)\n\r", available_size_bytes / 1024, available_size_bytes / (1024 * 1024));
+    MPRINTF("Used space           : %lu KB (%lu MB)\n\r", used_size_bytes / 1024, used_size_bytes / (1024 * 1024));
+
+    // Calculate and display usage percentage
+    if (total_size_bytes > 0)
+    {
+      ULONG usage_percent = (used_size_bytes * 100) / total_size_bytes;
+      MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, 100 - usage_percent);
+    }
   }
   else
   {
@@ -523,6 +576,13 @@ static void _Do_write_test(void)
   MPRINTF("\n=== FileX Write Test ===\n\r");
   _Print_test_config();
 
+  // Allocate test buffer
+  if (!_Allocate_test_buffer())
+  {
+    MPRINTF("Error: Failed to allocate test buffer\n\r");
+    return;
+  }
+
   Get_hw_timestump(&start_ts);
   stats.min_time = UINT32_MAX;
 
@@ -564,8 +624,8 @@ static void _Do_write_test(void)
 
         while (total_written < bytes_to_write && !write_error)
         {
-          uint32_t chunk_size = (bytes_to_write - total_written > sizeof(g_test_buffer)) ?
-                                sizeof(g_test_buffer) : (bytes_to_write - total_written);
+          uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ?
+                                FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
 
           _Fill_test_buffer(g_test_buffer, chunk_size, i);
 
@@ -651,6 +711,13 @@ static void _Do_read_test(void)
   MPRINTF("\n=== FileX Read Test ===\n\r");
   _Print_test_config();
 
+  // Allocate test buffer
+  if (!_Allocate_test_buffer())
+  {
+    MPRINTF("Error: Failed to allocate test buffer\n\r");
+    return;
+  }
+
   // Change to test directory
   status = fx_directory_default_set(&g_fx_spi_nor_media, "/test_files");
   if (status != FX_SUCCESS)
@@ -680,12 +747,10 @@ static void _Do_read_test(void)
       bool read_error = false;
       bool verify_error = false;
 
-      while (total_read < bytes_to_read && !read_error)
-      {
-        uint32_t chunk_size = (bytes_to_read - total_read > sizeof(g_test_buffer)) ?
-                              sizeof(g_test_buffer) : (bytes_to_read - total_read);
-
-        status = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
+        while (total_read < bytes_to_read && !read_error)
+        {
+          uint32_t chunk_size = (bytes_to_read - total_read > FILEX_TEST_BUFFER_SIZE) ?
+                                FILEX_TEST_BUFFER_SIZE : (bytes_to_read - total_read);        status = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
         if (status == FX_SUCCESS && actual_read == chunk_size)
         {
           total_read += actual_read;
@@ -857,6 +922,13 @@ static void _Do_format_test(void)
     return;
   }
 
+  // Allocate test buffer
+  if (!_Allocate_test_buffer())
+  {
+    MPRINTF("\nError: Failed to allocate test buffer\n\r");
+    return;
+  }
+
   MPRINTF("\nFormatting media...\n\r");
 
   Get_hw_timestump(&start_ts);
@@ -866,19 +938,19 @@ static void _Do_format_test(void)
 
   // Format the media using LevelX NOR driver
   status = fx_media_format(&g_fx_spi_nor_media,
-                          MC80_FileX_LevelX_DeviceDriver,  // Driver function
-                          (void*)&g_rm_filex_levelx_NOR_instance,   // Driver info pointer
-                          (UCHAR*)g_test_buffer,             // Memory pointer for work area
-                          sizeof(g_test_buffer),             // Memory size
-                          "FILEX_TEST",                      // Volume name
-                          1,                                 // Number of FATs
-                          32,                                // Directory entries
-                          0,                                 // Hidden sectors
-                          0,                                 // Total sectors (0 = use all available)
-                          512,                               // Bytes per sector
-                          1,                                 // Sectors per cluster
-                          1,                                 // Heads
-                          1);                                // Sectors per track
+                          MC80_FileX_LevelX_DeviceDriver,                    // Driver function
+                          (void*)&g_rm_filex_levelx_NOR_instance,           // Driver info pointer
+                          (UCHAR*)g_test_buffer,                             // Memory pointer for work area
+                          FILEX_TEST_BUFFER_SIZE,                            // Memory size
+                          G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,                  // Volume name
+                          G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,               // Number of FATs
+                          G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,            // Directory entries
+                          G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,               // Hidden sectors
+                          G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,                // Total sectors
+                          G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,             // Bytes per sector
+                          G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,          // Sectors per cluster
+                          1,                                                 // Heads
+                          1);                                                // Sectors per track
 
   if (status == FX_SUCCESS)
   {
@@ -995,6 +1067,17 @@ void Do_FileX_init(uint8_t keycode)
     MPRINTF("FileX media initialization failed: %s\n\r", _Get_filex_error_description(status));
     MPRINTF("Media appears to be unformatted. Attempting to format...\n\r");
 
+    // Allocate test buffer for formatting
+    if (!_Allocate_test_buffer())
+    {
+      MPRINTF("Error: Failed to allocate test buffer for formatting\n\r");
+      App_free(media_memory);
+      MPRINTF("\nPress any key to continue...\n\r");
+      uint8_t key;
+      WAIT_CHAR(&key, ms_to_ticks(100000));
+      return;
+    }
+
     // Close media first
     fx_media_close(&g_fx_spi_nor_media);
 
@@ -1003,14 +1086,14 @@ void Do_FileX_init(uint8_t keycode)
                                         MC80_FileX_LevelX_DeviceDriver,
                                         (void*)&g_rm_filex_levelx_NOR_instance,
                                         (UCHAR*)g_test_buffer,
-                                        sizeof(g_test_buffer),
-                                        "FILEX_NOR",
-                                        1,    // Number of FATs
-                                        32,   // Directory entries
-                                        0,    // Hidden sectors
-                                        0,    // Total sectors (0 = use all available)
-                                        512,  // Bytes per sector
-                                        1,    // Sectors per cluster
+                                        FILEX_TEST_BUFFER_SIZE,
+                                        G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
+                                        G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
+                                        G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
+                                        G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
+                                        G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
+                                        G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
+                                        G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
                                         1,    // Heads
                                         1);   // Sectors per track
 
@@ -1034,12 +1117,14 @@ void Do_FileX_init(uint8_t keycode)
       {
         MPRINTF("Failed to reopen formatted media: %s\n\r", _Get_filex_error_description(status));
         App_free(media_memory);
+        _Free_test_buffer();
       }
     }
     else
     {
       MPRINTF("Format failed: %s\n\r", _Get_filex_error_description(format_status));
       App_free(media_memory);
+      _Free_test_buffer();
     }
   }
   else
@@ -1294,4 +1379,7 @@ void Do_FileX_performance_test(uint8_t keycode)
       }
     }
   }
+
+  // Free test buffer when exiting menu
+  _Free_test_buffer();
 }
