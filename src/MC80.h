@@ -332,6 +332,7 @@ typedef struct
 #include "Monitor_Motor.h"
 #include "Monitor_CAN.h"
 #include "Monitor_LittleFS.h"
+#include "Monitor_FileX.h"
 #include "Monitor_OSPI.h"
 #include "Monitor_RTT.h"
 #include "CAN_protocol.h"

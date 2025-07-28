@@ -14275,6 +14275,12 @@
                     <name>$PROJ_DIR$\src\VT100\Monitor_diagnostic.h</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\src\VT100\Monitor_FileX.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\VT100\Monitor_FileX.h</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\src\VT100\Monitor_LittleFS.c</name>
                 </file>
                 <file>

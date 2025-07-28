@@ -35,6 +35,9 @@ void g_rm_filex_levelx_NOR_callback(rm_filex_levelx_nor_callback_args_t *p_args)
 // LevelX NOR flash instance
 extern LX_NOR_FLASH g_lx_NOR;
 
+// FileX media instance for LevelX NOR
+extern FX_MEDIA g_fx_spi_nor_media;
+
 // FileX LevelX NOR instance control structure
 extern rm_filex_levelx_nor_instance_ctrl_t g_rm_filex_levelx_NOR_ctrl;
 
@@ -54,5 +57,11 @@ extern ULONG g_rm_levelx_nor_OSPI_read_buffer[FSP_LX_READ_BUFFER_SIZE_WORDS];
 UINT      g_rm_levelx_nor_OSPI_initialize(LX_NOR_FLASH *p_nor_flash);
 fsp_err_t g_rm_levelx_nor_OSPI_close(void);
 UINT      g_rm_levelx_nor_OSPI_system_error(UINT error_code);
+
+// FileX LevelX NOR device driver function
+void MC80_FileX_LevelX_DeviceDriver(FX_MEDIA *p_fx_media);
+
+// FileX LevelX NOR callback function
+void g_rm_filex_levelx_NOR_callback(rm_filex_levelx_nor_callback_args_t *p_args);
 
 #endif  // LEVELX_CONFIG_H

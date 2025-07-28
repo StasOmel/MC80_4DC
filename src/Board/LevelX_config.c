@@ -222,6 +222,16 @@ fsp_err_t g_rm_levelx_nor_OSPI_close(void)
 // LevelX NOR flash structure
 LX_NOR_FLASH g_lx_NOR;
 
+// FileX media structure for LevelX NOR
+FX_MEDIA g_fx_spi_nor_media;
+
+// FileX LevelX NOR callback function
+void g_rm_filex_levelx_NOR_callback(rm_filex_levelx_nor_callback_args_t *p_args)
+{
+  FSP_PARAMETER_NOT_USED(p_args);
+  // Callback implementation can be added here if needed
+}
+
 // FileX LevelX NOR instance control structure
 rm_filex_levelx_nor_instance_ctrl_t g_rm_filex_levelx_NOR_ctrl;
 
@@ -240,3 +250,17 @@ const rm_filex_levelx_nor_instance_t g_rm_filex_levelx_NOR_instance = {
   .p_ctrl = &g_rm_filex_levelx_NOR_ctrl,  // Control structure
   .p_cfg  = &g_rm_filex_levelx_NOR_cfg    // Configuration structure
 };
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: MC80 FileX LevelX NOR device driver function with proper OSPI initialization
+
+  Parameters: p_fx_media - pointer to FileX media structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void MC80_FileX_LevelX_DeviceDriver(FX_MEDIA *p_fx_media)
+{
+  // Use the standard RM_FILEX_LEVELX_NOR_DeviceDriver implementation
+  // This ensures proper initialization through g_rm_levelx_nor_OSPI_initialize
+  RM_FILEX_LEVELX_NOR_DeviceDriver(p_fx_media);
+}
