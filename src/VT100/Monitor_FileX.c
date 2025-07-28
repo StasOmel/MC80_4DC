@@ -11,14 +11,14 @@
 #define MAX_DIR_STACK_DEPTH            32
 #define FILEX_MEMORY_BUFFER_SIZE       (32 * 1024)  // 32KB
 #define FILEX_TEST_BUFFER_SIZE         (16 * 1024)  // 16KB for test operations
+#define CRC32_SIZE                     4             // CRC32 size in bytes
 
 // Test data patterns
 enum
 {
   DATA_PATTERN_CONSTANT    = 0,
-  DATA_PATTERN_INCREMENTAL = 1,
-  DATA_PATTERN_RANDOM      = 2,
-  DATA_PATTERN_CHECKSUM    = 3
+  DATA_PATTERN_COUNTER     = 1,  // Fill with 32-bit counter (like LittleFS)
+  DATA_PATTERN_RANDOM      = 2
 };
 
 // Test configuration variables
@@ -49,6 +49,7 @@ typedef struct
   uint32_t operations_count;  // Number of operations performed
   uint32_t errors_count;      // Number of errors encountered
   uint32_t bytes_processed;   // Total bytes processed
+  uint32_t crc_errors;        // Number of CRC verification errors
 } T_filex_stats;
 
 // FileX media instance
@@ -94,8 +95,8 @@ static void        _Do_full_test(void);
 static void        _Print_filex_info(void);
 static void        _Print_test_config(void);
 static void        _Print_statistics(T_filex_stats *stats, const char *operation_name);
-static void        _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index);
-static bool        _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index);
+static void        _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset);
+static bool        _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset);
 static bool        _Push_dir_to_stack(const char *path, uint8_t depth);
 static bool        _Pop_dir_from_stack(char *path, uint8_t *depth);
 static void        _Print_tree_indent(uint8_t depth);
@@ -159,12 +160,10 @@ static const char *_Get_pattern_name(uint32_t pattern)
   {
     case DATA_PATTERN_CONSTANT:
       return "Constant";
-    case DATA_PATTERN_INCREMENTAL:
-      return "Incremental";
+    case DATA_PATTERN_COUNTER:
+      return "Counter";
     case DATA_PATTERN_RANDOM:
       return "Random";
-    case DATA_PATTERN_CHECKSUM:
-      return "Checksum";
     default:
       return "Unknown";
   }
@@ -297,11 +296,11 @@ static void _Print_tree_indent(uint8_t depth)
 /*-----------------------------------------------------------------------------------------------------
   Description: Fill test buffer with specified pattern
 
-  Parameters: buffer - buffer to fill, size - buffer size, file_index - file index for pattern
+  Parameters: buffer - buffer to fill, size - buffer size, file_index - file index for pattern, start_offset - starting offset for patterns
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-static void _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index)
+static void _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset)
 {
   switch (g_data_pattern)
   {
@@ -309,27 +308,39 @@ static void _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_inde
       memset(buffer, g_fill_constant, size);
       break;
 
-    case DATA_PATTERN_INCREMENTAL:
-      for (uint32_t i = 0; i < size; i++)
+    case DATA_PATTERN_COUNTER:
+    {
+      uint32_t *word_ptr   = (uint32_t *)buffer;
+      uint32_t  counter    = start_offset / 4;
+      uint32_t  word_count = size / 4;
+
+      // Fill with 32-bit counter values
+      for (uint32_t i = 0; i < word_count; i++)
       {
-        buffer[i] = (uint8_t)((file_index + i) & 0xFF);
+        word_ptr[i] = counter + i;
       }
-      break;
+
+      // Fill remaining bytes
+      uint32_t remaining_bytes = size % 4;
+      if (remaining_bytes > 0)
+      {
+        uint32_t last_value = counter + word_count;
+        uint8_t *byte_ptr   = &buffer[word_count * 4];
+        for (uint32_t i = 0; i < remaining_bytes; i++)
+        {
+          byte_ptr[i] = (uint8_t)((last_value >> (i * 8)) & 0xFF);
+        }
+      }
+    }
+    break;
 
     case DATA_PATTERN_RANDOM:
-      for (uint32_t i = 0; i < size; i++)
-      {
-        buffer[i] = (uint8_t)(rand() & 0xFF);
-      }
-      break;
-
-    case DATA_PATTERN_CHECKSUM:
     {
-      uint32_t checksum = file_index;
+      uint32_t seed = 0x12345678 + start_offset;
       for (uint32_t i = 0; i < size; i++)
       {
-        buffer[i] = (uint8_t)(checksum & 0xFF);
-        checksum  = (checksum + 1) * 0x1234567;
+        seed      = seed * 1103515245 + 12345;  // Simple LCG
+        buffer[i] = (uint8_t)(seed >> 16);
       }
     }
     break;
@@ -343,11 +354,11 @@ static void _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_inde
 /*-----------------------------------------------------------------------------------------------------
   Description: Verify test buffer data matches expected pattern
 
-  Parameters: buffer - buffer to verify, size - buffer size, file_index - file index for pattern
+  Parameters: buffer - buffer to verify, size - buffer size, file_index - file index for pattern, start_offset - starting offset for patterns
 
   Return: true if data matches, false otherwise
 -----------------------------------------------------------------------------------------------------*/
-static bool _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index)
+static bool _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset)
 {
   if (!g_verify_data)
   {
@@ -360,7 +371,7 @@ static bool _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_in
     return false;  // Memory allocation failed
   }
 
-  _Fill_test_buffer(expected_buffer, size, file_index);
+  _Fill_test_buffer(expected_buffer, size, file_index, start_offset);
   bool result = (memcmp(buffer, expected_buffer, size) == 0);
   App_free(expected_buffer);
 
@@ -377,13 +388,13 @@ static bool _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_in
 static void _Print_filex_info(void)
 {
   GET_MCBL;
-  ULONG total_clusters, available_clusters;
+  ULONG total_clusters, available_bytes;
   ULONG sectors_per_cluster, bytes_per_sector;
 
   MPRINTF("\n=== FileX Media Information ===\n\r");
 
-  // Get media information
-  UINT status = fx_media_space_available(&g_fx_spi_nor_media, &available_clusters);
+  // Get media information - fx_media_space_available returns available bytes, not clusters
+  UINT status = fx_media_space_available(&g_fx_spi_nor_media, &available_bytes);
   if (status == FX_SUCCESS)
   {
     total_clusters             = g_fx_spi_nor_media.fx_media_total_clusters;
@@ -392,25 +403,37 @@ static void _Print_filex_info(void)
 
     // Calculate sizes in bytes first to avoid overflow
     ULONG cluster_size_bytes   = sectors_per_cluster * bytes_per_sector;
+
+    // Calculate cluster counts - available_bytes contains free space in bytes
+    ULONG available_clusters   = available_bytes / cluster_size_bytes;
+
+    // Use data cluster count from media structure (this is the actual user data area)
+    ULONG data_clusters        = g_fx_spi_nor_media.fx_media_available_clusters;
+    ULONG used_clusters        = data_clusters - available_clusters;
+
+    // Calculate sizes based on data clusters from media structure
     ULONG total_size_bytes     = total_clusters * cluster_size_bytes;
-    ULONG available_size_bytes = available_clusters * cluster_size_bytes;
-    ULONG used_size_bytes      = total_size_bytes - available_size_bytes;
+    ULONG data_size_bytes      = data_clusters * cluster_size_bytes;
+    ULONG available_size_bytes = available_bytes;  // Use actual available bytes from API
+    ULONG used_size_bytes      = used_clusters * cluster_size_bytes;
 
     MPRINTF("Media ID             : 0x%lX\n\r", g_fx_spi_nor_media.fx_media_id);
     MPRINTF("Total clusters       : %lu\n\r", total_clusters);
+    MPRINTF("Data clusters        : %lu\n\r", data_clusters);
     MPRINTF("Available clusters   : %lu\n\r", available_clusters);
-    MPRINTF("Used clusters        : %lu\n\r", total_clusters - available_clusters);
+    MPRINTF("Used clusters        : %lu\n\r", used_clusters);
     MPRINTF("Sectors per cluster  : %lu\n\r", sectors_per_cluster);
     MPRINTF("Bytes per sector     : %lu\n\r", bytes_per_sector);
     MPRINTF("Cluster size         : %lu bytes\n\r", cluster_size_bytes);
     MPRINTF("Total space          : %lu KB (%lu MB)\n\r", total_size_bytes / 1024, total_size_bytes / (1024 * 1024));
+    MPRINTF("Data space           : %lu KB (%lu MB)\n\r", data_size_bytes / 1024, data_size_bytes / (1024 * 1024));
     MPRINTF("Available space      : %lu KB (%lu MB)\n\r", available_size_bytes / 1024, available_size_bytes / (1024 * 1024));
     MPRINTF("Used space           : %lu KB (%lu MB)\n\r", used_size_bytes / 1024, used_size_bytes / (1024 * 1024));
 
-    // Calculate and display usage percentage
-    if (total_size_bytes > 0)
+    // Calculate and display usage percentage based on data space
+    if (data_size_bytes > 0)
     {
-      ULONG usage_percent = (used_size_bytes * 100) / total_size_bytes;
+      ULONG usage_percent = (used_size_bytes * 100) / data_size_bytes;
       MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, 100 - usage_percent);
     }
   }
@@ -458,6 +481,10 @@ static void _Print_statistics(T_filex_stats *stats, const char *operation_name)
   MPRINTF("\n=== %s Statistics ===\n\r", operation_name);
   MPRINTF("Operations: %lu\n\r", stats->operations_count);
   MPRINTF("Errors: %lu\n\r", stats->errors_count);
+  if (stats->crc_errors > 0)
+  {
+    MPRINTF("CRC errors: %lu\n\r", stats->crc_errors);
+  }
   MPRINTF("Bytes processed: %lu (%lu KB)\n\r", stats->bytes_processed, stats->bytes_processed / 1024);
   MPRINTF("Total time: %lu us\n\r", stats->total_time);
 
@@ -639,8 +666,11 @@ static void _Do_write_test(void)
 
     MPRINTF("opened: %5u us, ", open_time);
 
+    // Initialize CRC calculation
+    uint32_t crc = 0xFFFFFFFF;
+
     // Write file data with I/O timing
-    uint32_t bytes_to_write = g_test_file_size;
+    uint32_t bytes_to_write = g_test_file_size > CRC32_SIZE ? g_test_file_size - CRC32_SIZE : 0;
     uint32_t total_written  = 0;
     bool     write_error    = false;
     T_sys_timestump io_start_ts, io_end_ts;
@@ -649,7 +679,13 @@ static void _Do_write_test(void)
     {
       uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
 
-      _Fill_test_buffer(g_test_buffer, chunk_size, i);
+      _Fill_test_buffer(g_test_buffer, chunk_size, i, total_written);
+
+      // Update CRC with this chunk
+      if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+      {
+        crc = CRC32_IEEE802_3(crc, g_test_buffer, chunk_size);
+      }
 
       Get_hw_timestump(&io_start_ts);
       status = fx_file_write(&file, g_test_buffer, chunk_size);
@@ -668,6 +704,33 @@ static void _Do_write_test(void)
                 total_written, _Get_filex_error_description(status), io_time, operation_time);
         write_error = true;
         stats.errors_count++;
+      }
+    }
+
+    if (!write_error)
+    {
+      // Write CRC32 at the end of file if verification enabled
+      if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+      {
+        uint32_t crc32_value = ~crc;
+        Get_hw_timestump(&io_start_ts);
+        status = fx_file_write(&file, &crc32_value, CRC32_SIZE);
+        Get_hw_timestump(&io_end_ts);
+        io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
+
+        if (status == FX_SUCCESS)
+        {
+          total_written += CRC32_SIZE;
+        }
+        else
+        {
+          Get_hw_timestump(&file_end_ts);
+          operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+          MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r",
+                  _Get_filex_error_description(status), io_time, operation_time);
+          write_error = true;
+          stats.errors_count++;
+        }
       }
     }
 
@@ -699,8 +762,17 @@ static void _Do_write_test(void)
           speed_kbps = 0;
         }
 
-        MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s\n\r",
+        MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s",
                 close_time, io_time, operation_time, speed_kbps);
+
+        // Show CRC32 if verification enabled
+        if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+        {
+          uint32_t final_crc = ~crc;
+          MPRINTF(", CRC32: 0x%08lX", final_crc);
+        }
+        MPRINTF("\n\r");
+
         stats.bytes_processed += total_written;
       }
     }
@@ -803,8 +875,12 @@ static void _Do_read_test(void)
 
     MPRINTF("opened: %5u us, ", open_time);
 
+    // Initialize CRC calculation
+    uint32_t crc = 0xFFFFFFFF;
+    bool     crc_valid = true;
+
     // Read file data with I/O timing
-    uint32_t bytes_to_read = g_test_file_size;
+    uint32_t bytes_to_read = g_test_file_size > CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
     uint32_t total_read    = 0;
     bool     read_error    = false;
     bool     verify_error  = false;
@@ -821,18 +897,24 @@ static void _Do_read_test(void)
 
       if (status == FX_SUCCESS && actual_read == chunk_size)
       {
-        total_read += actual_read;
-
-        // Verify data if enabled
-        if (g_verify_data && !_Verify_test_buffer(g_test_buffer, actual_read, i))
+        // Verify data if enabled (use offset before incrementing total_read)
+        if (g_verify_data && !_Verify_test_buffer(g_test_buffer, actual_read, i, total_read))
         {
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
           MPRINTF("FAILED (verify at offset %lu): Data verification failed (I/O: %6u us, total: %6u us)\n\r",
-                  total_read - actual_read, io_time, operation_time);
+                  total_read, io_time, operation_time);
           verify_error = true;
           stats.errors_count++;
           break;
+        }
+
+        total_read += actual_read;
+
+        // Update CRC with this chunk if verification enabled
+        if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+        {
+          crc = CRC32_IEEE802_3(crc, g_test_buffer, actual_read);
         }
       }
       else
@@ -844,6 +926,32 @@ static void _Do_read_test(void)
         read_error = true;
         stats.errors_count++;
         break;
+      }
+    }
+
+    // Read and verify CRC32 if enabled
+    if (!read_error && !verify_error && g_verify_data && g_test_file_size >= CRC32_SIZE)
+    {
+      uint32_t file_crc32, calculated_crc32;
+      Get_hw_timestump(&io_start_ts);
+      status = fx_file_read(&file, &file_crc32, CRC32_SIZE, &actual_read);
+      Get_hw_timestump(&io_end_ts);
+      io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
+
+      if (status == FX_SUCCESS && actual_read == CRC32_SIZE)
+      {
+        calculated_crc32 = ~crc;
+        if (file_crc32 != calculated_crc32)
+        {
+          crc_valid = false;
+          stats.crc_errors++;
+        }
+        total_read += actual_read;
+      }
+      else
+      {
+        crc_valid = false;
+        stats.crc_errors++;
       }
     }
 
@@ -873,8 +981,24 @@ static void _Do_read_test(void)
         speed_kbps = 0;
       }
 
-      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s\n\r",
+      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s",
               close_time, io_time, operation_time, speed_kbps);
+
+      // Show CRC32 status if verification enabled
+      if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+      {
+        if (crc_valid)
+        {
+          uint32_t calculated_crc = ~crc;
+          MPRINTF(", CRC32: OK (0x%08lX)", calculated_crc);
+        }
+        else
+        {
+          MPRINTF(", CRC32: FAILED");
+        }
+      }
+      MPRINTF("\n\r");
+
       stats.bytes_processed += total_read;
     }
 
@@ -1110,6 +1234,17 @@ void Do_FileX_init(uint8_t keycode)
 
   MPRINTF(VT100_CLEAR_AND_HOME);
   MPRINTF("=== FileX with LevelX Initialization ===\n\r");
+
+  // Check if media is already open
+  if (g_fx_spi_nor_media.fx_media_id == FX_MEDIA_ID)
+  {
+    MPRINTF("FileX media is already initialized and open.\n\r");
+    _Print_filex_info();
+    MPRINTF("\nPress any key to continue...\n\r");
+    uint8_t key;
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
 
   // Allocate memory for FileX operations
   media_memory = App_malloc(FILEX_MEMORY_BUFFER_SIZE);

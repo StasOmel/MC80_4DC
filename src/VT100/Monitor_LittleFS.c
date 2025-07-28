@@ -949,21 +949,7 @@ static void _Do_write_test(void)
       // Update CRC with this block
       if (g_enable_data_verification)
       {
-        for (uint32_t i = 0; i < bytes_to_write; i++)
-        {
-          crc ^= buffer[i];
-          for (uint8_t j = 0; j < 8; j++)
-          {
-            if (crc & 1)
-            {
-              crc = (crc >> 1) ^ 0xEDB88320;
-            }
-            else
-            {
-              crc >>= 1;
-            }
-          }
-        }
+        crc = CRC32_IEEE802_3(crc, buffer, bytes_to_write);
       }
 
       LITTLEFS_DEBUG_PRINTF("Writing block %u: %u bytes to %s\n\r", block, bytes_to_write, filename);
@@ -1296,21 +1282,7 @@ static void _Do_read_test(void)
       // Update CRC with this block
       if (g_enable_data_verification)
       {
-        for (uint32_t i = 0; i < read_result; i++)
-        {
-          crc ^= buffer[i];
-          for (uint8_t j = 0; j < 8; j++)
-          {
-            if (crc & 1)
-            {
-              crc = (crc >> 1) ^ 0xEDB88320;
-            }
-            else
-            {
-              crc >>= 1;
-            }
-          }
-        }
+        crc = CRC32_IEEE802_3(crc, buffer, read_result);
       }
 
       bytes_read += read_result;

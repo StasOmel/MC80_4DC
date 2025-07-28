@@ -383,3 +383,33 @@ uint16_t CRC16_0x755B(uint8_t *buf, uint32_t len, uint16_t seed)
 {
   return crc16_unreflected(buf, len, seed, crc16_precompiled_755B);
 }
+
+/*-----------------------------------------------------------------------------------------------------
+  Calculate CRC32 for data buffer using IEEE 802.3 polynomial (0xEDB88320)
+  This function implements the same algorithm as used in LittleFS and FileX
+
+  \param crc - initial CRC value (typically 0xFFFFFFFF)
+  \param data - pointer to data buffer
+  \param size - size of data buffer in bytes
+
+  \return uint32_t - calculated CRC32 value
+-----------------------------------------------------------------------------------------------------*/
+uint32_t CRC32_IEEE802_3(uint32_t crc, const uint8_t *data, uint32_t size)
+{
+  for (uint32_t i = 0; i < size; i++)
+  {
+    crc ^= data[i];
+    for (uint8_t j = 0; j < 8; j++)
+    {
+      if (crc & 1)
+      {
+        crc = (crc >> 1) ^ 0xEDB88320;
+      }
+      else
+      {
+        crc >>= 1;
+      }
+    }
+  }
+  return crc;
+}
