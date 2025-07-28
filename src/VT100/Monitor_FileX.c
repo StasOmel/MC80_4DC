@@ -8,6 +8,7 @@
 #define MAX_PATH_LENGTH                    256
 #define MAX_FILENAME_LENGTH                64
 #define MAX_DIR_STACK_DEPTH                32
+#define FILEX_MEMORY_BUFFER_SIZE           (32 * 1024)   // 32KB
 
 // Test data patterns
 enum
@@ -50,6 +51,9 @@ typedef struct
 
 // FileX media instance
 extern FX_MEDIA g_fx_spi_nor_media;
+
+// Global pointer to FileX memory buffer
+static uint8_t *g_filex_memory_buffer = NULL;
 
 // Menu definition
 const T_VT100_Menu_item MENU_FileX_items[] = {
@@ -878,9 +882,9 @@ static void _Do_format_test(void)
 
   if (status == FX_SUCCESS)
   {
-    // Reopen the media
+    // Reopen the media with the saved memory buffer
     status = fx_media_open(&g_fx_spi_nor_media, "FileX Media", MC80_FileX_LevelX_DeviceDriver,
-                          (void*)&g_rm_filex_levelx_NOR_instance, NULL, 0);
+                          (void*)&g_rm_filex_levelx_NOR_instance, g_filex_memory_buffer, FILEX_MEMORY_BUFFER_SIZE);
   }
 
   Get_hw_timestump(&end_ts);
@@ -951,11 +955,23 @@ void Do_FileX_init(uint8_t keycode)
   GET_MCBL;
   UINT status;
   T_sys_timestump start_ts, end_ts;
+  uint8_t *media_memory;
 
   FSP_PARAMETER_NOT_USED(keycode);
 
   MPRINTF(VT100_CLEAR_AND_HOME);
   MPRINTF("=== FileX with LevelX Initialization ===\n\r");
+
+  // Allocate memory for FileX operations
+  media_memory = App_malloc(FILEX_MEMORY_BUFFER_SIZE);
+  if (media_memory == NULL)
+  {
+    MPRINTF("Error: Failed to allocate memory for FileX operations\n\r");
+    MPRINTF("\nPress any key to continue...\n\r");
+    uint8_t key;
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
 
   Get_hw_timestump(&start_ts);
 
@@ -963,7 +979,7 @@ void Do_FileX_init(uint8_t keycode)
   status = fx_media_open(&g_fx_spi_nor_media, "FileX NOR Media",
                         MC80_FileX_LevelX_DeviceDriver,
                         (void*)&g_rm_filex_levelx_NOR_instance,
-                        NULL, 0);
+                        media_memory, FILEX_MEMORY_BUFFER_SIZE);
 
   Get_hw_timestump(&end_ts);
   uint32_t init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
@@ -971,11 +987,66 @@ void Do_FileX_init(uint8_t keycode)
   if (status == FX_SUCCESS)
   {
     MPRINTF("FileX media initialized successfully in %lu ms\n\r", init_time);
+    g_filex_memory_buffer = media_memory;  // Save pointer for later use
     _Print_filex_info();
+  }
+  else if (status == FX_BOOT_ERROR)
+  {
+    MPRINTF("FileX media initialization failed: %s\n\r", _Get_filex_error_description(status));
+    MPRINTF("Media appears to be unformatted. Attempting to format...\n\r");
+
+    // Close media first
+    fx_media_close(&g_fx_spi_nor_media);
+
+    // Try to format the media
+    UINT format_status = fx_media_format(&g_fx_spi_nor_media,
+                                        MC80_FileX_LevelX_DeviceDriver,
+                                        (void*)&g_rm_filex_levelx_NOR_instance,
+                                        (UCHAR*)g_test_buffer,
+                                        sizeof(g_test_buffer),
+                                        "FILEX_NOR",
+                                        1,    // Number of FATs
+                                        32,   // Directory entries
+                                        0,    // Hidden sectors
+                                        0,    // Total sectors (0 = use all available)
+                                        512,  // Bytes per sector
+                                        1,    // Sectors per cluster
+                                        1,    // Heads
+                                        1);   // Sectors per track
+
+    if (format_status == FX_SUCCESS)
+    {
+      MPRINTF("Format successful! Reopening media...\n\r");
+
+      // Try to reopen the formatted media
+      status = fx_media_open(&g_fx_spi_nor_media, "FileX NOR Media",
+                            MC80_FileX_LevelX_DeviceDriver,
+                            (void*)&g_rm_filex_levelx_NOR_instance,
+                            media_memory, FILEX_MEMORY_BUFFER_SIZE);
+
+      if (status == FX_SUCCESS)
+      {
+        MPRINTF("FileX media formatted and opened successfully!\n\r");
+        g_filex_memory_buffer = media_memory;
+        _Print_filex_info();
+      }
+      else
+      {
+        MPRINTF("Failed to reopen formatted media: %s\n\r", _Get_filex_error_description(status));
+        App_free(media_memory);
+      }
+    }
+    else
+    {
+      MPRINTF("Format failed: %s\n\r", _Get_filex_error_description(format_status));
+      App_free(media_memory);
+    }
   }
   else
   {
     MPRINTF("FileX media initialization failed: %s\n\r", _Get_filex_error_description(status));
+    // Free allocated memory on failure
+    App_free(media_memory);
   }
 
   MPRINTF("\nPress any key to continue...\n\r");
