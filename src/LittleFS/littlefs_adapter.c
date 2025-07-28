@@ -276,6 +276,7 @@ int _lfs_prog(const struct lfs_config *c, lfs_block_t block, lfs_off_t off, cons
   if (size > 0 && buffer != NULL)
   {
     const uint8_t *data = (const uint8_t *)buffer;
+    FSP_PARAMETER_NOT_USED(data);  // Suppress warning when debug is disabled
     LITTLEFS_DEBUG_PRINTF("Write data: %02X %02X %02X %02X...\n",
                           data[0],
                           size > 1 ? data[1] : 0,

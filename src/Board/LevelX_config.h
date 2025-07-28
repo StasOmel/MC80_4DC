@@ -1,28 +1,36 @@
 #ifndef LEVELX_CONFIG_H
 #define LEVELX_CONFIG_H
 
-#define G_FX_MEDIA_OSPI_NOR_MEDIA_MEMORY_SIZE    (512)
+#define G_FX_MEDIA_OSPI_NOR_MEDIA_MEMORY_SIZE    (2048)  // Increased buffer size for better performance
 #define G_FX_MEDIA_OSPI_NOR_VOLUME_NAME          ("Volume 1")
 #define G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS       (1)
-#define G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES    (256)
+#define G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES    (512)   // Increased for more files
 #define G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS       (0)
-#define G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS        (57337)
+#define G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS        (65536) // Corrected: 32MB / 512 bytes per sector
 #define G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR     (512)
 #define G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER  (1)
 #define G_FX_MEDIA_OSPI_NOR_VOLUME_SERIAL_NUMBER (12345)
 #define G_FX_MEDIA_OSPI_NOR_BOUNDARY_UNIT        (128)
 
+// === LevelX NOR Flash Memory Configuration ===
+// Hardware configuration for MX25UM25645G (32MB OSPI Flash)
+#define LEVELX_FLASH_TOTAL_SIZE_BYTES    (33554432)  // 32MB = 33,554,432 bytes
+#define LEVELX_BLOCK_SIZE_BYTES          (65536)     // 64KB per block (LevelX block size)
+#define LEVELX_BYTES_PER_WORD            (4)         // 4 bytes per ULONG word
+#define LEVELX_TOTAL_BLOCKS              (LEVELX_FLASH_TOTAL_SIZE_BYTES / LEVELX_BLOCK_SIZE_BYTES)  // 512 blocks
+#define LEVELX_WORDS_PER_BLOCK           (LEVELX_BLOCK_SIZE_BYTES / LEVELX_BYTES_PER_WORD)          // 16384 words per block
+
+// OSPI Protocol Selection
+// Choose one of the following protocols for OSPI communication:
+// - MC80_OSPI_PROTOCOL_1S_1S_1S: Standard SPI mode (most compatible, slower performance)
+// - MC80_OSPI_PROTOCOL_8D_8D_8D: Octal DTR mode (highest performance, requires stable setup)
+#define LEVELX_OSPI_PROTOCOL    MC80_OSPI_PROTOCOL_1S_1S_1S
+
+
 // Forward declarations for callback functions
-void rm_filex_levelx_nor_spi_callback(rm_levelx_nor_spi_callback_args_t *p_args);
 void g_rm_filex_levelx_NOR_callback(rm_filex_levelx_nor_callback_args_t *p_args);
 
 // External declarations for LevelX NOR OSPI configuration structures
-
-// LevelX NOR SPI instance control structure
-extern rm_levelx_nor_spi_instance_ctrl_t g_rm_levelx_nor_OSPI_ctrl;
-
-// LevelX NOR SPI configuration
-extern rm_levelx_nor_spi_cfg_t g_rm_levelx_nor_OSPI_cfg;
 
 // LevelX NOR flash instance
 extern LX_NOR_FLASH g_lx_NOR;
