@@ -2,7 +2,7 @@
 #include "LevelX_config.h"
 
 #define FILEX_TEST_FILES_COUNT_DEFAULT 10
-#define FILEX_TEST_FILE_SIZE_DEFAULT   (10 * 1024)  // 4KB
+#define FILEX_TEST_FILE_SIZE_DEFAULT   (10 * 1024)  // 10KB
 #define FILEX_TEST_BLOCK_SIZE_DEFAULT  (64 * 1024)  // 64KB
 #define DEFAULT_FILL_CONSTANT          0xAA
 #define MAX_PATH_LENGTH                256
