@@ -1,38 +1,38 @@
 #include "App.h"
 #include "LevelX_config.h"
 
-#define FILEX_TEST_FILES_COUNT_DEFAULT     100
-#define FILEX_TEST_FILE_SIZE_DEFAULT       (4 * 1024)    // 4KB
-#define FILEX_TEST_BLOCK_SIZE_DEFAULT      (64 * 1024)   // 64KB
-#define DEFAULT_FILL_CONSTANT              0xAA
-#define MAX_PATH_LENGTH                    256
-#define MAX_FILENAME_LENGTH                64
-#define MAX_DIR_STACK_DEPTH                32
-#define FILEX_MEMORY_BUFFER_SIZE           (32 * 1024)   // 32KB
-#define FILEX_TEST_BUFFER_SIZE             (16 * 1024)   // 16KB for test operations
+#define FILEX_TEST_FILES_COUNT_DEFAULT 10
+#define FILEX_TEST_FILE_SIZE_DEFAULT   (10 * 1024)  // 4KB
+#define FILEX_TEST_BLOCK_SIZE_DEFAULT  (64 * 1024)  // 64KB
+#define DEFAULT_FILL_CONSTANT          0xAA
+#define MAX_PATH_LENGTH                256
+#define MAX_FILENAME_LENGTH            64
+#define MAX_DIR_STACK_DEPTH            32
+#define FILEX_MEMORY_BUFFER_SIZE       (32 * 1024)  // 32KB
+#define FILEX_TEST_BUFFER_SIZE         (16 * 1024)  // 16KB for test operations
 
 // Test data patterns
 enum
 {
-  DATA_PATTERN_CONSTANT   = 0,
+  DATA_PATTERN_CONSTANT    = 0,
   DATA_PATTERN_INCREMENTAL = 1,
-  DATA_PATTERN_RANDOM     = 2,
-  DATA_PATTERN_CHECKSUM   = 3
+  DATA_PATTERN_RANDOM      = 2,
+  DATA_PATTERN_CHECKSUM    = 3
 };
 
 // Test configuration variables
-static uint32_t g_test_files_count         = FILEX_TEST_FILES_COUNT_DEFAULT;
-static uint32_t g_test_file_size           = FILEX_TEST_FILE_SIZE_DEFAULT;
-static uint32_t g_test_block_size          = FILEX_TEST_BLOCK_SIZE_DEFAULT;
-static uint32_t g_data_pattern             = DATA_PATTERN_CONSTANT;
-static uint32_t g_fill_constant            = DEFAULT_FILL_CONSTANT;
-static bool     g_verify_data              = true;
+static uint32_t g_test_files_count = FILEX_TEST_FILES_COUNT_DEFAULT;
+static uint32_t g_test_file_size   = FILEX_TEST_FILE_SIZE_DEFAULT;
+static uint32_t g_test_block_size  = FILEX_TEST_BLOCK_SIZE_DEFAULT;
+static uint32_t g_data_pattern     = DATA_PATTERN_CONSTANT;
+static uint32_t g_fill_constant    = DEFAULT_FILL_CONSTANT;
+static bool     g_verify_data      = true;
 
 // Directory navigation stack
 typedef struct
 {
-  char     path[MAX_PATH_LENGTH];
-  uint8_t  depth;
+  char    path[MAX_PATH_LENGTH];
+  uint8_t depth;
 } T_dir_entry;
 
 static T_dir_entry g_dir_stack[MAX_DIR_STACK_DEPTH];
@@ -54,10 +54,10 @@ typedef struct
 extern FX_MEDIA g_fx_spi_nor_media;
 
 // Global pointer to FileX memory buffer
-static uint8_t *g_filex_memory_buffer = NULL;
+static uint8_t *g_filex_memory_buffer      = NULL;
 
 // Global pointer to test buffer for file operations
-static uint8_t *g_test_buffer = NULL;
+static uint8_t *g_test_buffer              = NULL;
 
 // Menu definition
 const T_VT100_Menu_item MENU_FileX_items[] = {
@@ -85,24 +85,24 @@ const T_VT100_Menu MENU_FileX = {
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-static void _Do_write_test(void);
-static void _Do_read_test(void);
-static void _Do_delete_test(void);
-static void _Do_format_test(void);
-static void _Do_full_test(void);
-static void _Print_filex_info(void);
-static void _Print_test_config(void);
-static void _Print_statistics(T_filex_stats *stats, const char *operation_name);
-static void _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index);
-static bool _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index);
-static bool _Push_dir_to_stack(const char *path, uint8_t depth);
-static bool _Pop_dir_from_stack(char *path, uint8_t *depth);
-static void _Print_tree_indent(uint8_t depth);
-static void _List_directory_tree(const char *root_path, uint8_t max_depth);
+static void        _Do_write_test(void);
+static void        _Do_read_test(void);
+static void        _Do_delete_test(void);
+static void        _Do_format_test(void);
+static void        _Do_full_test(void);
+static void        _Print_filex_info(void);
+static void        _Print_test_config(void);
+static void        _Print_statistics(T_filex_stats *stats, const char *operation_name);
+static void        _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index);
+static bool        _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index);
+static bool        _Push_dir_to_stack(const char *path, uint8_t depth);
+static bool        _Pop_dir_from_stack(char *path, uint8_t *depth);
+static void        _Print_tree_indent(uint8_t depth);
+static void        _List_directory_tree(const char *root_path, uint8_t max_depth);
 static const char *_Get_pattern_name(uint32_t pattern);
 static const char *_Get_filex_error_description(UINT status);
-static bool _Allocate_test_buffer(void);
-static void _Free_test_buffer(void);
+static bool        _Allocate_test_buffer(void);
+static void        _Free_test_buffer(void);
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Helper function to push directory to stack
@@ -323,15 +323,15 @@ static void _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_inde
       break;
 
     case DATA_PATTERN_CHECKSUM:
+    {
+      uint32_t checksum = file_index;
+      for (uint32_t i = 0; i < size; i++)
       {
-        uint32_t checksum = file_index;
-        for (uint32_t i = 0; i < size; i++)
-        {
-          buffer[i] = (uint8_t)(checksum & 0xFF);
-          checksum = (checksum + 1) * 0x1234567;
-        }
+        buffer[i] = (uint8_t)(checksum & 0xFF);
+        checksum  = (checksum + 1) * 0x1234567;
       }
-      break;
+    }
+    break;
 
     default:
       memset(buffer, 0x00, size);
@@ -385,15 +385,15 @@ static void _Print_filex_info(void)
   UINT status = fx_media_space_available(&g_fx_spi_nor_media, &available_clusters);
   if (status == FX_SUCCESS)
   {
-    total_clusters = g_fx_spi_nor_media.fx_media_total_clusters;
-    sectors_per_cluster = g_fx_spi_nor_media.fx_media_sectors_per_cluster;
-    bytes_per_sector = g_fx_spi_nor_media.fx_media_bytes_per_sector;
+    total_clusters             = g_fx_spi_nor_media.fx_media_total_clusters;
+    sectors_per_cluster        = g_fx_spi_nor_media.fx_media_sectors_per_cluster;
+    bytes_per_sector           = g_fx_spi_nor_media.fx_media_bytes_per_sector;
 
     // Calculate sizes in bytes first to avoid overflow
-    ULONG cluster_size_bytes = sectors_per_cluster * bytes_per_sector;
-    ULONG total_size_bytes = total_clusters * cluster_size_bytes;
+    ULONG cluster_size_bytes   = sectors_per_cluster * bytes_per_sector;
+    ULONG total_size_bytes     = total_clusters * cluster_size_bytes;
     ULONG available_size_bytes = available_clusters * cluster_size_bytes;
-    ULONG used_size_bytes = total_size_bytes - available_size_bytes;
+    ULONG used_size_bytes      = total_size_bytes - available_size_bytes;
 
     MPRINTF("Media ID             : 0x%lX\n\r", g_fx_spi_nor_media.fx_media_id);
     MPRINTF("Total clusters       : %lu\n\r", total_clusters);
@@ -431,10 +431,10 @@ static void _Print_test_config(void)
   GET_MCBL;
 
   MPRINTF("\n=== Test Configuration ===\n\r");
-  MPRINTF("Files count: %lu\n\r", g_test_files_count);
-  MPRINTF("File size: %lu bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
-  MPRINTF("Block size: %lu bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
-  MPRINTF("Data pattern: %s", _Get_pattern_name(g_data_pattern));
+  MPRINTF("Files count      : %lu\n\r", g_test_files_count);
+  MPRINTF("File size        : %lu bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
+  MPRINTF("Block size       : %lu bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
+  MPRINTF("Data pattern     : %s", _Get_pattern_name(g_data_pattern));
   if (g_data_pattern == DATA_PATTERN_CONSTANT)
   {
     MPRINTF(" (0x%02X)", (uint8_t)g_fill_constant);
@@ -484,12 +484,12 @@ static void _Print_statistics(T_filex_stats *stats, const char *operation_name)
 static void _List_directory_tree(const char *root_path, uint8_t max_depth)
 {
   GET_MCBL;
-  CHAR entry_name[FX_MAX_LONG_NAME_LEN];
-  UINT attributes;
-  ULONG size;
-  UINT year, month, day, hour, minute, second;
-  UINT status;
-  char current_path[MAX_PATH_LENGTH];
+  CHAR    entry_name[FX_MAX_LONG_NAME_LEN];
+  UINT    attributes;
+  ULONG   size;
+  UINT    year, month, day, hour, minute, second;
+  UINT    status;
+  char    current_path[MAX_PATH_LENGTH];
   uint8_t current_depth;
 
   // Initialize stack and start with root directory
@@ -567,11 +567,11 @@ static void _List_directory_tree(const char *root_path, uint8_t max_depth)
 static void _Do_write_test(void)
 {
   GET_MCBL;
-  T_filex_stats stats = {0};
+  T_filex_stats   stats = { 0 };
   T_sys_timestump start_ts, end_ts;
-  FX_FILE file;
-  CHAR filename[MAX_FILENAME_LENGTH];
-  UINT status;
+  FX_FILE         file;
+  CHAR            filename[MAX_FILENAME_LENGTH];
+  UINT            status;
 
   MPRINTF("\n=== FileX Write Test ===\n\r");
   _Print_test_config();
@@ -587,7 +587,7 @@ static void _Do_write_test(void)
   stats.min_time = UINT32_MAX;
 
   // Create test directory
-  status = fx_directory_create(&g_fx_spi_nor_media, "test_files");
+  status         = fx_directory_create(&g_fx_spi_nor_media, "test_files");
   if (status != FX_SUCCESS && status != FX_ALREADY_CREATED)
   {
     MPRINTF("Error creating test directory: %s\n\r", _Get_filex_error_description(status));
@@ -619,13 +619,12 @@ static void _Do_write_test(void)
       if (status == FX_SUCCESS)
       {
         uint32_t bytes_to_write = g_test_file_size;
-        uint32_t total_written = 0;
-        bool write_error = false;
+        uint32_t total_written  = 0;
+        bool     write_error    = false;
 
         while (total_written < bytes_to_write && !write_error)
         {
-          uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ?
-                                FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
+          uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
 
           _Fill_test_buffer(g_test_buffer, chunk_size, i);
 
@@ -701,12 +700,12 @@ static void _Do_write_test(void)
 static void _Do_read_test(void)
 {
   GET_MCBL;
-  T_filex_stats stats = {0};
+  T_filex_stats   stats = { 0 };
   T_sys_timestump start_ts, end_ts;
-  FX_FILE file;
-  CHAR filename[MAX_FILENAME_LENGTH];
-  UINT status;
-  ULONG actual_read;
+  FX_FILE         file;
+  CHAR            filename[MAX_FILENAME_LENGTH];
+  UINT            status;
+  ULONG           actual_read;
 
   MPRINTF("\n=== FileX Read Test ===\n\r");
   _Print_test_config();
@@ -743,14 +742,14 @@ static void _Do_read_test(void)
     if (status == FX_SUCCESS)
     {
       uint32_t bytes_to_read = g_test_file_size;
-      uint32_t total_read = 0;
-      bool read_error = false;
-      bool verify_error = false;
+      uint32_t total_read    = 0;
+      bool     read_error    = false;
+      bool     verify_error  = false;
 
-        while (total_read < bytes_to_read && !read_error)
-        {
-          uint32_t chunk_size = (bytes_to_read - total_read > FILEX_TEST_BUFFER_SIZE) ?
-                                FILEX_TEST_BUFFER_SIZE : (bytes_to_read - total_read);        status = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
+      while (total_read < bytes_to_read && !read_error)
+      {
+        uint32_t chunk_size = (bytes_to_read - total_read > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_read - total_read);
+        status              = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
         if (status == FX_SUCCESS && actual_read == chunk_size)
         {
           total_read += actual_read;
@@ -825,10 +824,10 @@ static void _Do_read_test(void)
 static void _Do_delete_test(void)
 {
   GET_MCBL;
-  T_filex_stats stats = {0};
+  T_filex_stats   stats = { 0 };
   T_sys_timestump start_ts, end_ts;
-  CHAR filename[MAX_FILENAME_LENGTH];
-  UINT status;
+  CHAR            filename[MAX_FILENAME_LENGTH];
+  UINT            status;
 
   MPRINTF("\n=== FileX Delete Test ===\n\r");
 
@@ -909,7 +908,7 @@ static void _Do_format_test(void)
 {
   GET_MCBL;
   T_sys_timestump start_ts, end_ts;
-  UINT status;
+  UINT            status;
 
   MPRINTF("\n=== FileX Format Test ===\n\r");
   MPRINTF("WARNING: This will erase all data on the media!\n\r");
@@ -938,25 +937,25 @@ static void _Do_format_test(void)
 
   // Format the media using LevelX NOR driver
   status = fx_media_format(&g_fx_spi_nor_media,
-                          MC80_FileX_LevelX_DeviceDriver,                    // Driver function
-                          (void*)&g_rm_filex_levelx_NOR_instance,           // Driver info pointer
-                          (UCHAR*)g_test_buffer,                             // Memory pointer for work area
-                          FILEX_TEST_BUFFER_SIZE,                            // Memory size
-                          G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,                  // Volume name
-                          G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,               // Number of FATs
-                          G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,            // Directory entries
-                          G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,               // Hidden sectors
-                          G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,                // Total sectors
-                          G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,             // Bytes per sector
-                          G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,          // Sectors per cluster
-                          1,                                                 // Heads
-                          1);                                                // Sectors per track
+                           MC80_FileX_LevelX_DeviceDriver,           // Driver function
+                           (void *)&g_rm_filex_levelx_NOR_instance,  // Driver info pointer
+                           (UCHAR *)g_test_buffer,                   // Memory pointer for work area
+                           FILEX_TEST_BUFFER_SIZE,                   // Memory size
+                           G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
+                           G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
+                           G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
+                           G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
+                           G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
+                           G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
+                           G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
+                           1,                                        // Heads
+                           1);                                       // Sectors per track
 
   if (status == FX_SUCCESS)
   {
     // Reopen the media with the saved memory buffer
     status = fx_media_open(&g_fx_spi_nor_media, "FileX Media", MC80_FileX_LevelX_DeviceDriver,
-                          (void*)&g_rm_filex_levelx_NOR_instance, g_filex_memory_buffer, FILEX_MEMORY_BUFFER_SIZE);
+                           (void *)&g_rm_filex_levelx_NOR_instance, g_filex_memory_buffer, FILEX_MEMORY_BUFFER_SIZE);
   }
 
   Get_hw_timestump(&end_ts);
@@ -1025,9 +1024,9 @@ static void _Do_full_test(void)
 void Do_FileX_init(uint8_t keycode)
 {
   GET_MCBL;
-  UINT status;
+  UINT            status;
   T_sys_timestump start_ts, end_ts;
-  uint8_t *media_memory;
+  uint8_t        *media_memory;
 
   FSP_PARAMETER_NOT_USED(keycode);
 
@@ -1049,9 +1048,9 @@ void Do_FileX_init(uint8_t keycode)
 
   // Initialize FileX media
   status = fx_media_open(&g_fx_spi_nor_media, "FileX NOR Media",
-                        MC80_FileX_LevelX_DeviceDriver,
-                        (void*)&g_rm_filex_levelx_NOR_instance,
-                        media_memory, FILEX_MEMORY_BUFFER_SIZE);
+                         MC80_FileX_LevelX_DeviceDriver,
+                         (void *)&g_rm_filex_levelx_NOR_instance,
+                         media_memory, FILEX_MEMORY_BUFFER_SIZE);
 
   Get_hw_timestump(&end_ts);
   uint32_t init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
@@ -1083,19 +1082,19 @@ void Do_FileX_init(uint8_t keycode)
 
     // Try to format the media
     UINT format_status = fx_media_format(&g_fx_spi_nor_media,
-                                        MC80_FileX_LevelX_DeviceDriver,
-                                        (void*)&g_rm_filex_levelx_NOR_instance,
-                                        (UCHAR*)g_test_buffer,
-                                        FILEX_TEST_BUFFER_SIZE,
-                                        G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
-                                        G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
-                                        G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
-                                        G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
-                                        G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
-                                        G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
-                                        G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
-                                        1,    // Heads
-                                        1);   // Sectors per track
+                                         MC80_FileX_LevelX_DeviceDriver,
+                                         (void *)&g_rm_filex_levelx_NOR_instance,
+                                         (UCHAR *)g_test_buffer,
+                                         FILEX_TEST_BUFFER_SIZE,
+                                         G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
+                                         G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
+                                         G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
+                                         G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
+                                         G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
+                                         G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
+                                         G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
+                                         1,                                        // Heads
+                                         1);                                       // Sectors per track
 
     if (format_status == FX_SUCCESS)
     {
@@ -1103,9 +1102,9 @@ void Do_FileX_init(uint8_t keycode)
 
       // Try to reopen the formatted media
       status = fx_media_open(&g_fx_spi_nor_media, "FileX NOR Media",
-                            MC80_FileX_LevelX_DeviceDriver,
-                            (void*)&g_rm_filex_levelx_NOR_instance,
-                            media_memory, FILEX_MEMORY_BUFFER_SIZE);
+                             MC80_FileX_LevelX_DeviceDriver,
+                             (void *)&g_rm_filex_levelx_NOR_instance,
+                             media_memory, FILEX_MEMORY_BUFFER_SIZE);
 
       if (status == FX_SUCCESS)
       {
@@ -1171,6 +1170,157 @@ void Do_FileX_list_files(uint8_t keycode)
   g_stack_top = 0;  // Reset directory stack
   _List_directory_tree("/", 5);
 
+  // Interactive menu for file operations
+  uint8_t choice;
+  while (true)
+  {
+    // Show menu at the top
+    MPRINTF("\n\rOptions:\n\r");
+    MPRINTF("<1> - Read file as HEX dump\n\r");
+    MPRINTF("<ESC> - Return to menu\n\r");
+    MPRINTF("Choice: ");
+
+    if (WAIT_CHAR(&choice, ms_to_ticks(30000)) == RES_OK)
+    {
+      if (choice == '1')
+      {
+        // Get filename from user
+        char filename[MAX_FILENAME_LENGTH];
+        if (VT100_input_filename(filename, MAX_FILENAME_LENGTH, "test_001.dat"))
+        {
+          // Add leading slash if not present
+          char full_filename[MAX_FILENAME_LENGTH + 1];
+          if (filename[0] != '/')
+          {
+            snprintf(full_filename, sizeof(full_filename), "/%s", filename);
+          }
+          else
+          {
+            strncpy(full_filename, filename, sizeof(full_filename) - 1);
+            full_filename[sizeof(full_filename) - 1] = '\0';
+          }
+
+          MPRINTF("Opening file: %s\n\r", full_filename);
+
+          // Open file for reading
+          FX_FILE file;
+          UINT    status = fx_file_open(&g_fx_spi_nor_media, &file, full_filename, FX_OPEN_FOR_READ);
+          if (status != FX_SUCCESS)
+          {
+            MPRINTF("Failed to open file: %s\n\r", _Get_filex_error_description(status));
+          }
+          else
+          {
+            // Get file size
+            ULONG file_size;
+            status = fx_file_extended_seek(&file, 0);
+            if (status == FX_SUCCESS)
+            {
+              file_size = file.fx_file_current_file_size;
+              MPRINTF("File size: %lu bytes\n\r", file_size);
+
+              if (file_size == 0)
+              {
+                MPRINTF("File is empty\n\r");
+              }
+              else
+              {
+                // Allocate test buffer for reading
+                if (!_Allocate_test_buffer())
+                {
+                  MPRINTF("Memory allocation failed\n\r");
+                }
+                else
+                {
+                  // Read file in blocks using FILEX_TEST_BUFFER_SIZE
+                  uint32_t block_size       = FILEX_TEST_BUFFER_SIZE;
+                  uint32_t total_bytes_read = 0;
+                  uint32_t current_offset   = 0;
+
+                  // Read file block by block
+                  while (current_offset < file_size)
+                  {
+                    // Calculate bytes to read for this block
+                    uint32_t bytes_to_read = block_size;
+                    if (current_offset + bytes_to_read > file_size)
+                    {
+                      bytes_to_read = file_size - current_offset;
+                    }
+
+                    // Seek to current position
+                    status = fx_file_extended_seek(&file, current_offset);
+                    if (status != FX_SUCCESS)
+                    {
+                      MPRINTF("Failed to seek to offset %lu: %s\n\r",
+                              current_offset, _Get_filex_error_description(status));
+                      break;
+                    }
+
+                    // Read one block
+                    ULONG actual_bytes_read;
+                    status = fx_file_read(&file, g_test_buffer, bytes_to_read, &actual_bytes_read);
+                    if (status != FX_SUCCESS)
+                    {
+                      MPRINTF("Failed to read file at offset %lu: %s\n\r",
+                              current_offset, _Get_filex_error_description(status));
+                      break;
+                    }
+
+                    if (actual_bytes_read == 0)
+                    {
+                      // End of file reached
+                      break;
+                    }
+
+                    // Display this block as HEX dump
+                    MPRINTF("Block at offset %lu (%lu bytes):\n\r", current_offset, actual_bytes_read);
+                    VT100_print_dump(current_offset, g_test_buffer, actual_bytes_read);
+
+                    current_offset += actual_bytes_read;
+                    total_bytes_read += actual_bytes_read;
+
+                    // Show progress for large files
+                    if (file_size > block_size)
+                    {
+                      uint32_t progress_percent = (current_offset * 100) / file_size;
+                      MPRINTF("Progress: %lu%% (%lu/%lu bytes)\n\r",
+                              progress_percent, current_offset, file_size);
+                    }
+                  }
+
+                  MPRINTF("Successfully read %lu bytes total\n\r", total_bytes_read);
+                }
+              }
+            }
+            else
+            {
+              MPRINTF("Failed to get file size: %s\n\r", _Get_filex_error_description(status));
+            }
+
+            // Close file
+            fx_file_close(&file);
+          }
+        }
+      }
+      else if (choice == VT100_ESC)
+      {
+        // Exit to menu
+        break;
+      }
+      else
+      {
+        // Invalid choice, continue waiting
+        MPRINTF("Invalid choice. Press 1 to read file or ESC to return to menu.\n\r");
+        MPRINTF("Choice: ");
+      }
+    }
+    else
+    {
+      MPRINTF("TIMEOUT - returning to menu\n\r");
+      break;
+    }
+  }
+
   MPRINTF("\nPress any key to continue...\n\r");
   uint8_t key;
   WAIT_CHAR(&key, ms_to_ticks(100000));
@@ -1187,7 +1337,7 @@ void Do_FileX_performance_test(uint8_t keycode)
 {
   GET_MCBL;
   uint8_t choice;
-  bool exit_menu = false;
+  bool    exit_menu = false;
 
   FSP_PARAMETER_NOT_USED(keycode);
 
@@ -1358,11 +1508,11 @@ void Do_FileX_performance_test(uint8_t keycode)
 
         case '9':
           g_test_files_count = FILEX_TEST_FILES_COUNT_DEFAULT;
-          g_test_file_size = FILEX_TEST_FILE_SIZE_DEFAULT;
-          g_test_block_size = FILEX_TEST_BLOCK_SIZE_DEFAULT;
-          g_data_pattern = DATA_PATTERN_CONSTANT;
-          g_fill_constant = DEFAULT_FILL_CONSTANT;
-          g_verify_data = true;
+          g_test_file_size   = FILEX_TEST_FILE_SIZE_DEFAULT;
+          g_test_block_size  = FILEX_TEST_BLOCK_SIZE_DEFAULT;
+          g_data_pattern     = DATA_PATTERN_CONSTANT;
+          g_fill_constant    = DEFAULT_FILL_CONSTANT;
+          g_verify_data      = true;
           MPRINTF("\n\rConfiguration reset to defaults.\n\r");
           MPRINTF("Press any key to continue...\n\r");
           WAIT_CHAR(&choice, ms_to_ticks(100000));

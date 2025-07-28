@@ -40,8 +40,8 @@
         <MultiCoreRunAll>1</MultiCoreRunAll>
     </Simulator>
     <PlDriver>
-        <MemConfigValue>D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\R7FA8M1AH.ddf</MemConfigValue>
         <FirstRun>0</FirstRun>
+        <MemConfigValue>D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\R7FA8M1AH.ddf</MemConfigValue>
     </PlDriver>
     <JLinkDriver>
         <LeaveTargetRunning>_ 0</LeaveTargetRunning>
@@ -210,9 +210,8 @@
         <mode>0</mode>
     </DisassembleMode>
     <Breakpoints2>
-        <Bp0>_ 1 "EMUL_CODE" "{$PROJ_DIR$\ra\microsoft\azure-rtos\filex\common\src\fx_media_format.c}.635.13" 0 0 1 "" 0 "" 0</Bp0>
-        <Bp1>_ 1 "EMUL_CODE" "{$PROJ_DIR$\ra\microsoft\azure-rtos\filex\common\src\fx_media_format.c}.146.5" 0 0 1 "" 0 "" 0</Bp1>
-        <Count>2</Count>
+        <Bp0>_ 1 "EMUL_CODE" "{$PROJ_DIR$\src\VT100\Monitor_FileX.c}.1072.10" 0 0 1 "" 0 "" 0</Bp0>
+        <Count>1</Count>
     </Breakpoints2>
     <DriverProfiling>
         <Enabled>0</Enabled>

@@ -4,9 +4,9 @@
 #define MAX_DIRS_IN_STACK            32
 
 // Performance test configuration
-#define LFS_TEST_FILES_COUNT_DEFAULT 10       // Default number of files
-#define LFS_TEST_FILE_SIZE_DEFAULT   10240    // Default file size (10 KB)
-#define LFS_TEST_BLOCK_SIZE_DEFAULT  65536    // Default block size (64 KB)
+#define LFS_TEST_FILES_COUNT_DEFAULT 10      // Default number of files
+#define LFS_TEST_FILE_SIZE_DEFAULT   (10*1024) // Default file size (4 KB)
+#define LFS_TEST_BLOCK_SIZE_DEFAULT  (64*1024)// Default block size (64 KB)
 #define LFS_TEST_FILE_PREFIX         "test_"  // File name prefix
 #define LFS_MAX_FILENAME_LENGTH      64       // Maximum filename length
 
@@ -15,7 +15,7 @@
 #define DATA_PATTERN_CONSTANT        0     // Fill with constant value
 #define DATA_PATTERN_COUNTER         1     // Fill with 32-bit counter
 #define DATA_PATTERN_RANDOM          2     // Fill with pseudo-random data
-#define DEFAULT_FILL_CONSTANT        0x5A  // Default constant for pattern fill
+#define DEFAULT_FILL_CONSTANT        0xAA  // Default constant for pattern fill
 
 // Performance test parameters (configurable)
 static uint32_t g_test_files_count         = LFS_TEST_FILES_COUNT_DEFAULT;
@@ -85,6 +85,60 @@ const T_VT100_Menu MENU_LittleFS = {
   "\033[5C <R> - Return to previous menu\r\n",
   MENU_LittleFS_items
 };
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Print LittleFS filesystem information
+
+  Parameters: none
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+static void _Print_littlefs_info(void)
+{
+  GET_MCBL;
+  struct lfs_fsinfo fsinfo;
+  int result;
+
+  MPRINTF("\n=== LittleFS Media Information ===\n\r");
+
+  // Check if filesystem is mounted
+  if (!Littlefs_is_mounted())
+  {
+    MPRINTF("Error: Filesystem not mounted. Please initialize first.\n\r");
+    return;
+  }
+
+  // Get filesystem statistics
+  result = lfs_fs_stat(&g_littlefs_context.lfs, &fsinfo);
+  if (result == 0)
+  {
+    uint32_t total_size = fsinfo.block_count * fsinfo.block_size;
+
+    // Get actual used size
+    lfs_size_t used_blocks = lfs_fs_size(&g_littlefs_context.lfs);
+    uint32_t   used_size   = used_blocks * fsinfo.block_size;
+    uint32_t   free_size   = total_size - used_size;
+
+    MPRINTF("Total blocks         : %lu\n\r", fsinfo.block_count);
+    MPRINTF("Block size           : %lu bytes\n\r", fsinfo.block_size);
+    MPRINTF("Used blocks          : %lu\n\r", (uint32_t)used_blocks);
+    MPRINTF("Free blocks          : %lu\n\r", fsinfo.block_count - (uint32_t)used_blocks);
+    MPRINTF("Total space          : %lu KB (%lu MB)\n\r", total_size / 1024, total_size / (1024 * 1024));
+    MPRINTF("Used space           : %lu KB (%lu MB)\n\r", used_size / 1024, used_size / (1024 * 1024));
+    MPRINTF("Available space      : %lu KB (%lu MB)\n\r", free_size / 1024, free_size / (1024 * 1024));
+
+    // Calculate and display usage percentage
+    if (total_size > 0)
+    {
+      uint32_t usage_percent = (used_size * 100) / total_size;
+      MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, 100 - usage_percent);
+    }
+  }
+  else
+  {
+    MPRINTF("Error getting filesystem information: %s\n\r", _Littlefs_error_to_string(result));
+  }
+}
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Helper function to push directory to stack
@@ -1635,17 +1689,30 @@ void Do_LittleFS_performance_test(uint8_t keycode)
   {
     MPRINTF(VT100_CLEAR_AND_HOME);
     MPRINTF("=== LittleFS Performance Test ===\n\r");
-    MPRINTF("\n\rCurrent test configuration:\n\r");
-    MPRINTF("  Files count: %u\n\r", g_test_files_count);
-    MPRINTF("  File size: %u bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
-    MPRINTF("  Block size: %u bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
-    MPRINTF("  Data pattern: %s", _Get_pattern_name(g_data_pattern));
+
+    // Check if filesystem is mounted
+    if (!Littlefs_is_mounted())
+    {
+      MPRINTF("\nERROR: LittleFS not mounted!\n\r");
+      MPRINTF("Please initialize LittleFS first from the main menu.\n\r");
+      MPRINTF("\nPress any key to return...\n\r");
+      WAIT_CHAR(&choice, ms_to_ticks(100000));
+      return;
+    }
+
+    _Print_littlefs_info();
+
+    MPRINTF("\n=== Test Configuration ===\n\r");
+    MPRINTF("Files count      : %u\n\r", g_test_files_count);
+    MPRINTF("File size        : %u bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
+    MPRINTF("Block size       : %u bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
+    MPRINTF("Data pattern     : %s", _Get_pattern_name(g_data_pattern));
     if (g_data_pattern == DATA_PATTERN_CONSTANT)
     {
       MPRINTF(" (0x%02X)", g_fill_constant);
     }
     MPRINTF("\n\r");
-    MPRINTF("  Data verification: %s\n\r", g_enable_data_verification ? "ON" : "OFF");
+    MPRINTF("Data verification: %s\n\r", g_enable_data_verification ? "Enabled" : "Disabled");
 
     MPRINTF("\n\rTest operations:\n\r");
     MPRINTF("<1> - Write files test\n\r");
@@ -1779,7 +1846,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           g_test_file_size           = LFS_TEST_FILE_SIZE_DEFAULT;
           g_test_block_size          = LFS_TEST_BLOCK_SIZE_DEFAULT;
           g_data_pattern             = DATA_PATTERN_CONSTANT;
-          g_fill_constant            = 0xAA;
+          g_fill_constant            = DEFAULT_FILL_CONSTANT;
           g_enable_data_verification = true;
           MPRINTF("\n\rParameters reset to defaults\n\r");
           MPRINTF("Press any key to continue...\n\r");
