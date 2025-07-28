@@ -52,11 +52,11 @@ int Littlefs_initialize(void)
     LITTLEFS_DEBUG_PRINTF("OSPI driver initialized successfully\n\r");
   }
 
-  // Set OSPI protocol as configured
-  err = Mc80_ospi_spi_protocol_set(g_mc80_ospi.p_ctrl, LITTLEFS_OSPI_PROTOCOL);
+  // Set OSPI protocol as configured using safe switch
+  err = Mc80_ospi_spi_protocol_switch_safe(g_mc80_ospi.p_ctrl, LITTLEFS_OSPI_PROTOCOL);
   if (err != FSP_SUCCESS)
   {
-    LITTLEFS_DEBUG_ERR_PRINTF("Failed to set OSPI protocol: %u\n\r", (unsigned int)err);
+    LITTLEFS_DEBUG_ERR_PRINTF("Failed to switch OSPI protocol safely: %u\n\r", (unsigned int)err);
     return -1;
   }
 

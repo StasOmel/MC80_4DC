@@ -46,7 +46,12 @@ typedef struct
   uint32_t max_speed_kbps;    // Maximum speed in KB/s
   uint32_t avg_speed_kbps;    // Average speed in KB/s
   uint32_t total_open_time;   // Total time for file open operations
+  uint32_t min_open_time;     // Minimum open time
+  uint32_t max_open_time;     // Maximum open time
   uint32_t total_close_time;  // Total time for file close operations
+  uint32_t min_close_time;    // Minimum close time
+  uint32_t max_close_time;    // Maximum close time
+  uint32_t total_io_time;     // Total time for pure I/O operations (read/write only)
   uint32_t crc_errors;        // Number of CRC verification errors
   uint32_t pattern_errors;    // Number of data pattern errors
   uint32_t size_errors;       // Number of file size errors
@@ -165,45 +170,47 @@ static void _Print_stats(const char *operation_name, T_operation_stats *stats)
   {
     MPRINTF("Data processed: %u KB (%u bytes)\n\r", stats->total_bytes / 1024, stats->total_bytes);
 
-    MPRINTF("Time statistics:\n\r");
-    MPRINTF("  Min: %u ms\n\r", stats->min_time);
-    MPRINTF("  Max: %u ms\n\r", stats->max_time);
-    MPRINTF("  Avg: %u ms\n\r", stats->avg_time);
-    MPRINTF("  Total: %u ms\n\r", stats->total_time);
+    MPRINTF("\nTiming breakdown:\n\r");
 
+    // File open timing statistics
     if (stats->total_open_time > 0)
     {
-      MPRINTF("  Open time: %u ms (avg: %u ms)\n\r",
-              stats->total_open_time, stats->total_open_time / stats->success_count);
+      float avg_open_time          = (float)stats->total_open_time / stats->success_count;
+      float open_time_diff_percent = 0.0f;
+      if (stats->min_open_time > 0)
+      {
+        open_time_diff_percent = ((float)(stats->max_open_time - stats->min_open_time) * 100.0f) / stats->min_open_time;
+      }
+      MPRINTF("  Open time     - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_open_time, stats->min_open_time, stats->max_open_time, open_time_diff_percent);
     }
 
+    // File close timing statistics
     if (stats->total_close_time > 0)
     {
-      MPRINTF("  Close time: %u ms (avg: %u ms)\n\r",
-              stats->total_close_time, stats->total_close_time / stats->success_count);
+      float avg_close_time          = (float)stats->total_close_time / stats->success_count;
+      float close_time_diff_percent = 0.0f;
+      if (stats->min_close_time > 0)
+      {
+        close_time_diff_percent = ((float)(stats->max_close_time - stats->min_close_time) * 100.0f) / stats->min_close_time;
+      }
+      MPRINTF("  Close time    - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_close_time, stats->min_close_time, stats->max_close_time, close_time_diff_percent);
     }
 
-    MPRINTF("Speed statistics:\n\r");
-    MPRINTF("  Min: %u KB/s\n\r", stats->min_speed_kbps);
-    MPRINTF("  Max: %u KB/s\n\r", stats->max_speed_kbps);
-    MPRINTF("  Avg: %u KB/s\n\r", stats->avg_speed_kbps);
-
-    // Calculate overall throughput
-    if (stats->total_time > 0)
-    {
-      uint32_t overall_kbps = (stats->total_bytes * 1000) / (stats->total_time * 1024);
-      MPRINTF("  Overall: %u KB/s\n\r", overall_kbps);
-    }
+    // Speed statistics
+    MPRINTF("\nSpeed statistics:\n\r");
+    MPRINTF("  Max speed:    %5u KB/s\n\r", stats->max_speed_kbps);
+    MPRINTF("  Avg speed:    %5u KB/s\n\r", stats->avg_speed_kbps);
+    MPRINTF("  Min speed:    %5u KB/s\n\r", stats->min_speed_kbps);
 
     // Print data integrity statistics if enabled
     if (g_enable_data_verification)
     {
-      MPRINTF("Data integrity:\n\r");
-      MPRINTF("  CRC errors: %u\n\r", stats->crc_errors);
+      MPRINTF("\nData integrity:\n\r");
+      MPRINTF("  CRC errors    : %u\n\r", stats->crc_errors);
       MPRINTF("  Pattern errors: %u\n\r", stats->pattern_errors);
-      MPRINTF("  Size errors: %u\n\r", stats->size_errors);
+      MPRINTF("  Size errors   : %u\n\r", stats->size_errors);
       uint32_t total_integrity_errors = stats->crc_errors + stats->pattern_errors + stats->size_errors;
-      MPRINTF("  Total integrity errors: %u\n\r", total_integrity_errors);
+      MPRINTF("  Total errors  : %u\n\r", total_integrity_errors);
     }
   }
 }
@@ -375,6 +382,20 @@ void Do_LittleFS_init(uint8_t keycode)
   GET_MCBL;
   MPRINTF(VT100_CLEAR_AND_HOME);
   MPRINTF("=== LittleFS Initialization ===\n\r");
+
+  // Display filesystem configuration parameters
+  MPRINTF("\nFilesystem configuration:\n\r");
+  MPRINTF("  Block size:      %u bytes (%.1f KB)\n\r", LITTLEFS_BLOCK_SIZE, (float)LITTLEFS_BLOCK_SIZE / 1024.0f);
+  MPRINTF("  Block count:     %u blocks\n\r", LITTLEFS_BLOCK_COUNT);
+  MPRINTF("  Total capacity:  %u KB (%.1f MB)\n\r",
+          (LITTLEFS_BLOCK_SIZE * LITTLEFS_BLOCK_COUNT) / 1024,
+          (float)(LITTLEFS_BLOCK_SIZE * LITTLEFS_BLOCK_COUNT) / (1024.0f * 1024.0f));
+  MPRINTF("  Cache size:      %u bytes\n\r", LITTLEFS_CACHE_SIZE);
+  MPRINTF("  Lookahead size:  %u bytes\n\r", LITTLEFS_LOOKAHEAD_SIZE);
+  MPRINTF("  Block cycles:    %u\n\r", LITTLEFS_BLOCK_CYCLES);
+  MPRINTF("  Read size:       %u bytes\n\r", LITTLEFS_READ_SIZE);
+  MPRINTF("  Program size:    %u bytes\n\r", LITTLEFS_PROG_SIZE);
+  MPRINTF("\n\r");
 
   // Initialize LittleFS configuration
   LITTLEFS_DEBUG_PRINTF("Starting LittleFS initialization\n\r");
@@ -554,12 +575,12 @@ void Do_LittleFS_list_files(uint8_t keycode)
   result = lfs_fs_stat(&g_littlefs_context.lfs, &fsinfo);
   if (result == 0)
   {
-    uint32_t total_size = fsinfo.block_count * fsinfo.block_size;
+    uint32_t total_size    = fsinfo.block_count * fsinfo.block_size;
 
     // Get actual used size
     lfs_size_t used_blocks = lfs_fs_size(&g_littlefs_context.lfs);
-    uint32_t used_size = used_blocks * fsinfo.block_size;
-    uint32_t free_size = total_size - used_size;
+    uint32_t   used_size   = used_blocks * fsinfo.block_size;
+    uint32_t   free_size   = total_size - used_size;
 
     MPRINTF("\nFilesystem statistics:\n\r");
     MPRINTF("  Total space: %u KB (%u blocks x %u bytes)\n\r",
@@ -601,7 +622,7 @@ void Do_LittleFS_list_files(uint8_t keycode)
 
           // Open file for reading
           lfs_file_t file;
-          int result = lfs_file_open(&g_littlefs_context.lfs, &file, full_filename, LFS_O_RDONLY);
+          int        result = lfs_file_open(&g_littlefs_context.lfs, &file, full_filename, LFS_O_RDONLY);
           if (result < 0)
           {
             MPRINTF("Failed to open file: %s\n\r", _Littlefs_error_to_string(result));
@@ -619,12 +640,12 @@ void Do_LittleFS_list_files(uint8_t keycode)
             else
             {
               // Read file in blocks using LFS_TEST_BLOCK_SIZE_DEFAULT
-              uint32_t block_size = LFS_TEST_BLOCK_SIZE_DEFAULT;
+              uint32_t block_size       = LFS_TEST_BLOCK_SIZE_DEFAULT;
               uint32_t total_bytes_read = 0;
-              uint32_t current_offset = 0;
+              uint32_t current_offset   = 0;
 
               // Allocate buffer for one block
-              uint8_t *buffer = (uint8_t *)App_malloc(block_size);
+              uint8_t *buffer           = (uint8_t *)App_malloc(block_size);
               if (buffer == NULL)
               {
                 MPRINTF("Memory allocation failed\n\r");
@@ -646,7 +667,7 @@ void Do_LittleFS_list_files(uint8_t keycode)
                   if (bytes_read < 0)
                   {
                     MPRINTF("Failed to read file at offset %u: %s\n\r",
-                           current_offset, _Littlefs_error_to_string((int)bytes_read));
+                            current_offset, _Littlefs_error_to_string((int)bytes_read));
                     break;
                   }
 
@@ -668,7 +689,7 @@ void Do_LittleFS_list_files(uint8_t keycode)
                   {
                     uint32_t progress_percent = (current_offset * 100) / file_size;
                     MPRINTF("Progress: %u%% (%u/%u bytes)\n\r",
-                           progress_percent, current_offset, file_size);
+                            progress_percent, current_offset, file_size);
                   }
                 }
 
@@ -762,7 +783,7 @@ static void _Do_write_test(void)
   char              filename[LFS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
-  uint32_t          open_time, close_time;
+  uint32_t          open_time, close_time, io_time;
   uint32_t          bytes_written;
   uint32_t          blocks_per_file;
   uint32_t          operation_time;
@@ -802,7 +823,12 @@ static void _Do_write_test(void)
   stats.max_speed_kbps   = 0;
   stats.avg_speed_kbps   = 0;
   stats.total_open_time  = 0;
+  stats.min_open_time    = UINT32_MAX;
+  stats.max_open_time    = 0;
   stats.total_close_time = 0;
+  stats.min_close_time   = UINT32_MAX;
+  stats.max_close_time   = 0;
+  stats.total_io_time    = 0;
   stats.crc_errors       = 0;
   stats.pattern_errors   = 0;
   stats.size_errors      = 0;
@@ -832,22 +858,26 @@ static void _Do_write_test(void)
     Get_hw_timestump(&open_start_ts);
     result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
     Get_hw_timestump(&open_end_ts);
-    open_time = Timestump_diff_to_msec(&open_start_ts, &open_end_ts);
+    open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
 
     if (result < 0)
     {
       Get_hw_timestump(&end_ts);
-      operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
-      MPRINTF("FAILED (open): %s (open: %u ms, total: %u ms)\n\r",
+      operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
+      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
       stats.error_count++;
       continue;
     }
 
-    MPRINTF("opened in %u ms, ", open_time);
+    MPRINTF("opened: %5u us, ", open_time);
 
     // Initialize CRC calculation
-    uint32_t crc  = 0xFFFFFFFF;
+    uint32_t crc = 0xFFFFFFFF;
+
+    // Initialize I/O time measurement
+    io_time      = 0;
+    T_sys_timestump io_start_ts, io_end_ts;
 
     // Write file data in blocks
     bytes_written = 0;
@@ -883,14 +913,17 @@ static void _Do_write_test(void)
       }
 
       LITTLEFS_DEBUG_PRINTF("Writing block %u: %u bytes to %s\n\r", block, bytes_to_write, filename);
+      Get_hw_timestump(&io_start_ts);
       lfs_ssize_t written = lfs_file_write(&g_littlefs_context.lfs, &file, buffer, bytes_to_write);
+      Get_hw_timestump(&io_end_ts);
+      io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
       if (written < 0)
       {
         MPRINTF("FAILED (write block %u): %s\n\r", block, _Littlefs_error_to_string((int)written));
         lfs_file_close(&g_littlefs_context.lfs, &file);
         lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
         Get_hw_timestump(&end_ts);
-        operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
+        operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
         stats.error_count++;
         goto next_file;
       }
@@ -905,15 +938,18 @@ static void _Do_write_test(void)
     // Write CRC32 at the end of file
     if (g_enable_data_verification && g_test_file_size >= CRC32_SIZE)
     {
-      crc32_value         = ~crc;
+      crc32_value = ~crc;
+      Get_hw_timestump(&io_start_ts);
       lfs_ssize_t written = lfs_file_write(&g_littlefs_context.lfs, &file, &crc32_value, CRC32_SIZE);
+      Get_hw_timestump(&io_end_ts);
+      io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
       if (written < 0)
       {
         MPRINTF("FAILED (write CRC): %s\n\r", _Littlefs_error_to_string((int)written));
         lfs_file_close(&g_littlefs_context.lfs, &file);
         lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
         Get_hw_timestump(&end_ts);
-        operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
+        operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
         stats.error_count++;
         goto next_file;
       }
@@ -925,29 +961,30 @@ static void _Do_write_test(void)
     Get_hw_timestump(&close_start_ts);
     result = lfs_file_close(&g_littlefs_context.lfs, &file);
     Get_hw_timestump(&close_end_ts);
-    close_time = Timestump_diff_to_msec(&close_start_ts, &close_end_ts);
+    close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
     Get_hw_timestump(&end_ts);
-    operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
+    operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
 
     if (result < 0)
     {
-      MPRINTF("FAILED (close): %s (close: %u ms, total: %u ms)\n\r",
+      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), close_time, operation_time);
       stats.error_count++;
     }
     else if (bytes_written == g_test_file_size)
     {
-      // Calculate speed in KB/s (avoid division by zero)
-      if (operation_time > 0)
+      // Calculate speed in KB/s based on I/O time (avoid division by zero)
+      // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
+      if (io_time > 0)
       {
-        speed_kbps = (g_test_file_size * 1000) / (operation_time * 1024);
+        speed_kbps = (uint32_t)((float)g_test_file_size * 1000000.0f / ((float)io_time * 1024.0f));
       }
       else
       {
         speed_kbps = 0;
       }
 
-      MPRINTF("closed in %u ms, total: %u ms, %u KB/s", close_time, operation_time, speed_kbps);
+      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
       if (g_enable_data_verification)
       {
         MPRINTF(", CRC: 0x%08X", crc32_value);
@@ -968,7 +1005,24 @@ static void _Do_write_test(void)
       }
       stats.total_time += operation_time;
       stats.total_open_time += open_time;
+      if (open_time < stats.min_open_time)
+      {
+        stats.min_open_time = open_time;
+      }
+      if (open_time > stats.max_open_time)
+      {
+        stats.max_open_time = open_time;
+      }
       stats.total_close_time += close_time;
+      if (close_time < stats.min_close_time)
+      {
+        stats.min_close_time = close_time;
+      }
+      if (close_time > stats.max_close_time)
+      {
+        stats.max_close_time = close_time;
+      }
+      stats.total_io_time += io_time;
 
       // Update speed statistics
       if (speed_kbps < stats.min_speed_kbps)
@@ -982,7 +1036,7 @@ static void _Do_write_test(void)
     }
     else
     {
-      MPRINTF("FAILED (partial write: %u/%u bytes, close: %u ms, total: %u ms)\n\r",
+      MPRINTF("FAILED (partial write: %u/%u bytes, close: %5u us, total: %6u us)\n\r",
               bytes_written, g_test_file_size, close_time, operation_time);
       stats.error_count++;
     }
@@ -995,13 +1049,21 @@ static void _Do_write_test(void)
   if (stats.success_count > 0)
   {
     stats.avg_time = stats.total_time / stats.success_count;
-    if (stats.total_time > 0)
+    if (stats.total_io_time > 0)
     {
-      stats.avg_speed_kbps = (stats.total_bytes * 1000) / (stats.total_time * 1024);
+      stats.avg_speed_kbps = (uint32_t)((float)stats.total_bytes * 1000000.0f / ((float)stats.total_io_time * 1024.0f));
     }
     if (stats.min_speed_kbps == UINT32_MAX)
     {
       stats.min_speed_kbps = 0;
+    }
+    if (stats.min_open_time == UINT32_MAX)
+    {
+      stats.min_open_time = 0;
+    }
+    if (stats.min_close_time == UINT32_MAX)
+    {
+      stats.min_close_time = 0;
     }
   }
   else
@@ -1009,6 +1071,10 @@ static void _Do_write_test(void)
     stats.min_time       = 0;
     stats.avg_time       = 0;
     stats.min_speed_kbps = 0;
+    stats.min_open_time  = 0;
+    stats.max_open_time  = 0;
+    stats.min_close_time = 0;
+    stats.max_close_time = 0;
   }
 
   _Print_stats("Write Test", &stats);
@@ -1031,7 +1097,7 @@ static void _Do_read_test(void)
   char              filename[LFS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
-  uint32_t          open_time, close_time;
+  uint32_t          open_time, close_time, io_time;
   uint32_t          bytes_read;
   uint32_t          blocks_per_file;
   uint32_t          operation_time;
@@ -1073,7 +1139,12 @@ static void _Do_read_test(void)
   stats.max_speed_kbps   = 0;
   stats.avg_speed_kbps   = 0;
   stats.total_open_time  = 0;
+  stats.min_open_time    = UINT32_MAX;
+  stats.max_open_time    = 0;
   stats.total_close_time = 0;
+  stats.min_close_time   = UINT32_MAX;
+  stats.max_close_time   = 0;
+  stats.total_io_time    = 0;
   stats.crc_errors       = 0;
   stats.pattern_errors   = 0;
   stats.size_errors      = 0;
@@ -1106,25 +1177,29 @@ static void _Do_read_test(void)
     Get_hw_timestump(&open_start_ts);
     result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_RDONLY);
     Get_hw_timestump(&open_end_ts);
-    open_time = Timestump_diff_to_msec(&open_start_ts, &open_end_ts);
+    open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
 
     if (result < 0)
     {
       Get_hw_timestump(&end_ts);
-      operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
-      MPRINTF("FAILED (open): %s (open: %u ms, total: %u ms)\n\r",
+      operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
+      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
       stats.error_count++;
       continue;
     }
 
-    MPRINTF("opened in %u ms, ", open_time);
+    MPRINTF("opened: %5u us, ", open_time);
 
     // Initialize CRC calculation
     uint32_t crc = 0xFFFFFFFF;
 
+    // Initialize I/O time measurement
+    io_time      = 0;
+    T_sys_timestump io_start_ts, io_end_ts;
+
     // Read file data in blocks
-    bytes_read   = 0;
+    bytes_read = 0;
     for (uint32_t block = 0; block < blocks_per_file; block++)
     {
       uint32_t bytes_to_read = g_test_block_size;
@@ -1134,13 +1209,16 @@ static void _Do_read_test(void)
       }
 
       LITTLEFS_DEBUG_PRINTF("Reading block %u: %u bytes from %s\n\r", block, bytes_to_read, filename);
+      Get_hw_timestump(&io_start_ts);
       lfs_ssize_t read_result = lfs_file_read(&g_littlefs_context.lfs, &file, buffer, bytes_to_read);
+      Get_hw_timestump(&io_end_ts);
+      io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
       if (read_result < 0)
       {
         MPRINTF("FAILED (read block %u): %s\n\r", block, _Littlefs_error_to_string((int)read_result));
         lfs_file_close(&g_littlefs_context.lfs, &file);
         Get_hw_timestump(&end_ts);
-        operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
+        operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
         stats.error_count++;
         goto next_file;
       }
@@ -1192,7 +1270,10 @@ static void _Do_read_test(void)
     // Read and verify CRC32 if enabled
     if (g_enable_data_verification && g_test_file_size >= CRC32_SIZE)
     {
+      Get_hw_timestump(&io_start_ts);
       lfs_ssize_t crc_read = lfs_file_read(&g_littlefs_context.lfs, &file, &file_crc32, CRC32_SIZE);
+      Get_hw_timestump(&io_end_ts);
+      io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
       if (crc_read == CRC32_SIZE)
       {
         calculated_crc32 = ~crc;
@@ -1215,13 +1296,13 @@ static void _Do_read_test(void)
     Get_hw_timestump(&close_start_ts);
     result = lfs_file_close(&g_littlefs_context.lfs, &file);
     Get_hw_timestump(&close_end_ts);
-    close_time = Timestump_diff_to_msec(&close_start_ts, &close_end_ts);
+    close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
     Get_hw_timestump(&end_ts);
-    operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
+    operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
 
     if (result < 0)
     {
-      MPRINTF("FAILED (close): %s (close: %u ms, total: %u ms)\n\r",
+      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), close_time, operation_time);
       stats.error_count++;
     }
@@ -1234,18 +1315,19 @@ static void _Do_read_test(void)
         stats.size_errors++;
       }
 
-      // Calculate speed in KB/s (avoid division by zero)
-      if (operation_time > 0)
+      // Calculate speed in KB/s based on I/O time (avoid division by zero)
+      // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
+      if (io_time > 0)
       {
-        speed_kbps = (bytes_read * 1000) / (operation_time * 1024);
+        speed_kbps = (uint32_t)((float)bytes_read * 1000000.0f / ((float)io_time * 1024.0f));
       }
       else
       {
         speed_kbps = 0;
       }
 
-      MPRINTF("closed in %u ms, %u bytes, total: %u ms, %u KB/s",
-              close_time, bytes_read, operation_time, speed_kbps);
+      MPRINTF("closed: %5u us, size: %5u bytes, I/O: %6u us, total: %6u us, speed: %5u KB/s",
+              close_time, bytes_read, io_time, operation_time, speed_kbps);
 
       if (g_enable_data_verification)
       {
@@ -1273,7 +1355,24 @@ static void _Do_read_test(void)
       }
       stats.total_time += operation_time;
       stats.total_open_time += open_time;
+      if (open_time < stats.min_open_time)
+      {
+        stats.min_open_time = open_time;
+      }
+      if (open_time > stats.max_open_time)
+      {
+        stats.max_open_time = open_time;
+      }
       stats.total_close_time += close_time;
+      if (close_time < stats.min_close_time)
+      {
+        stats.min_close_time = close_time;
+      }
+      if (close_time > stats.max_close_time)
+      {
+        stats.max_close_time = close_time;
+      }
+      stats.total_io_time += io_time;
 
       // Update speed statistics
       if (speed_kbps < stats.min_speed_kbps)
@@ -1294,13 +1393,21 @@ static void _Do_read_test(void)
   if (stats.success_count > 0)
   {
     stats.avg_time = stats.total_time / stats.success_count;
-    if (stats.total_time > 0)
+    if (stats.total_io_time > 0)
     {
-      stats.avg_speed_kbps = (stats.total_bytes * 1000) / (stats.total_time * 1024);
+      stats.avg_speed_kbps = (uint32_t)((float)stats.total_bytes * 1000000.0f / ((float)stats.total_io_time * 1024.0f));
     }
     if (stats.min_speed_kbps == UINT32_MAX)
     {
       stats.min_speed_kbps = 0;
+    }
+    if (stats.min_open_time == UINT32_MAX)
+    {
+      stats.min_open_time = 0;
+    }
+    if (stats.min_close_time == UINT32_MAX)
+    {
+      stats.min_close_time = 0;
     }
   }
   else
@@ -1308,6 +1415,10 @@ static void _Do_read_test(void)
     stats.min_time       = 0;
     stats.avg_time       = 0;
     stats.min_speed_kbps = 0;
+    stats.min_open_time  = 0;
+    stats.max_open_time  = 0;
+    stats.min_close_time = 0;
+    stats.max_close_time = 0;
   }
 
   _Print_stats("Read Test", &stats);
@@ -1344,7 +1455,12 @@ static void _Do_delete_test(void)
   stats.max_speed_kbps   = 0;  // Not applicable for delete
   stats.avg_speed_kbps   = 0;  // Not applicable for delete
   stats.total_open_time  = 0;  // Not applicable for delete
+  stats.min_open_time    = 0;  // Not applicable for delete
+  stats.max_open_time    = 0;  // Not applicable for delete
   stats.total_close_time = 0;  // Not applicable for delete
+  stats.min_close_time   = 0;  // Not applicable for delete
+  stats.max_close_time   = 0;  // Not applicable for delete
+  stats.total_io_time    = 0;  // Not applicable for delete
   stats.crc_errors       = 0;  // Not applicable for delete
   stats.pattern_errors   = 0;  // Not applicable for delete
   stats.size_errors      = 0;  // Not applicable for delete
@@ -1361,16 +1477,16 @@ static void _Do_delete_test(void)
     Get_hw_timestump(&start_ts);
     result = lfs_remove(&g_littlefs_context.lfs, filename);
     Get_hw_timestump(&end_ts);
-    operation_time = Timestump_diff_to_msec(&start_ts, &end_ts);
+    operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
 
     if (result < 0)
     {
-      MPRINTF("FAILED: %s (%u ms)\n\r", _Littlefs_error_to_string(result), operation_time);
+      MPRINTF("FAILED: %s (%6u us)\n\r", _Littlefs_error_to_string(result), operation_time);
       stats.error_count++;
     }
     else
     {
-      MPRINTF("OK (%u ms)\n\r", operation_time);
+      MPRINTF("deleted: %6u us\n\r", operation_time);
       stats.success_count++;
 
       // Update statistics
@@ -1431,7 +1547,7 @@ static void _Do_format_test(void)
   Get_hw_timestump(&start_ts);
   result = Littlefs_format();
   Get_hw_timestump(&end_ts);
-  format_time = Timestump_diff_to_msec(&start_ts, &end_ts);
+  format_time = Timestump_diff_to_usec(&start_ts, &end_ts);
 
   if (result != 0)
   {
@@ -1439,7 +1555,7 @@ static void _Do_format_test(void)
     return;
   }
 
-  MPRINTF("OK (%u ms)\n\r", format_time);
+  MPRINTF("OK (%u us)\n\r", format_time);
 
   // Remount filesystem
   MPRINTF("Remounting... ");
@@ -1452,7 +1568,7 @@ static void _Do_format_test(void)
   MPRINTF("OK\n\r");
 
   MPRINTF("\n=== Format Test Statistics ===\n\r");
-  MPRINTF("Format time: %u ms\n\r", format_time);
+  MPRINTF("Format time: %u us\n\r", format_time);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -1494,11 +1610,11 @@ static void _Do_full_test(void)
   _Do_delete_test();
 
   Get_hw_timestump(&total_end_ts);
-  total_test_time = Timestump_diff_to_msec(&total_start_ts, &total_end_ts);
+  total_test_time = Timestump_diff_to_usec(&total_start_ts, &total_end_ts);
 
   MPRINTF("\n=== Full Test Summary ===\n\r");
-  MPRINTF("Total test duration: %u ms\n\r", total_test_time);
-  MPRINTF("Average time per file (all operations): %.1f ms\n\r",
+  MPRINTF("Total test duration: %u us\n\r", total_test_time);
+  MPRINTF("Average time per file (all operations): %.1f us\n\r",
           (float)total_test_time / g_test_files_count);
 }
 

@@ -11,9 +11,11 @@ extern "C"
 #define LITTLEFS_BLOCK_SIZE     4096        // 4KB sectors (matches flash erase sector size)
 #define LITTLEFS_BLOCK_COUNT    8192        // 32MB total = 8192 blocks of 4KB each (32MB / 4KB = 8192)
 #define LITTLEFS_CACHE_SIZE     1024        // Cache size (must be <= block_size and multiple of read/prog sizes)
+                                            // NOTE: Reducing from 2048 to 1024 has minimal performance impact
+                                            // NOTE: Reducing from 2048 to 64 decreases read performance by ~20%
 #define LITTLEFS_LOOKAHEAD_SIZE 1024        // Lookahead buffer size (8192/8 = 1024)
 #define LITTLEFS_BLOCK_CYCLES   1000        //
-#define LITTLEFS_READ_SIZE      64           // Minimum read size (optimized for OSPI flash)
+#define LITTLEFS_READ_SIZE      64          // Minimum read size (optimized for OSPI flash)
 #define LITTLEFS_PROG_SIZE      64          //
 
 // Data integrity and performance settings
@@ -28,13 +30,13 @@ extern "C"
 // - Bad block management and error recovery
 
 // OSPI protocol configuration for LittleFS operations
-#define LITTLEFS_OSPI_PROTOCOL  MC80_OSPI_PROTOCOL_1S_1S_1S  // Can be changed to MC80_OSPI_PROTOCOL_8D_8D_8D
+#define LITTLEFS_OSPI_PROTOCOL  MC80_OSPI_PROTOCOL_8D_8D_8D  // Can be changed to MC80_OSPI_PROTOCOL_8D_8D_8D
 
 // Debug output control for LittleFS adapter
 // Set LITTLEFS_DEBUG_ENABLE to 0 to disable all debug output from LittleFS adapter
 // Set LITTLEFS_DEBUG_ENABLE to 1 to enable debug output (default)
 #ifndef LITTLEFS_DEBUG_ENABLE
-  #define LITTLEFS_DEBUG_ENABLE 1  // Set to 0 to disable debug output
+  #define LITTLEFS_DEBUG_ENABLE 0  // Set to 0 to disable debug output
 #endif
 
 #if LITTLEFS_DEBUG_ENABLE
