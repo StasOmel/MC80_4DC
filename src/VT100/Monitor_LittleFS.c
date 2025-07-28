@@ -1545,7 +1545,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
     MPRINTF("<B> - Toggle data verification\n\r");
     MPRINTF("<C> - Change constant pattern value\n\r");
     MPRINTF("<9> - Reset to defaults\n\r");
-    MPRINTF("<R> - Return to previous menu\n\r");
+    MPRINTF("<ESC> - Return to previous menu\n\r");
     MPRINTF("\n\rEnter choice: ");
 
     if (WAIT_CHAR(&choice, ms_to_ticks(100000)) == RES_OK)
@@ -1733,8 +1733,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           WAIT_CHAR(&choice, ms_to_ticks(100000));
           break;
 
-        case 'R':
-        case 'r':
+        case VT100_ESC:
           exit_menu = true;
           break;
 

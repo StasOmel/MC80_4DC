@@ -278,7 +278,7 @@ static void _Ospi_display_custom_menu(T_ospi_operation_settings *settings, T_osp
   MPRINTF("  <7> - Write operation\n\r");
   MPRINTF("  <8> - Erase operation\n\r");
   MPRINTF("  <9> - Switch protocol\n\r");
-  MPRINTF("  <R> - Return to main menu\n\r");
+  MPRINTF("  <ESC> - Return to main menu\n\r");
   MPRINTF("Choice: ");
 }
 
@@ -1496,8 +1496,7 @@ void OSPI_test_custom_operations(uint8_t keycode)
         break;
       }
 
-      case 'R':
-      case 'r':
+      case VT100_ESC:
         return;
 
       default:
