@@ -4,6 +4,7 @@
 #define FILEX_TEST_FILES_COUNT_DEFAULT 10
 #define FILEX_TEST_FILE_SIZE_DEFAULT   (10 * 1024)  // 10KB
 #define FILEX_TEST_BLOCK_SIZE_DEFAULT  (64 * 1024)  // 64KB
+#define FILEX_TEST_FILE_PREFIX         "test_"      // File name prefix
 #define DEFAULT_FILL_CONSTANT          0xAA
 #define MAX_PATH_LENGTH                256
 #define MAX_FILENAME_LENGTH            64
@@ -586,19 +587,11 @@ static void _Do_write_test(void)
   Get_hw_timestump(&start_ts);
   stats.min_time = UINT32_MAX;
 
-  // Create test directory
-  status         = fx_directory_create(&g_fx_spi_nor_media, "test_files");
-  if (status != FX_SUCCESS && status != FX_ALREADY_CREATED)
-  {
-    MPRINTF("Error creating test directory: %s\n\r", _Get_filex_error_description(status));
-    return;
-  }
-
-  // Change to test directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/test_files");
+  // Ensure we're in root directory
+  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
   if (status != FX_SUCCESS)
   {
-    MPRINTF("Error changing to test directory: %s\n\r", _Get_filex_error_description(status));
+    MPRINTF("Error changing to root directory: %s\n\r", _Get_filex_error_description(status));
     return;
   }
 
@@ -606,73 +599,122 @@ static void _Do_write_test(void)
 
   for (uint32_t i = 0; i < g_test_files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "test_%04lu.dat", i);
+    snprintf(filename, sizeof(filename), "%s%03lu.bin", FILEX_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
+    T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
+    uint32_t open_time = 0, close_time = 0, io_time = 0, operation_time = 0;
+    uint32_t speed_kbps = 0;
+
     Get_hw_timestump(&file_start_ts);
 
-    // Create and open file
+    MPRINTF("File %s: ", filename);
+
+    // Create file
     status = fx_file_create(&g_fx_spi_nor_media, filename);
-    if (status == FX_SUCCESS || status == FX_ALREADY_CREATED)
+    if (status != FX_SUCCESS && status != FX_ALREADY_CREATED)
     {
-      status = fx_file_open(&g_fx_spi_nor_media, &file, filename, FX_OPEN_FOR_WRITE);
+      Get_hw_timestump(&file_end_ts);
+      operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+      MPRINTF("FAILED (create): %s (total: %6u us)\n\r", _Get_filex_error_description(status), operation_time);
+      stats.errors_count++;
+      continue;
+    }
+
+    // Open file with timing
+    Get_hw_timestump(&open_start_ts);
+    status = fx_file_open(&g_fx_spi_nor_media, &file, filename, FX_OPEN_FOR_WRITE);
+    Get_hw_timestump(&open_end_ts);
+    open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
+
+    if (status != FX_SUCCESS)
+    {
+      Get_hw_timestump(&file_end_ts);
+      operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
+              _Get_filex_error_description(status), open_time, operation_time);
+      stats.errors_count++;
+      continue;
+    }
+
+    MPRINTF("opened: %5u us, ", open_time);
+
+    // Write file data with I/O timing
+    uint32_t bytes_to_write = g_test_file_size;
+    uint32_t total_written  = 0;
+    bool     write_error    = false;
+    T_sys_timestump io_start_ts, io_end_ts;
+
+    while (total_written < bytes_to_write && !write_error)
+    {
+      uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
+
+      _Fill_test_buffer(g_test_buffer, chunk_size, i);
+
+      Get_hw_timestump(&io_start_ts);
+      status = fx_file_write(&file, g_test_buffer, chunk_size);
+      Get_hw_timestump(&io_end_ts);
+      io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
+
       if (status == FX_SUCCESS)
       {
-        uint32_t bytes_to_write = g_test_file_size;
-        uint32_t total_written  = 0;
-        bool     write_error    = false;
-
-        while (total_written < bytes_to_write && !write_error)
-        {
-          uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
-
-          _Fill_test_buffer(g_test_buffer, chunk_size, i);
-
-          status = fx_file_write(&file, g_test_buffer, chunk_size);
-          if (status == FX_SUCCESS)
-          {
-            total_written += chunk_size;
-          }
-          else
-          {
-            MPRINTF("Write error in file %s at offset %lu: %s\n\r", filename, total_written, _Get_filex_error_description(status));
-            write_error = true;
-            stats.errors_count++;
-          }
-        }
-
-        fx_file_close(&file);
-
-        if (!write_error)
-        {
-          stats.bytes_processed += total_written;
-        }
+        total_written += chunk_size;
       }
       else
       {
-        MPRINTF("Error opening file %s: %s\n\r", filename, _Get_filex_error_description(status));
+        Get_hw_timestump(&file_end_ts);
+        operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+        MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r",
+                total_written, _Get_filex_error_description(status), io_time, operation_time);
+        write_error = true;
         stats.errors_count++;
+      }
+    }
+
+    if (!write_error)
+    {
+      // Close file with timing
+      Get_hw_timestump(&close_start_ts);
+      status = fx_file_close(&file);
+      Get_hw_timestump(&close_end_ts);
+      close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
+      Get_hw_timestump(&file_end_ts);
+      operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+
+      if (status != FX_SUCCESS)
+      {
+        MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
+                _Get_filex_error_description(status), close_time, operation_time);
+        stats.errors_count++;
+      }
+      else
+      {
+        // Calculate speed in KB/s based on I/O time
+        if (io_time > 0)
+        {
+          speed_kbps = (uint32_t)((float)g_test_file_size * 1000000.0f / ((float)io_time * 1024.0f));
+        }
+        else
+        {
+          speed_kbps = 0;
+        }
+
+        MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s\n\r",
+                close_time, io_time, operation_time, speed_kbps);
+        stats.bytes_processed += total_written;
       }
     }
     else
     {
-      MPRINTF("Error creating file %s: %s\n\r", filename, _Get_filex_error_description(status));
-      stats.errors_count++;
+      // Close file even if write failed
+      fx_file_close(&file);
     }
 
-    Get_hw_timestump(&file_end_ts);
     uint32_t file_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-
     if (file_time < stats.min_time) stats.min_time = file_time;
     if (file_time > stats.max_time) stats.max_time = file_time;
 
     stats.operations_count++;
-
-    // Progress indicator
-    if ((i + 1) % 10 == 0 || i == g_test_files_count - 1)
-    {
-      MPRINTF("Progress: %lu/%lu files written\r", i + 1, g_test_files_count);
-    }
   }
 
   Get_hw_timestump(&end_ts);
@@ -717,11 +759,11 @@ static void _Do_read_test(void)
     return;
   }
 
-  // Change to test directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/test_files");
+  // Change to root directory
+  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
   if (status != FX_SUCCESS)
   {
-    MPRINTF("Error: test_files directory not found. Run write test first.\n\r");
+    MPRINTF("Error: Could not access root directory. Run write test first.\n\r");
     return;
   }
 
@@ -732,71 +774,115 @@ static void _Do_read_test(void)
 
   for (uint32_t i = 0; i < g_test_files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "test_%04lu.dat", i);
+    snprintf(filename, sizeof(filename), "%s%03lu.bin", FILEX_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
+    T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
+    uint32_t open_time = 0, close_time = 0, io_time = 0, operation_time = 0;
+    uint32_t speed_kbps = 0;
+
     Get_hw_timestump(&file_start_ts);
 
-    // Open file for reading
+    MPRINTF("File %s: ", filename);
+
+    // Open file for reading with timing
+    Get_hw_timestump(&open_start_ts);
     status = fx_file_open(&g_fx_spi_nor_media, &file, filename, FX_OPEN_FOR_READ);
-    if (status == FX_SUCCESS)
+    Get_hw_timestump(&open_end_ts);
+    open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
+
+    if (status != FX_SUCCESS)
     {
-      uint32_t bytes_to_read = g_test_file_size;
-      uint32_t total_read    = 0;
-      bool     read_error    = false;
-      bool     verify_error  = false;
+      Get_hw_timestump(&file_end_ts);
+      operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
+              _Get_filex_error_description(status), open_time, operation_time);
+      stats.errors_count++;
+      continue;
+    }
 
-      while (total_read < bytes_to_read && !read_error)
+    MPRINTF("opened: %5u us, ", open_time);
+
+    // Read file data with I/O timing
+    uint32_t bytes_to_read = g_test_file_size;
+    uint32_t total_read    = 0;
+    bool     read_error    = false;
+    bool     verify_error  = false;
+    T_sys_timestump io_start_ts, io_end_ts;
+
+    while (total_read < bytes_to_read && !read_error)
+    {
+      uint32_t chunk_size = (bytes_to_read - total_read > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_read - total_read);
+
+      Get_hw_timestump(&io_start_ts);
+      status = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
+      Get_hw_timestump(&io_end_ts);
+      io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
+
+      if (status == FX_SUCCESS && actual_read == chunk_size)
       {
-        uint32_t chunk_size = (bytes_to_read - total_read > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_read - total_read);
-        status              = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
-        if (status == FX_SUCCESS && actual_read == chunk_size)
-        {
-          total_read += actual_read;
+        total_read += actual_read;
 
-          // Verify data if enabled
-          if (g_verify_data && !_Verify_test_buffer(g_test_buffer, actual_read, i))
-          {
-            MPRINTF("Data verification failed in file %s at offset %lu\n\r", filename, total_read - actual_read);
-            verify_error = true;
-            stats.errors_count++;
-          }
-        }
-        else
+        // Verify data if enabled
+        if (g_verify_data && !_Verify_test_buffer(g_test_buffer, actual_read, i))
         {
-          MPRINTF("Read error in file %s at offset %lu: %s (read %lu, expected %lu)\n\r",
-                  filename, total_read, _Get_filex_error_description(status), actual_read, chunk_size);
-          read_error = true;
+          Get_hw_timestump(&file_end_ts);
+          operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+          MPRINTF("FAILED (verify at offset %lu): Data verification failed (I/O: %6u us, total: %6u us)\n\r",
+                  total_read - actual_read, io_time, operation_time);
+          verify_error = true;
           stats.errors_count++;
+          break;
         }
       }
-
-      fx_file_close(&file);
-
-      if (!read_error && !verify_error)
+      else
       {
-        stats.bytes_processed += total_read;
+        Get_hw_timestump(&file_end_ts);
+        operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+        MPRINTF("FAILED (read at offset %lu): %s (read %lu, expected %lu, I/O: %6u us, total: %6u us)\n\r",
+                total_read, _Get_filex_error_description(status), actual_read, chunk_size, io_time, operation_time);
+        read_error = true;
+        stats.errors_count++;
+        break;
       }
     }
-    else
+
+    // Close file with timing
+    Get_hw_timestump(&close_start_ts);
+    status = fx_file_close(&file);
+    Get_hw_timestump(&close_end_ts);
+    close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
+    Get_hw_timestump(&file_end_ts);
+    operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+
+    if (status != FX_SUCCESS)
     {
-      MPRINTF("Error opening file %s: %s\n\r", filename, _Get_filex_error_description(status));
+      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
+              _Get_filex_error_description(status), close_time, operation_time);
       stats.errors_count++;
     }
+    else if (!read_error && !verify_error)
+    {
+      // Calculate speed in KB/s based on I/O time
+      if (io_time > 0)
+      {
+        speed_kbps = (uint32_t)((float)g_test_file_size * 1000000.0f / ((float)io_time * 1024.0f));
+      }
+      else
+      {
+        speed_kbps = 0;
+      }
 
-    Get_hw_timestump(&file_end_ts);
+      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s\n\r",
+              close_time, io_time, operation_time, speed_kbps);
+      stats.bytes_processed += total_read;
+    }
+
     uint32_t file_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-
     if (file_time < stats.min_time) stats.min_time = file_time;
     if (file_time > stats.max_time) stats.max_time = file_time;
 
     stats.operations_count++;
-
-    // Progress indicator
-    if ((i + 1) % 10 == 0 || i == g_test_files_count - 1)
-    {
-      MPRINTF("Progress: %lu/%lu files read\r", i + 1, g_test_files_count);
-    }
   }
 
   Get_hw_timestump(&end_ts);
@@ -831,11 +917,11 @@ static void _Do_delete_test(void)
 
   MPRINTF("\n=== FileX Delete Test ===\n\r");
 
-  // Change to test directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/test_files");
+  // Change to root directory
+  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
   if (status != FX_SUCCESS)
   {
-    MPRINTF("Error: test_files directory not found. Run write test first.\n\r");
+    MPRINTF("Error: Could not access root directory. Run write test first.\n\r");
     return;
   }
 
@@ -846,43 +932,35 @@ static void _Do_delete_test(void)
 
   for (uint32_t i = 0; i < g_test_files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "test_%04lu.dat", i);
+    snprintf(filename, sizeof(filename), "%s%03lu.bin", FILEX_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
+    uint32_t operation_time = 0;
+
     Get_hw_timestump(&file_start_ts);
 
+    MPRINTF("File %s: ", filename);
+
     status = fx_file_delete(&g_fx_spi_nor_media, filename);
+    Get_hw_timestump(&file_end_ts);
+    operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
+
     if (status == FX_SUCCESS)
     {
+      MPRINTF("deleted: %6u us\n\r", operation_time);
       stats.bytes_processed += g_test_file_size;  // Assume file was the expected size
     }
     else
     {
-      MPRINTF("Error deleting file %s: %s\n\r", filename, _Get_filex_error_description(status));
+      MPRINTF("FAILED: %s (%6u us)\n\r", _Get_filex_error_description(status), operation_time);
       stats.errors_count++;
     }
 
-    Get_hw_timestump(&file_end_ts);
     uint32_t file_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-
     if (file_time < stats.min_time) stats.min_time = file_time;
     if (file_time > stats.max_time) stats.max_time = file_time;
 
     stats.operations_count++;
-
-    // Progress indicator
-    if ((i + 1) % 10 == 0 || i == g_test_files_count - 1)
-    {
-      MPRINTF("Progress: %lu/%lu files deleted\r", i + 1, g_test_files_count);
-    }
-  }
-
-  // Return to root directory and delete test directory
-  fx_directory_default_set(&g_fx_spi_nor_media, "/");
-  status = fx_directory_delete(&g_fx_spi_nor_media, "test_files");
-  if (status != FX_SUCCESS)
-  {
-    MPRINTF("Warning: Could not delete test_files directory: %s\n\r", _Get_filex_error_description(status));
   }
 
   Get_hw_timestump(&end_ts);
@@ -1186,18 +1264,20 @@ void Do_FileX_list_files(uint8_t keycode)
       {
         // Get filename from user
         char filename[MAX_FILENAME_LENGTH];
-        if (VT100_input_filename(filename, MAX_FILENAME_LENGTH, "test_001.dat"))
+        if (VT100_input_filename(filename, MAX_FILENAME_LENGTH, "test_001.bin"))
         {
           // Add leading slash if not present
           char full_filename[MAX_FILENAME_LENGTH + 1];
-          if (filename[0] != '/')
+          if (filename[0] == '/')
           {
-            snprintf(full_filename, sizeof(full_filename), "/%s", filename);
+            // Already has absolute path
+            strncpy(full_filename, filename, sizeof(full_filename) - 1);
+            full_filename[sizeof(full_filename) - 1] = '\0';
           }
           else
           {
-            strncpy(full_filename, filename, sizeof(full_filename) - 1);
-            full_filename[sizeof(full_filename) - 1] = '\0';
+            // Add leading slash for root directory
+            snprintf(full_filename, sizeof(full_filename), "/%s", filename);
           }
 
           MPRINTF("Opening file: %s\n\r", full_filename);
