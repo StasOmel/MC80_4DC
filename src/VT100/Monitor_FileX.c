@@ -260,36 +260,29 @@ static void _Print_filex_info(void)
     // Calculate sizes in bytes first to avoid overflow
     ULONG cluster_size_bytes   = sectors_per_cluster * bytes_per_sector;
 
-    // Calculate cluster counts - available_bytes contains free space in bytes
-    ULONG available_clusters   = available_bytes / cluster_size_bytes;
-
     // Use data cluster count from media structure (this is the actual user data area)
     ULONG data_clusters        = g_fx_spi_nor_media.fx_media_available_clusters;
-    ULONG used_clusters        = data_clusters - available_clusters;
 
     // Calculate sizes based on data clusters from media structure
     ULONG total_size_bytes     = total_clusters * cluster_size_bytes;
     ULONG data_size_bytes      = data_clusters * cluster_size_bytes;
-    ULONG available_size_bytes = available_bytes;  // Use actual available bytes from API
-    ULONG used_size_bytes      = used_clusters * cluster_size_bytes;
+    ULONG used_size_bytes      = total_size_bytes - available_bytes;
 
     MPRINTF("Media ID             : 0x%lX\n\r", g_fx_spi_nor_media.fx_media_id);
     MPRINTF("Total clusters       : %lu\n\r", total_clusters);
     MPRINTF("Data clusters        : %lu\n\r", data_clusters);
-    MPRINTF("Available clusters   : %lu\n\r", available_clusters);
-    MPRINTF("Used clusters        : %lu\n\r", used_clusters);
     MPRINTF("Sectors per cluster  : %lu\n\r", sectors_per_cluster);
     MPRINTF("Bytes per sector     : %lu\n\r", bytes_per_sector);
     MPRINTF("Cluster size         : %lu bytes\n\r", cluster_size_bytes);
     MPRINTF("Total space          : %lu KB (%lu MB)\n\r", total_size_bytes / 1024, total_size_bytes / (1024 * 1024));
     MPRINTF("Data space           : %lu KB (%lu MB)\n\r", data_size_bytes / 1024, data_size_bytes / (1024 * 1024));
-    MPRINTF("Available space      : %lu KB (%lu MB)\n\r", available_size_bytes / 1024, available_size_bytes / (1024 * 1024));
+    MPRINTF("Available space      : %lu KB (%lu MB)\n\r", available_bytes / 1024, available_bytes / (1024 * 1024));
     MPRINTF("Used space           : %lu KB (%lu MB)\n\r", used_size_bytes / 1024, used_size_bytes / (1024 * 1024));
 
-    // Calculate and display usage percentage based on data space
-    if (data_size_bytes > 0)
+    // Calculate and display usage percentage based on total disk space
+    if (total_size_bytes > 0)
     {
-      ULONG usage_percent = (used_size_bytes * 100) / data_size_bytes;
+      ULONG usage_percent = (used_size_bytes * 100) / total_size_bytes;
       MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, 100 - usage_percent);
     }
   }
