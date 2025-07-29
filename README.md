@@ -140,7 +140,45 @@ High-performance OSPI flash driver featuring:
 
 This project is licensed under the MIT License - see the [`LICENSE`](LICENSE ) file for details.
 
-## 🔌 Board Connections
+## � Release Information
+
+### v1.0-filesystem-testing - Filesystem Performance Analysis Complete
+
+This release marks the successful completion of comprehensive filesystem testing and performance analysis for the MC80_4DC platform. The testing framework has been fully validated and provides detailed performance metrics for both supported filesystems.
+
+#### 🎯 Release Highlights
+
+- **Complete Filesystem Testing Framework**: Unified testing interface supporting both LittleFS and FileX filesystems
+- **Performance Analysis Tools**: Comprehensive Python-based analysis suite with detailed performance graphs
+- **Unified Statistics Engine**: Common performance measurement framework for both filesystems
+- **Bug Fixes**: Resolved speed calculation issues and disk space reporting accuracy
+- **Configuration Optimization**: FileX directory entry limits configured for optimal performance
+
+#### 📊 Testing Results
+
+The testing framework provides comprehensive analysis of:
+- **Read Performance**: File open/close timing and throughput analysis
+- **Write Performance**: Write speed analysis with first-file overhead measurements
+- **Delete Performance**: Deletion speed analysis with performance degradation tracking
+- **Storage Efficiency**: Accurate disk space utilization and percentage calculations
+
+#### 🛠 Technical Improvements
+
+- **Unified Test Functions**: FileX read tests now include pattern validation and size verification
+- **Fixed Statistics Calculations**: Corrected average and minimum speed calculations for delete operations
+- **Accurate Disk Usage**: Fixed FileX media information display with proper used space calculations
+- **Python Analysis Suite**: Created universal log parsers supporting both LittleFS and FileX log formats
+
+#### 📈 Performance Analysis Tools
+
+The release includes Python scripts for detailed performance analysis:
+- `Parse_FS_read_log.py` - Read operation analysis with timing breakdowns
+- `Parse_FS_write_log.py` - Write operation analysis with speed metrics
+- `Parse_FS_delete_log.py` - Delete operation analysis with performance tracking
+
+All analysis tools support both filesystem formats and generate comprehensive matplotlib-based visualizations.
+
+## �🔌 Board Connections
 
 **MC80_4DC** - Experimental DC motor control with precision analog feedback.
 ![MC80 Connections](Doc/Img/MC80_Connections.png)
