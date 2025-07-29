@@ -10725,21 +10725,6 @@
                 </file>
             </group>
             <group>
-                <name>FileSystem</name>
-                <file>
-                    <name>$PROJ_DIR$\src\FileSystem\FS_init.c</name>
-                </file>
-                <file>
-                    <name>$PROJ_DIR$\src\FileSystem\FS_init.h</name>
-                </file>
-                <file>
-                    <name>$PROJ_DIR$\src\FileSystem\FS_utils.c</name>
-                </file>
-                <file>
-                    <name>$PROJ_DIR$\src\FileSystem\FS_utils.h</name>
-                </file>
-            </group>
-            <group>
                 <name>FreeMaster</name>
                 <file>
                     <name>$PROJ_DIR$\src\FreeMaster\freemaster.h</name>
@@ -15135,6 +15120,21 @@
                 </file>
             </group>
             <group>
+                <name>uSD_FileSystem</name>
+                <file>
+                    <name>$PROJ_DIR$\src\uSD_FileSystem\FS_init.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\uSD_FileSystem\FS_init.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\uSD_FileSystem\FS_utils.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\uSD_FileSystem\FS_utils.h</name>
+                </file>
+            </group>
+            <group>
                 <name>Utils</name>
                 <file>
                     <name>$PROJ_DIR$\src\Utils\App_utils.c</name>
@@ -15273,6 +15273,165 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\src\VT100\Test_Patterns.h</name>
+                </file>
+            </group>
+            <group>
+                <name>YAFFS2</name>
+                <group>
+                    <name>YAFFS_direct</name>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_allocator.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_allocator.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_attribs.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_attribs.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_bitmap.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_bitmap.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_cache.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_cache.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_checkptrw.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_checkptrw.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_ecc.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_ecc.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_endian.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_endian.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_getblockinfo.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_guts.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_guts.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_hweight.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_hweight.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_nameval.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_nameval.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_nand.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_nand.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_packedtags1.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_packedtags1.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_packedtags2.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_packedtags2.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_summary.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_summary.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_tagscompat.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_tagscompat.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_tagsmarshall.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_tagsmarshall.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_trace.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_verify.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_verify.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_yaffs1.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_yaffs1.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_yaffs2.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_yaffs2.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffscfg.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffsfs.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffsfs.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\ydirectenv.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\ydirectenv.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yportenv.h</name>
+                    </file>
+                </group>
+                <file>
+                    <name>$PROJ_DIR$\src\YAFFS2\yaffs_nor_adapter.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\YAFFS2\yaffs_nor_adapter.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\YAFFS2\yaffs_nor_config.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\YAFFS2\yaffs_nor_device.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\YAFFS2\yaffs_nor_device.h</name>
                 </file>
             </group>
             <file>

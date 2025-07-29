@@ -32,32 +32,36 @@ static struct yaffs_dev g_yaffs_nor_device =
     // YAFFS2 feature configuration
     .is_yaffs2 = 1,                               // Enable YAFFS2 features
     .use_header_file_size = YAFFS_NOR_USE_HEADER_FILE_SIZE,
-    .disable_lazy_load = YAFFS_NOR_DISABLE_LAZY_LOAD,
     .refresh_period = YAFFS_NOR_REFRESH_PERIOD,
     .n_caches = YAFFS_NOR_CACHE_SIZE,
-    .n_reserved_blocks = YAFFS_NOR_RESERVED_BLOCKS,
 
     // Deterministic behavior settings
-    .disable_background_gc = YAFFS_NOR_DISABLE_BACKGROUND_GC,  // Manual GC control
-    .gc_control = YAFFS_GC_CONTROL_DISABLE_BG,    // Disable background garbage collection
-    .disable_summary = 0,                         // Enable summary for fast mount
-    .empty_lost_and_found = YAFFS_NOR_EMPTY_LOST_AND_FOUND,
+    .empty_lost_n_found = YAFFS_NOR_EMPTY_LOST_AND_FOUND,
 
     // ECC and reliability settings
-    .no_tags_ecc = YAFFS_NOR_NO_TAGS_ECC,         // Enable ECC for metadata
-    .inband_tags = YAFFS_NOR_INBAND_TAGS,         // Use separate OOB area
-    .always_check_checkpt = YAFFS_NOR_ALWAYS_CHECK_CHECKPT,
-    .auto_checkpoint = YAFFS_NOR_AUTO_CHECKPT,
+    .no_tags_ecc = YAFFS_NOR_NO_TAGS_ECC,         // Disable ECC for metadata
+    .inband_tags = YAFFS_NOR_INBAND_TAGS,         // Store tags inside data area
+  },
 
-    // Wide tree nodes for large file support
-    .wide_tnodes = YAFFS_NOR_WIDE_TNODES,
+  // Driver functions for hardware interface
+  .drv =
+  {
+    .drv_write_chunk_fn = NULL,                   // Not used - we use tagger
+    .drv_read_chunk_fn = NULL,                    // Not used - we use tagger
+    .drv_erase_fn = Yaffs_nor_erase_block,
+    .drv_mark_bad_fn = Yaffs_nor_mark_bad_block,
+    .drv_check_bad_fn = Yaffs_nor_check_bad_block,
+    .drv_initialise_fn = Yaffs_nor_initialise,
+    .drv_deinitialise_fn = Yaffs_nor_deinitialise,
+  },
 
-    // Hardware interface functions
+  // Tags handler for metadata operations
+  .tagger =
+  {
     .write_chunk_tags_fn = Yaffs_nor_write_chunk_tags,
     .read_chunk_tags_fn = Yaffs_nor_read_chunk_tags,
-    .erase_fn = Yaffs_nor_erase_block,
-    .check_bad_block_fn = Yaffs_nor_check_bad_block,
-    .mark_bad_block_fn = Yaffs_nor_mark_bad_block,
+    .query_block_fn = NULL,                       // Optional
+    .mark_bad_fn = Yaffs_nor_mark_bad_block,
   },
 
   // Runtime state (initialized by YAFFS2)
@@ -192,7 +196,7 @@ int Yaffs_nor_device_garbage_collect(const char *mount_point, int urgency)
   }
 
   // Perform garbage collection
-  blocks_collected = yaffs_do_background_gc(dev, urgency);
+  blocks_collected = yaffs_do_background_gc_reldev(dev, urgency);
 
   return blocks_collected;
 }

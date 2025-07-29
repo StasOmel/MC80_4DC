@@ -1,6 +1,11 @@
+#include "App.h"
 #include "yaffs_nor_adapter.h"
-#include "yaffs_nor_config.h"
 #include "MC80_OSPI_drv.h"
+
+// Compile-time check for inband tags mode (tags are stored within data area)
+_Static_assert(YAFFS_NOR_PAGE_OOB_SIZE == 0,
+               "OOB size must be 0 for inband tags mode");
+
 
 /*-----------------------------------------------------------------------------------------------------
   External reference to OSPI driver control structure
@@ -47,7 +52,7 @@ int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
   // Prepare page data area
   if (NULL != data)
   {
-    // Copy user data to page buffer
+    // Copy data to page buffer (includes inband tags at end if present)
     memcpy(p_page->data, data, YAFFS_NOR_PAGE_DATA_SIZE);
   }
   else
@@ -56,24 +61,8 @@ int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
     memset(p_page->data, 0xFF, YAFFS_NOR_PAGE_DATA_SIZE);
   }
 
-  // Prepare OOB area with tags
-  if (NULL != tags)
-  {
-    // Copy YAFFS tags to OOB area
-    memcpy(p_page->oob, tags, sizeof(struct yaffs_ext_tags));
-
-    // Fill remaining OOB space with erased pattern
-    if (sizeof(struct yaffs_ext_tags) < YAFFS_NOR_PAGE_OOB_SIZE)
-    {
-      memset(&p_page->oob[sizeof(struct yaffs_ext_tags)], 0xFF,
-             YAFFS_NOR_PAGE_OOB_SIZE - sizeof(struct yaffs_ext_tags));
-    }
-  }
-  else
-  {
-    // No tags - fill entire OOB with erased pattern
-    memset(p_page->oob, 0xFF, YAFFS_NOR_PAGE_OOB_SIZE);
-  }
+  // Note: With inband tags, YAFFS2 already placed tags inside data buffer
+  // No separate OOB processing needed
 
   // Write complete page (data + OOB) to NOR Flash using OSPI driver
   err = Mc80_ospi_memory_mapped_write(&g_ospi_ctrl,
@@ -131,17 +120,14 @@ int Yaffs_nor_read_chunk_tags(struct yaffs_dev *dev, int chunk_id,
 
   if (FSP_SUCCESS == err)
   {
-    // Copy data to user buffer if requested
+    // Copy data to user buffer if requested (includes inband tags at end)
     if (NULL != data)
     {
       memcpy(data, p_page->data, YAFFS_NOR_PAGE_DATA_SIZE);
     }
 
-    // Extract tags from OOB area if requested
-    if (NULL != tags)
-    {
-      memcpy(tags, p_page->oob, sizeof(struct yaffs_ext_tags));
-    }
+    // Note: With inband tags, YAFFS2 extracts tags from data buffer itself
+    // No separate OOB processing needed
   }
 
   // Free temporary buffer

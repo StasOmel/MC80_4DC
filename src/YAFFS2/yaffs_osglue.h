@@ -18,26 +18,29 @@
  */
 
 
-#ifndef __YAFFSCFG_H__
-#define __YAFFSCFG_H__
+#ifndef __YAFFS_OSGLUE_H__
+#define __YAFFS_OSGLUE_H__
 
 
 #include "yportenv.h"
 
+void yaffsfs_Lock(void);
+void yaffsfs_Unlock(void);
 
-#ifdef CONFIG_YAFFS_SMALL_RAM
-#define YAFFSFS_N_HANDLES	10
-#define YAFFSFS_N_DSC		2
-#else
-#define YAFFSFS_N_HANDLES	100
-#define YAFFSFS_N_DSC		20
+u32 yaffsfs_CurrentTime(void);
+
+void yaffsfs_SetError(int err);
+
+void *yaffsfs_malloc(size_t size);
+void yaffsfs_free(void *ptr);
+
+void yaffsfs_get_malloc_values(unsigned *current, unsigned *high_water);
+
+
+int yaffsfs_CheckMemRegion(const void *addr, size_t size, int write_request);
+
+void yaffsfs_OSInitialisation(void);
+
+
 #endif
 
-
-struct yaffsfs_DeviceConfiguration {
-	const YCHAR *prefix;
-	struct yaffs_dev *dev;
-};
-
-
-#endif

@@ -12,32 +12,12 @@
  * Note: Only YAFFS headers are LGPL, YAFFS C code is covered by GPL.
  */
 
-/*
- * Header file for using yaffs in an application via
- * a direct interface.
- */
-
-
-#ifndef __YAFFSCFG_H__
-#define __YAFFSCFG_H__
-
+#ifndef __YAFFS_HWEIGHT_H__
+#define __YAFFS_HWEIGHT_H__
 
 #include "yportenv.h"
 
-
-#ifdef CONFIG_YAFFS_SMALL_RAM
-#define YAFFSFS_N_HANDLES	10
-#define YAFFSFS_N_DSC		2
-#else
-#define YAFFSFS_N_HANDLES	100
-#define YAFFSFS_N_DSC		20
-#endif
-
-
-struct yaffsfs_DeviceConfiguration {
-	const YCHAR *prefix;
-	struct yaffs_dev *dev;
-};
-
+int yaffs_hweight8(u8 x);
+int yaffs_hweight32(u32 x);
 
 #endif
