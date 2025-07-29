@@ -1,24 +1,15 @@
 #include "App.h"
 #include "Performance_Stats.h"
 #include "Test_Patterns.h"
+#include "FS_Test_Config.h"
 
 #define MAX_PATH_LENGTH              256
 #define MAX_DIRS_IN_STACK            32
 
-// Performance test configuration
-#define LFS_TEST_FILES_COUNT_DEFAULT 10      // Default number of files
-#define LFS_TEST_FILE_SIZE_DEFAULT   (10*1024) // Default file size (10 KB)
-#define LFS_TEST_BLOCK_SIZE_DEFAULT  (64*1024)// Default block size (64 KB)
-#define LFS_TEST_FILE_PREFIX         "test_"  // File name prefix
-#define LFS_MAX_FILENAME_LENGTH      64       // Maximum filename length
-
-// Data integrity definitions
-#define CRC32_SIZE                   4     // CRC32 size in bytes
-
 // Performance test parameters (configurable)
-static uint32_t g_test_files_count         = LFS_TEST_FILES_COUNT_DEFAULT;
-static uint32_t g_test_file_size           = LFS_TEST_FILE_SIZE_DEFAULT;
-static uint32_t g_test_block_size          = LFS_TEST_BLOCK_SIZE_DEFAULT;
+static uint32_t g_test_files_count         = FS_TEST_FILES_COUNT_DEFAULT;
+static uint32_t g_test_file_size           = FS_TEST_FILE_SIZE_DEFAULT;
+static uint32_t g_test_block_size          = FS_TEST_BLOCK_SIZE_DEFAULT;
 static uint32_t g_data_pattern             = DATA_PATTERN_CONSTANT;
 static uint32_t g_fill_constant            = DEFAULT_FILL_CONSTANT;
 static bool     g_enable_data_verification = true;
@@ -469,11 +460,11 @@ void Do_LittleFS_list_files(uint8_t keycode)
       if (choice == '1')
       {
         // Get filename from user
-        char filename[LFS_MAX_FILENAME_LENGTH];
-        if (VT100_input_filename(filename, LFS_MAX_FILENAME_LENGTH, "test_001.bin"))
+        char filename[FS_MAX_FILENAME_LENGTH];
+        if (VT100_input_filename(filename, FS_MAX_FILENAME_LENGTH, "test_001.bin"))
         {
           // Add leading slash if not present
-          char full_filename[LFS_MAX_FILENAME_LENGTH + 1];
+          char full_filename[FS_MAX_FILENAME_LENGTH + 1];
           if (filename[0] != '/')
           {
             snprintf(full_filename, sizeof(full_filename), "/%s", filename);
@@ -505,8 +496,8 @@ void Do_LittleFS_list_files(uint8_t keycode)
             }
             else
             {
-              // Read file in blocks using LFS_TEST_BLOCK_SIZE_DEFAULT
-              uint32_t block_size       = LFS_TEST_BLOCK_SIZE_DEFAULT;
+              // Read file in blocks using FS_TEST_BLOCK_SIZE_DEFAULT
+              uint32_t block_size       = FS_TEST_BLOCK_SIZE_DEFAULT;
               uint32_t total_bytes_read = 0;
               uint32_t current_offset   = 0;
 
@@ -646,7 +637,7 @@ static void _Do_write_test(void)
   GET_MCBL;
   uint8_t          *buffer = NULL;
   T_performance_stats stats;
-  char              filename[LFS_MAX_FILENAME_LENGTH];
+  char              filename[FS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
   uint32_t          open_time, close_time, io_time;
@@ -676,7 +667,7 @@ static void _Do_write_test(void)
   MPRINTF(", Verification: %s\n\r", g_enable_data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size              = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
+  data_size              = g_test_file_size >= FS_CRC32_SIZE ? g_test_file_size - FS_CRC32_SIZE : g_test_file_size;
 
   // Initialize statistics
   Performance_stats_init(&stats);
@@ -694,7 +685,7 @@ static void _Do_write_test(void)
   // Write files
   for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
   {
-    snprintf(filename, LFS_MAX_FILENAME_LENGTH, "/%s%03u.bin", LFS_TEST_FILE_PREFIX, file_idx + 1);
+    snprintf(filename, FS_MAX_FILENAME_LENGTH, "/%s%03u.bin", FS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Writing %s... ", filename);
 
     T_sys_timestump start_ts, end_ts, open_start_ts, open_end_ts, close_start_ts, close_end_ts;
@@ -770,11 +761,11 @@ static void _Do_write_test(void)
     }
 
     // Write CRC32 at the end of file
-    if (g_enable_data_verification && g_test_file_size >= CRC32_SIZE)
+    if (g_enable_data_verification && g_test_file_size >= FS_CRC32_SIZE)
     {
       crc32_value = ~crc;
       Get_hw_timestump(&io_start_ts);
-      lfs_ssize_t written = lfs_file_write(&g_littlefs_context.lfs, &file, &crc32_value, CRC32_SIZE);
+      lfs_ssize_t written = lfs_file_write(&g_littlefs_context.lfs, &file, &crc32_value, FS_CRC32_SIZE);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
       if (written < 0)
@@ -859,7 +850,7 @@ static void _Do_read_test(void)
   GET_MCBL;
   uint8_t          *buffer = NULL;
   T_performance_stats stats;
-  char              filename[LFS_MAX_FILENAME_LENGTH];
+  char              filename[FS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
   uint32_t          open_time, close_time, io_time;
@@ -891,7 +882,7 @@ static void _Do_read_test(void)
   MPRINTF(", Verification: %s\n\r", g_enable_data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size              = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
+  data_size              = g_test_file_size >= FS_CRC32_SIZE ? g_test_file_size - FS_CRC32_SIZE : g_test_file_size;
 
   // Initialize statistics
   Performance_stats_init(&stats);
@@ -909,7 +900,7 @@ static void _Do_read_test(void)
   // Read files
   for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
   {
-    snprintf(filename, LFS_MAX_FILENAME_LENGTH, "/%s%03u.bin", LFS_TEST_FILE_PREFIX, file_idx + 1);
+    snprintf(filename, FS_MAX_FILENAME_LENGTH, "/%s%03u.bin", FS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Reading %s... ", filename);
 
     T_sys_timestump start_ts, end_ts, open_start_ts, open_end_ts, close_start_ts, close_end_ts;
@@ -1001,13 +992,13 @@ static void _Do_read_test(void)
     }
 
     // Read and verify CRC32 if enabled
-    if (g_enable_data_verification && g_test_file_size >= CRC32_SIZE)
+    if (g_enable_data_verification && g_test_file_size >= FS_CRC32_SIZE)
     {
       Get_hw_timestump(&io_start_ts);
-      lfs_ssize_t crc_read = lfs_file_read(&g_littlefs_context.lfs, &file, &file_crc32, CRC32_SIZE);
+      lfs_ssize_t crc_read = lfs_file_read(&g_littlefs_context.lfs, &file, &file_crc32, FS_CRC32_SIZE);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
-      if (crc_read == CRC32_SIZE)
+      if (crc_read == FS_CRC32_SIZE)
       {
         calculated_crc32 = ~crc;
         if (file_crc32 != calculated_crc32)
@@ -1067,7 +1058,7 @@ static void _Do_read_test(void)
         MPRINTF(", CRC: %s", crc_valid ? "OK" : "ERROR");
         MPRINTF(", Pattern: %s", pattern_valid ? "OK" : "ERROR");
         MPRINTF(", Size: %s", size_valid ? "OK" : "ERROR");
-        if (crc_valid && g_test_file_size >= CRC32_SIZE)
+        if (crc_valid && g_test_file_size >= FS_CRC32_SIZE)
         {
           MPRINTF(" (0x%08X)", file_crc32);
         }
@@ -1101,7 +1092,7 @@ static void _Do_delete_test(void)
 {
   GET_MCBL;
   T_performance_stats stats;
-  char              filename[LFS_MAX_FILENAME_LENGTH];
+  char              filename[FS_MAX_FILENAME_LENGTH];
   int               result;
   uint32_t          operation_time;
 
@@ -1114,7 +1105,7 @@ static void _Do_delete_test(void)
   // Delete files
   for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
   {
-    snprintf(filename, LFS_MAX_FILENAME_LENGTH, "/%s%03u.bin", LFS_TEST_FILE_PREFIX, file_idx + 1);
+    snprintf(filename, FS_MAX_FILENAME_LENGTH, "/%s%03u.bin", FS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Deleting %s... ", filename);
 
     // Delete file
@@ -1417,9 +1408,9 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           break;
 
         case '9':
-          g_test_files_count         = LFS_TEST_FILES_COUNT_DEFAULT;
-          g_test_file_size           = LFS_TEST_FILE_SIZE_DEFAULT;
-          g_test_block_size          = LFS_TEST_BLOCK_SIZE_DEFAULT;
+          g_test_files_count         = FS_TEST_FILES_COUNT_DEFAULT;
+          g_test_file_size           = FS_TEST_FILE_SIZE_DEFAULT;
+          g_test_block_size          = FS_TEST_BLOCK_SIZE_DEFAULT;
           g_data_pattern             = DATA_PATTERN_CONSTANT;
           g_fill_constant            = DEFAULT_FILL_CONSTANT;
           g_enable_data_verification = true;

@@ -2,23 +2,17 @@
 #include "LevelX_config.h"
 #include "Performance_Stats.h"
 #include "Test_Patterns.h"
+#include "FS_Test_Config.h"
 
-#define FILEX_TEST_FILES_COUNT_DEFAULT 10
-#define FILEX_TEST_FILE_SIZE_DEFAULT   (10 * 1024)  // 10KB
-#define FILEX_TEST_BLOCK_SIZE_DEFAULT  (64 * 1024)  // 64KB
-#define FILEX_TEST_FILE_PREFIX         "test_"      // File name prefix
-#define DEFAULT_FILL_CONSTANT          0xAA
 #define MAX_PATH_LENGTH                256
-#define MAX_FILENAME_LENGTH            64
 #define MAX_DIR_STACK_DEPTH            32
 #define FILEX_MEMORY_BUFFER_SIZE       (32 * 1024)  // 32KB
 #define FILEX_TEST_BUFFER_SIZE         (16 * 1024)  // 16KB for test operations
-#define CRC32_SIZE                     4             // CRC32 size in bytes
 
 // Test configuration variables
-static uint32_t g_test_files_count = FILEX_TEST_FILES_COUNT_DEFAULT;
-static uint32_t g_test_file_size   = FILEX_TEST_FILE_SIZE_DEFAULT;
-static uint32_t g_test_block_size  = FILEX_TEST_BLOCK_SIZE_DEFAULT;
+static uint32_t g_test_files_count = FS_TEST_FILES_COUNT_DEFAULT;
+static uint32_t g_test_file_size   = FS_TEST_FILE_SIZE_DEFAULT;
+static uint32_t g_test_block_size  = FS_TEST_BLOCK_SIZE_DEFAULT;
 static uint32_t g_data_pattern     = DATA_PATTERN_CONSTANT;
 static uint32_t g_fill_constant    = DEFAULT_FILL_CONSTANT;
 static bool     g_verify_data      = true;
@@ -446,7 +440,7 @@ static void _Do_write_test(void)
   T_performance_stats   stats;
   T_sys_timestump start_ts, end_ts;
   FX_FILE         file;
-  CHAR            filename[MAX_FILENAME_LENGTH];
+  CHAR            filename[FS_MAX_FILENAME_LENGTH];
   UINT            status;
 
   MPRINTF("\n=== FileX Write Test ===\n\r");
@@ -476,7 +470,7 @@ static void _Do_write_test(void)
 
   for (uint32_t i = 0; i < g_test_files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "%s%03lu.bin", FILEX_TEST_FILE_PREFIX, i + 1);
+    snprintf(filename, sizeof(filename), "%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
     T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
@@ -520,7 +514,7 @@ static void _Do_write_test(void)
     uint32_t crc = 0xFFFFFFFF;
 
     // Write file data with I/O timing
-    uint32_t bytes_to_write = g_test_file_size > CRC32_SIZE ? g_test_file_size - CRC32_SIZE : 0;
+    uint32_t bytes_to_write = g_test_file_size > FS_CRC32_SIZE ? g_test_file_size - FS_CRC32_SIZE : 0;
     uint32_t total_written  = 0;
     bool     write_error    = false;
     T_sys_timestump io_start_ts, io_end_ts;
@@ -532,7 +526,7 @@ static void _Do_write_test(void)
       Test_patterns_fill_buffer(g_test_buffer, chunk_size, g_data_pattern, g_fill_constant, total_written);
 
       // Update CRC with this chunk
-      if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+      if (g_verify_data && g_test_file_size >= FS_CRC32_SIZE)
       {
         crc = CRC32_IEEE802_3(crc, g_test_buffer, chunk_size);
       }
@@ -560,17 +554,17 @@ static void _Do_write_test(void)
     if (!write_error)
     {
       // Write CRC32 at the end of file if verification enabled
-      if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+      if (g_verify_data && g_test_file_size >= FS_CRC32_SIZE)
       {
         uint32_t crc32_value = ~crc;
         Get_hw_timestump(&io_start_ts);
-        status = fx_file_write(&file, &crc32_value, CRC32_SIZE);
+        status = fx_file_write(&file, &crc32_value, FS_CRC32_SIZE);
         Get_hw_timestump(&io_end_ts);
         io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
         if (status == FX_SUCCESS)
         {
-          total_written += CRC32_SIZE;
+          total_written += FS_CRC32_SIZE;
         }
         else
         {
@@ -616,7 +610,7 @@ static void _Do_write_test(void)
                 close_time, io_time, operation_time, speed_kbps);
 
         // Show CRC32 if verification enabled
-        if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+        if (g_verify_data && g_test_file_size >= FS_CRC32_SIZE)
         {
           uint32_t final_crc = ~crc;
           MPRINTF(", CRC32: 0x%08lX", final_crc);
@@ -659,7 +653,7 @@ static void _Do_read_test(void)
   T_performance_stats   stats;
   T_sys_timestump start_ts, end_ts;
   FX_FILE         file;
-  CHAR            filename[MAX_FILENAME_LENGTH];
+  CHAR            filename[FS_MAX_FILENAME_LENGTH];
   UINT            status;
   ULONG           actual_read;
 
@@ -690,7 +684,7 @@ static void _Do_read_test(void)
 
   for (uint32_t i = 0; i < g_test_files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "%s%03lu.bin", FILEX_TEST_FILE_PREFIX, i + 1);
+    snprintf(filename, sizeof(filename), "%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
     T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
@@ -724,7 +718,7 @@ static void _Do_read_test(void)
     bool     crc_valid = true;
 
     // Read file data with I/O timing
-    uint32_t bytes_to_read = g_test_file_size > CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
+    uint32_t bytes_to_read = g_test_file_size > FS_CRC32_SIZE ? g_test_file_size - FS_CRC32_SIZE : g_test_file_size;
     uint32_t total_read    = 0;
     bool     read_error    = false;
     bool     verify_error  = false;
@@ -756,7 +750,7 @@ static void _Do_read_test(void)
         total_read += actual_read;
 
         // Update CRC with this chunk if verification enabled
-        if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+        if (g_verify_data && g_test_file_size >= FS_CRC32_SIZE)
         {
           crc = CRC32_IEEE802_3(crc, g_test_buffer, actual_read);
         }
@@ -774,15 +768,15 @@ static void _Do_read_test(void)
     }
 
     // Read and verify CRC32 if enabled
-    if (!read_error && !verify_error && g_verify_data && g_test_file_size >= CRC32_SIZE)
+    if (!read_error && !verify_error && g_verify_data && g_test_file_size >= FS_CRC32_SIZE)
     {
       uint32_t file_crc32, calculated_crc32;
       Get_hw_timestump(&io_start_ts);
-      status = fx_file_read(&file, &file_crc32, CRC32_SIZE, &actual_read);
+      status = fx_file_read(&file, &file_crc32, FS_CRC32_SIZE, &actual_read);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
-      if (status == FX_SUCCESS && actual_read == CRC32_SIZE)
+      if (status == FX_SUCCESS && actual_read == FS_CRC32_SIZE)
       {
         calculated_crc32 = ~crc;
         if (file_crc32 != calculated_crc32)
@@ -829,7 +823,7 @@ static void _Do_read_test(void)
               close_time, io_time, operation_time, speed_kbps);
 
       // Show CRC32 status if verification enabled
-      if (g_verify_data && g_test_file_size >= CRC32_SIZE)
+      if (g_verify_data && g_test_file_size >= FS_CRC32_SIZE)
       {
         if (crc_valid)
         {
@@ -872,7 +866,7 @@ static void _Do_delete_test(void)
   GET_MCBL;
   T_performance_stats   stats;
   T_sys_timestump start_ts, end_ts;
-  CHAR            filename[MAX_FILENAME_LENGTH];
+  CHAR            filename[FS_MAX_FILENAME_LENGTH];
   UINT            status;
 
   MPRINTF("\n=== FileX Delete Test ===\n\r");
@@ -894,7 +888,7 @@ static void _Do_delete_test(void)
 
   for (uint32_t i = 0; i < g_test_files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "%s%03lu.bin", FILEX_TEST_FILE_PREFIX, i + 1);
+    snprintf(filename, sizeof(filename), "%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
     uint32_t operation_time = 0;
@@ -1227,11 +1221,11 @@ void Do_FileX_list_files(uint8_t keycode)
       if (choice == '1')
       {
         // Get filename from user
-        char filename[MAX_FILENAME_LENGTH];
-        if (VT100_input_filename(filename, MAX_FILENAME_LENGTH, "test_001.bin"))
+        char filename[FS_MAX_FILENAME_LENGTH];
+        if (VT100_input_filename(filename, FS_MAX_FILENAME_LENGTH, "test_001.bin"))
         {
           // Add leading slash if not present
-          char full_filename[MAX_FILENAME_LENGTH + 1];
+          char full_filename[FS_MAX_FILENAME_LENGTH + 1];
           if (filename[0] == '/')
           {
             // Already has absolute path
@@ -1551,9 +1545,9 @@ void Do_FileX_performance_test(uint8_t keycode)
           break;
 
         case '9':
-          g_test_files_count = FILEX_TEST_FILES_COUNT_DEFAULT;
-          g_test_file_size   = FILEX_TEST_FILE_SIZE_DEFAULT;
-          g_test_block_size  = FILEX_TEST_BLOCK_SIZE_DEFAULT;
+          g_test_files_count = FS_TEST_FILES_COUNT_DEFAULT;
+          g_test_file_size   = FS_TEST_FILE_SIZE_DEFAULT;
+          g_test_block_size  = FS_TEST_BLOCK_SIZE_DEFAULT;
           g_data_pattern     = DATA_PATTERN_CONSTANT;
           g_fill_constant    = DEFAULT_FILL_CONSTANT;
           g_verify_data      = true;
