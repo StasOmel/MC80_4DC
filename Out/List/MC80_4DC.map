@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ELF Linker V9.70.1.475/W64 for ARM                  29/Jul/2025  11:32:18
+# IAR ELF Linker V9.70.1.475/W64 for ARM                  29/Jul/2025  11:37:14
 # Copyright 2007-2025 IAR Systems AB.
 #
 #    Output file                  =
@@ -3602,7 +3602,7 @@ No sections matched the following patterns:
 "P1|P12|P17|P22|P24|P26", part 2 of 2:                          0x0
   DTCM_DATA_INIT                    0x200'01e0         16       0x0  <Block>
 
-"P2":                                                      0xc'635e
+"P2":                                                      0xc'625a
   .rodata                 const     0x200'01e0          8      0x18  MC80_OSPI_drv.o [2]
   .rodata                 const     0x200'01f8          8      0x18  MC80_OSPI_drv.o [2]
   .rodata                 const     0x200'0210          8      0x18  MC80_OSPI_drv.o [2]
@@ -8055,129 +8055,129 @@ No sections matched the following patterns:
   .text                   ro code   0x20b'4830          4    0x1d04  Monitor_FileX.o [24]
   .text                   ro code   0x20b'6534          4     0x108  Test_Patterns.o [24]
   .text                   ro code   0x20b'663c          4     0x394  Performance_Stats.o [24]
-  .text                   ro code   0x20b'69d0          4    0x1d3c  Monitor_LittleFS.o [24]
-  .text                   ro code   0x20b'870c          4     0x654  Monitor_log_viewer.o [24]
-  .text                   ro code   0x20b'8d60          4     0xeb0  Monitor_Motor.o [24]
-  .text                   ro code   0x20b'9c10          4    0x2878  Monitor_OSPI.o [24]
-  .text                   ro code   0x20b'c488          4     0xc64  Monitor_RTT.o [24]
-  .text                   ro code   0x20b'd0ec          4     0xba0  Monitor_TMC6200.o [24]
-  .text                   ro code   0x20b'dc8c          4       0x6  ABImemclr.o [81]
-  .text                   ro code   0x20b'dc94          4     0x5e2  Monitor_USB_drv.o [22]
-  .text                   ro code   0x20b'e278          4      0x74  nx_packet_pool_cleanup.o [70]
-  .text                   ro code   0x20b'e2ec          4      0x70  nx_udp_receive_cleanup.o [70]
-  .text                   ro code   0x20b'e35c          4     0x48a  r_dmac.o [41]
-  .text                   ro code   0x20b'e7e8          4     0x284  r_dtc.o [42]
-  .text                   ro code   0x20b'ea6c          4      0xde  r_ether.o [44]
-  Veneer                  ro code   0x20b'eb4c          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb54          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb5c          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb64          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb6c          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb74          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb7c          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb84          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb8c          4       0x8  - Linker created -
-  Veneer                  ro code   0x20b'eb94          4       0x8  - Linker created -
-  .text                   ro code   0x20b'eb9c          4     0xa40  r_flash_hp.o [46]
-  .text                   ro code   0x20b'f5dc          4     0xdc0  r_sdhi.o [51]
-  .text                   ro code   0x20c'039c          4     0x1f0  rm_block_media_sdmmc.o [55]
-  .text                   ro code   0x20c'058c          4      0x10  startup.o [21]
-  .text                   ro code   0x20c'059c          4     0x254  system.o [21]
-  .text                   ro code   0x20c'07f0          2      0x12  main.o [54]
-  .text                   ro code   0x20c'0804          4      0x18  cppinit.o [79]
-  .text                   ro code   0x20c'081c          4      0x48  tx_initialize_kernel_enter.o [73]
-  .text                   ro code   0x20c'0864          4      0xcc  tx_initialize_low_level.o [61]
-  .text                   ro code   0x20c'0930          2       0xc  tx_initialize_high_level.o [73]
-  .text                   ro code   0x20c'093c          4      0xb0  tx_thread_schedule.o [61]
-  .text                   ro code   0x20c'09ec          4      0x20  tx_thread_initialize.o [73]
-  .text                   ro code   0x20c'0a0c          4      0x34  tx_timer_initialize.o [73]
-  .text                   ro code   0x20c'0a40          4      0x24  tx_port_wait_thread_ready.o [61]
-  .text                   ro code   0x20c'0a64          4      0xc0  tx_timer_interrupt.o [61]
-  .text                   ro code   0x20c'0b24          4     0x1e8  tx_timer_expiration_process.o [73]
-  .text                   ro code   0x20c'0d0c          4      0x80  tx_thread_time_slice.o [73]
-  .text                   ro code   0x20c'0d8c          4      0x98  tx_block_pool_cleanup.o [73]
-  .text                   ro code   0x20c'0e24          4      0x98  tx_byte_pool_cleanup.o [73]
-  .text                   ro code   0x20c'0ebc          4      0xa0  tx_event_flags_cleanup.o [73]
-  .text                   ro code   0x20c'0f5c          4      0xdc  tx_mutex_cleanup.o [73]
-  .text                   ro code   0x20c'1038          4      0xa8  tx_queue_cleanup.o [73]
-  .text                   ro code   0x20c'10e0          4      0x98  tx_semaphore_cleanup.o [73]
-  .text                   ro code   0x20c'1178          4      0x24  tx_thread_schedule.o [61]
-  .text                   ro code   0x20c'119c          4      0x84  tx_thread_shell_entry.o [73]
-  .text                   ro code   0x20c'1220          4      0x50  tx_thread_timeout.o [73]
-  .text                   ro code   0x20c'1270          4      0xd8  ux_device_class_cdc_acm_bulkin_thread.o [74]
-  .text                   ro code   0x20c'1348          2      0x14  ux_utility_event_flags_get.o [68]
-  .text                   ro code   0x20c'135c          4      0x74  ux_device_class_cdc_acm_bulkout_thread.o [74]
-  .text                   ro code   0x20c'13d0          4      0xe4  ux_device_class_cdc_acm_control_request.o [74]
-  .text                   ro code   0x20c'14b4          2      0x1a  ux_utility_long_put.o [68]
-  .text                   ro code   0x20c'14d0          4     0x19c  ux_device_class_cdc_acm_initialize.o [74]
-  .text                   ro code   0x20c'166c          2       0x8  ux_utility_mutex_delete.o [68]
-  .text                   ro code   0x20c'1674          2      0x1c  ux_utility_event_flags_create.o [68]
-  .text                   ro code   0x20c'1690          2      0x3a  ux_utility_thread_create.o [68]
-  .text                   ro code   0x20c'16ca          2      0x12  ux_utility_thread_delete.o [68]
-  .text                   ro code   0x20c'16dc          2       0x8  ux_utility_event_flags_delete.o [68]
-  .text                   ro code   0x20c'16e4          4      0x22  fpinit_M.o [80]
-  .text                   ro code   0x20c'1708          4     0x13c  heap0.o [79]
-  .text                   ro code   0x20c'1844          4      0x2c  xgetmemchunk.o [79]
-  .text                   ro code   0x20c'1870          4      0x4c  iarwstdswo.o [82]
-  .version                const     0x20c'18bc          4       0x4  bsp_common.o [26]
-  .version                const     0x20c'18c0          4       0x8  bsp_common.o [26]
-  .version                const     0x20c'18c8          4      0x44  bsp_common.o [26]
-  RAM_INIT_CODE                     0x20c'190c                0x54c  <Block>
-    .code_in_ram_init               0x20c'190c                0x54c  <Block>
-      Initializer bytes   const     0x20c'190c          4     0x54c  <for .code_in_ram-1>
-  .data_init                        0x20c'1e58                0xcf8  <Block>
-    Initializer bytes     const     0x20c'1e58          4     0xcf8  <for .data-1>
-  .text                   ro code   0x20c'2b50          2       0xa  common_data.o [54]
-  .text                   ro code   0x20c'2b5a          2      0x18  gx_canvas_shift.o [71]
-  .text                   ro code   0x20c'2b72          2     0x210  gx_display_driver_16bpp_block_move.o [71]
-  .text                   ro code   0x20c'2d82          2      0xc4  gx_display_driver_16bpp_canvas_copy.o [71]
-  .text                   ro code   0x20c'2e46          2      0x64  gx_display_driver_16bpp_horizontal_line_draw.o [71]
-  .text                   ro code   0x20c'2eaa          2      0x48  gx_display_driver_horizontal_line_alpha_draw.o [71]
-  .text                   ro code   0x20c'2ef2          2       0x8  gx_display_driver_16bpp_row_pitch_get.o [71]
-  .text                   ro code   0x20c'2efa          2     0x5a2  gx_display_driver_16bpp_simple_line_draw.o [71]
-  .text                   ro code   0x20c'349c          2     0x4b6  gx_display_driver_simple_line_alpha_draw.o [71]
-  .text                   ro code   0x20c'3952          2      0x64  gx_display_driver_16bpp_vertical_line_draw.o [71]
-  .text                   ro code   0x20c'39b6          2      0x4c  gx_display_driver_vertical_line_alpha_draw.o [71]
-  .text                   ro code   0x20c'3a02          2      0x54  gx_display_driver_16bpp_vertical_pattern_line_draw.o [71]
-  .text                   ro code   0x20c'3a56          2     0x196  gx_display_driver_565rgb_canvas_blend.o [71]
-  .text                   ro code   0x20c'3bec          2     0x384  gx_display_driver_565rgb_glyph_1bit_draw.o [71]
-  .text                   ro code   0x20c'3f70          2     0x792  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
-  .text                   ro code   0x20c'4702          2     0x53e  gx_display_driver_generic_aliased_fixed_point_line_draw.o [71]
-  .text                   ro code   0x20c'4c40          2     0x5d2  gx_display_driver_generic_aliased_line_draw.o [71]
-  .text                   ro code   0x20c'5212          2     0x1a4  gx_display_driver_generic_aliased_wide_line_draw.o [71]
-  .text                   ro code   0x20c'53b6          2     0x380  gx_display_driver_generic_alphamap_draw.o [71]
-  .text                   ro code   0x20c'5736          2     0x2be  gx_display_driver_generic_glyph_4bpp_draw.o [71]
-  .text                   ro code   0x20c'59f4          2     0x132  gx_display_driver_generic_glyph_8bpp_draw.o [71]
-  .text                   ro code   0x20c'5b26          2     0x162  gx_display_driver_generic_pie_fill.o [71]
-  .text                   ro code   0x20c'5c88          2      0x70  gx_display_driver_generic_polygon_draw.o [71]
-  .text                   ro code   0x20c'5cf8          2     0x18e  gx_display_driver_generic_simple_wide_line_draw.o [71]
-  .text                   ro code   0x20c'5e86          2      0x32  gx_multi_line_text_view_draw.o [71]
-  .text                   ro code   0x20c'5eb8          2      0x18  gx_prompt_draw.o [71]
-  .text                   ro code   0x20c'5ed0          2      0x26  gx_widget_background_draw.o [71]
-  .text                   ro code   0x20c'5ef6          2      0x52  gx_prompt_text_draw.o [71]
-  .text                   ro code   0x20c'5f48          2      0xe2  gx_widget_text_draw.o [71]
-  .text                   ro code   0x20c'602a          2      0x22  gx_prompt_text_get.o [71]
-  .text                   ro code   0x20c'604c          2      0x18  gx_rich_text_view_draw.o [71]
-  .text                   ro code   0x20c'6064          2      0xd0  gx_rich_text_view_scroll_info_get.o [71]
-  .text                   ro code   0x20c'6134          2      0x12  gx_widget_draw.o [71]
-  .text                   ro code   0x20c'6146          2      0x46  gx_window_root_event_process.o [71]
-  .text                   ro code   0x20c'618c          2      0xb4  gx_window_scroll_info_get.o [71]
-  .text                   ro code   0x20c'6240          2      0x1c  ux_device_class_cdc_acm_activate.o [74]
-  .text                   ro code   0x20c'625c          2      0x4c  ux_device_class_cdc_acm_deactivate.o [74]
-  .text                   ro code   0x20c'62a8          2     0x15a  ux_device_class_cdc_acm_ioctl.o [74]
-  .text                   ro code   0x20c'6402          2       0x8  ux_utility_thread_resume.o [68]
-  .text                   ro code   0x20c'640a          2      0x4e  ux_device_class_cdc_acm_entry.o [74]
-  .text                   ro code   0x20c'6458          2      0x44  ux_device_class_cdc_acm_unitialize.o [74]
-  .text                   ro code   0x20c'649c          2       0x4  heaptramp0.o [79]
-  .text                   ro code   0x20c'64a0          2      0x16  xprout.o [79]
-  .text                   ro code   0x20c'64b6          2      0x20  putchar.o [79]
-  .text                   ro code   0x20c'64d6          2      0x10  write.o [82]
-  .text                   ro code   0x20c'64e6          2      0x1e  dwrite.o [82]
-  .text                   ro code   0x20c'6504          2      0x22  iarwrite.o [82]
-  .rodata                 const     0x20c'6526                  0x8  Motor_Driver_task.o [72]
-  .rodata                 const     0x20c'652e                  0x8  Motor_Driver_task.o [72]
-  .rodata                 const     0x20c'6536                  0x8  Motor_Driver_task.o [72]
-                                  - 0x20c'653e             0xc'635e
+  .text                   ro code   0x20b'69d0          4    0x1c38  Monitor_LittleFS.o [24]
+  .text                   ro code   0x20b'8608          4     0x654  Monitor_log_viewer.o [24]
+  .text                   ro code   0x20b'8c5c          4     0xeb0  Monitor_Motor.o [24]
+  .text                   ro code   0x20b'9b0c          4    0x2878  Monitor_OSPI.o [24]
+  .text                   ro code   0x20b'c384          4     0xc64  Monitor_RTT.o [24]
+  .text                   ro code   0x20b'cfe8          4     0xba0  Monitor_TMC6200.o [24]
+  .text                   ro code   0x20b'db88          4       0x6  ABImemclr.o [81]
+  .text                   ro code   0x20b'db90          4     0x5e2  Monitor_USB_drv.o [22]
+  .text                   ro code   0x20b'e174          4      0x74  nx_packet_pool_cleanup.o [70]
+  .text                   ro code   0x20b'e1e8          4      0x70  nx_udp_receive_cleanup.o [70]
+  .text                   ro code   0x20b'e258          4     0x48a  r_dmac.o [41]
+  .text                   ro code   0x20b'e6e4          4     0x284  r_dtc.o [42]
+  .text                   ro code   0x20b'e968          4      0xde  r_ether.o [44]
+  Veneer                  ro code   0x20b'ea48          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea50          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea58          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea60          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea68          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea70          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea78          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea80          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea88          4       0x8  - Linker created -
+  Veneer                  ro code   0x20b'ea90          4       0x8  - Linker created -
+  .text                   ro code   0x20b'ea98          4     0xa40  r_flash_hp.o [46]
+  .text                   ro code   0x20b'f4d8          4     0xdc0  r_sdhi.o [51]
+  .text                   ro code   0x20c'0298          4     0x1f0  rm_block_media_sdmmc.o [55]
+  .text                   ro code   0x20c'0488          4      0x10  startup.o [21]
+  .text                   ro code   0x20c'0498          4     0x254  system.o [21]
+  .text                   ro code   0x20c'06ec          2      0x12  main.o [54]
+  .text                   ro code   0x20c'0700          4      0x18  cppinit.o [79]
+  .text                   ro code   0x20c'0718          4      0x48  tx_initialize_kernel_enter.o [73]
+  .text                   ro code   0x20c'0760          4      0xcc  tx_initialize_low_level.o [61]
+  .text                   ro code   0x20c'082c          2       0xc  tx_initialize_high_level.o [73]
+  .text                   ro code   0x20c'0838          4      0xb0  tx_thread_schedule.o [61]
+  .text                   ro code   0x20c'08e8          4      0x20  tx_thread_initialize.o [73]
+  .text                   ro code   0x20c'0908          4      0x34  tx_timer_initialize.o [73]
+  .text                   ro code   0x20c'093c          4      0x24  tx_port_wait_thread_ready.o [61]
+  .text                   ro code   0x20c'0960          4      0xc0  tx_timer_interrupt.o [61]
+  .text                   ro code   0x20c'0a20          4     0x1e8  tx_timer_expiration_process.o [73]
+  .text                   ro code   0x20c'0c08          4      0x80  tx_thread_time_slice.o [73]
+  .text                   ro code   0x20c'0c88          4      0x98  tx_block_pool_cleanup.o [73]
+  .text                   ro code   0x20c'0d20          4      0x98  tx_byte_pool_cleanup.o [73]
+  .text                   ro code   0x20c'0db8          4      0xa0  tx_event_flags_cleanup.o [73]
+  .text                   ro code   0x20c'0e58          4      0xdc  tx_mutex_cleanup.o [73]
+  .text                   ro code   0x20c'0f34          4      0xa8  tx_queue_cleanup.o [73]
+  .text                   ro code   0x20c'0fdc          4      0x98  tx_semaphore_cleanup.o [73]
+  .text                   ro code   0x20c'1074          4      0x24  tx_thread_schedule.o [61]
+  .text                   ro code   0x20c'1098          4      0x84  tx_thread_shell_entry.o [73]
+  .text                   ro code   0x20c'111c          4      0x50  tx_thread_timeout.o [73]
+  .text                   ro code   0x20c'116c          4      0xd8  ux_device_class_cdc_acm_bulkin_thread.o [74]
+  .text                   ro code   0x20c'1244          2      0x14  ux_utility_event_flags_get.o [68]
+  .text                   ro code   0x20c'1258          4      0x74  ux_device_class_cdc_acm_bulkout_thread.o [74]
+  .text                   ro code   0x20c'12cc          4      0xe4  ux_device_class_cdc_acm_control_request.o [74]
+  .text                   ro code   0x20c'13b0          2      0x1a  ux_utility_long_put.o [68]
+  .text                   ro code   0x20c'13cc          4     0x19c  ux_device_class_cdc_acm_initialize.o [74]
+  .text                   ro code   0x20c'1568          2       0x8  ux_utility_mutex_delete.o [68]
+  .text                   ro code   0x20c'1570          2      0x1c  ux_utility_event_flags_create.o [68]
+  .text                   ro code   0x20c'158c          2      0x3a  ux_utility_thread_create.o [68]
+  .text                   ro code   0x20c'15c6          2      0x12  ux_utility_thread_delete.o [68]
+  .text                   ro code   0x20c'15d8          2       0x8  ux_utility_event_flags_delete.o [68]
+  .text                   ro code   0x20c'15e0          4      0x22  fpinit_M.o [80]
+  .text                   ro code   0x20c'1604          4     0x13c  heap0.o [79]
+  .text                   ro code   0x20c'1740          4      0x2c  xgetmemchunk.o [79]
+  .text                   ro code   0x20c'176c          4      0x4c  iarwstdswo.o [82]
+  .version                const     0x20c'17b8          4       0x4  bsp_common.o [26]
+  .version                const     0x20c'17bc          4       0x8  bsp_common.o [26]
+  .version                const     0x20c'17c4          4      0x44  bsp_common.o [26]
+  RAM_INIT_CODE                     0x20c'1808                0x54c  <Block>
+    .code_in_ram_init               0x20c'1808                0x54c  <Block>
+      Initializer bytes   const     0x20c'1808          4     0x54c  <for .code_in_ram-1>
+  .data_init                        0x20c'1d54                0xcf8  <Block>
+    Initializer bytes     const     0x20c'1d54          4     0xcf8  <for .data-1>
+  .text                   ro code   0x20c'2a4c          2       0xa  common_data.o [54]
+  .text                   ro code   0x20c'2a56          2      0x18  gx_canvas_shift.o [71]
+  .text                   ro code   0x20c'2a6e          2     0x210  gx_display_driver_16bpp_block_move.o [71]
+  .text                   ro code   0x20c'2c7e          2      0xc4  gx_display_driver_16bpp_canvas_copy.o [71]
+  .text                   ro code   0x20c'2d42          2      0x64  gx_display_driver_16bpp_horizontal_line_draw.o [71]
+  .text                   ro code   0x20c'2da6          2      0x48  gx_display_driver_horizontal_line_alpha_draw.o [71]
+  .text                   ro code   0x20c'2dee          2       0x8  gx_display_driver_16bpp_row_pitch_get.o [71]
+  .text                   ro code   0x20c'2df6          2     0x5a2  gx_display_driver_16bpp_simple_line_draw.o [71]
+  .text                   ro code   0x20c'3398          2     0x4b6  gx_display_driver_simple_line_alpha_draw.o [71]
+  .text                   ro code   0x20c'384e          2      0x64  gx_display_driver_16bpp_vertical_line_draw.o [71]
+  .text                   ro code   0x20c'38b2          2      0x4c  gx_display_driver_vertical_line_alpha_draw.o [71]
+  .text                   ro code   0x20c'38fe          2      0x54  gx_display_driver_16bpp_vertical_pattern_line_draw.o [71]
+  .text                   ro code   0x20c'3952          2     0x196  gx_display_driver_565rgb_canvas_blend.o [71]
+  .text                   ro code   0x20c'3ae8          2     0x384  gx_display_driver_565rgb_glyph_1bit_draw.o [71]
+  .text                   ro code   0x20c'3e6c          2     0x792  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+  .text                   ro code   0x20c'45fe          2     0x53e  gx_display_driver_generic_aliased_fixed_point_line_draw.o [71]
+  .text                   ro code   0x20c'4b3c          2     0x5d2  gx_display_driver_generic_aliased_line_draw.o [71]
+  .text                   ro code   0x20c'510e          2     0x1a4  gx_display_driver_generic_aliased_wide_line_draw.o [71]
+  .text                   ro code   0x20c'52b2          2     0x380  gx_display_driver_generic_alphamap_draw.o [71]
+  .text                   ro code   0x20c'5632          2     0x2be  gx_display_driver_generic_glyph_4bpp_draw.o [71]
+  .text                   ro code   0x20c'58f0          2     0x132  gx_display_driver_generic_glyph_8bpp_draw.o [71]
+  .text                   ro code   0x20c'5a22          2     0x162  gx_display_driver_generic_pie_fill.o [71]
+  .text                   ro code   0x20c'5b84          2      0x70  gx_display_driver_generic_polygon_draw.o [71]
+  .text                   ro code   0x20c'5bf4          2     0x18e  gx_display_driver_generic_simple_wide_line_draw.o [71]
+  .text                   ro code   0x20c'5d82          2      0x32  gx_multi_line_text_view_draw.o [71]
+  .text                   ro code   0x20c'5db4          2      0x18  gx_prompt_draw.o [71]
+  .text                   ro code   0x20c'5dcc          2      0x26  gx_widget_background_draw.o [71]
+  .text                   ro code   0x20c'5df2          2      0x52  gx_prompt_text_draw.o [71]
+  .text                   ro code   0x20c'5e44          2      0xe2  gx_widget_text_draw.o [71]
+  .text                   ro code   0x20c'5f26          2      0x22  gx_prompt_text_get.o [71]
+  .text                   ro code   0x20c'5f48          2      0x18  gx_rich_text_view_draw.o [71]
+  .text                   ro code   0x20c'5f60          2      0xd0  gx_rich_text_view_scroll_info_get.o [71]
+  .text                   ro code   0x20c'6030          2      0x12  gx_widget_draw.o [71]
+  .text                   ro code   0x20c'6042          2      0x46  gx_window_root_event_process.o [71]
+  .text                   ro code   0x20c'6088          2      0xb4  gx_window_scroll_info_get.o [71]
+  .text                   ro code   0x20c'613c          2      0x1c  ux_device_class_cdc_acm_activate.o [74]
+  .text                   ro code   0x20c'6158          2      0x4c  ux_device_class_cdc_acm_deactivate.o [74]
+  .text                   ro code   0x20c'61a4          2     0x15a  ux_device_class_cdc_acm_ioctl.o [74]
+  .text                   ro code   0x20c'62fe          2       0x8  ux_utility_thread_resume.o [68]
+  .text                   ro code   0x20c'6306          2      0x4e  ux_device_class_cdc_acm_entry.o [74]
+  .text                   ro code   0x20c'6354          2      0x44  ux_device_class_cdc_acm_unitialize.o [74]
+  .text                   ro code   0x20c'6398          2       0x4  heaptramp0.o [79]
+  .text                   ro code   0x20c'639c          2      0x16  xprout.o [79]
+  .text                   ro code   0x20c'63b2          2      0x20  putchar.o [79]
+  .text                   ro code   0x20c'63d2          2      0x10  write.o [82]
+  .text                   ro code   0x20c'63e2          2      0x1e  dwrite.o [82]
+  .text                   ro code   0x20c'6400          2      0x22  iarwrite.o [82]
+  .rodata                 const     0x20c'6422                  0x8  Motor_Driver_task.o [72]
+  .rodata                 const     0x20c'642a                  0x8  Motor_Driver_task.o [72]
+  .rodata                 const     0x20c'6432                  0x8  Motor_Driver_task.o [72]
+                                  - 0x20c'643a             0xc'625a
 
 "A1":                                                           0x0
   TZ_FLASH                          0x21f'8000                  0x0  <Block>
@@ -9020,7 +9020,7 @@ Unused ranges:
          ----           --       ----
          0x18       0xffff     0xffe8
    0x200'01d8   0x200'01df        0x8
-   0x20c'653e   0x21f'7fff  0x13'1ac2
+   0x20c'643a   0x21f'7fff  0x13'1bc6
   0x2000'0000  0x2000'ffff   0x1'0000
   0x2200'06cc  0x2200'06cf        0x4
   0x2200'13c8  0x2200'1fff      0xc38
@@ -9213,7 +9213,7 @@ D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\Out\Obj\Utils_4974367215967249432.
 D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\Out\Obj\VT100_18299657575648422751.dir: [24]
     Monitor_CAN.o                                                1'588             1'345      263
     Monitor_FileX.o                                              7'428             6'117    8'257
-    Monitor_LittleFS.o                                           7'484             6'465    8'246
+    Monitor_LittleFS.o                                           7'224             6'465    8'246
     Monitor_Motor.o                                              3'760             4'352       14
     Monitor_OSPI.o                                              10'360            13'204       44
     Monitor_RTT.o                                                3'172             5'544
@@ -9228,7 +9228,7 @@ D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\Out\Obj\VT100_18299657575648422751
     Performance_Stats.o                                            916               520
     Test_Patterns.o                                                264                36
     ---------------------------------------------------------------------------------------------
-    Total:                                                      49'282            45'256   19'674
+    Total:                                                      49'022            45'256   19'674
 
 D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\Out\Obj\adaptors_6164255869315187367.dir: [25]
     r_sce_adapt.o                                                  116                        128
@@ -10303,7 +10303,7 @@ shb_l.a: [82]
     Gaps                                                           137
     Linker created                                                  88       48       52
 -------------------------------------------------------------------------------------------------
-    Grand Total:                                               433'321    1'378  379'125  545'974
+    Grand Total:                                               433'061    1'378  379'125  545'974
 
 
 *******************************************************************************
@@ -10319,14 +10319,14 @@ Entry                       Address      Size  Type      Object
 .code_in_ram$$Length          0x54c             --   Gb  - Linker created -
 .code_in_ram$$Limit     0x2200'06cc             --   Gb  - Linker created -
 .code_in_ram_init$$Base
-                         0x20c'190c             --   Gb  - Linker created -
+                         0x20c'1808             --   Gb  - Linker created -
 .code_in_ram_init$$Limit
-                         0x20c'1e58             --   Gb  - Linker created -
+                         0x20c'1d54             --   Gb  - Linker created -
 .data$$Base             0x2200'06d0             --   Gb  - Linker created -
 .data$$Length                 0xcf8             --   Gb  - Linker created -
 .data$$Limit            0x2200'13c8             --   Gb  - Linker created -
-.data_init$$Base         0x20c'1e58             --   Gb  - Linker created -
-.data_init$$Limit        0x20c'2b50             --   Gb  - Linker created -
+.data_init$$Base         0x20c'1d54             --   Gb  - Linker created -
+.data_init$$Limit        0x20c'2a4c             --   Gb  - Linker created -
 AGT0_callback            0x20a'0929       0x8  Code  Gb  Manual_Encoder.o [10]
 Access_control           0x20a'a69d      0x98  Code  Gb  Monitor_access_control.o [24]
 Adc_driver_calculate_scaling_factors
@@ -10409,7 +10409,7 @@ Application_monitor_main_screen
                          0x20a'b6d5       0x2  Code  Wk  Monitor_VT100_manager.o [24]
 Are_any_motors_active    0x20a'0e91      0x3e  Code  Gb  Screen_diagnostic_main.o [20]
 BCD2ToBYTE               0x206'ac35      0x18  Code  Gb  String_utils.o [23]
-BusFault_Handler         0x20c'0599       0x4  Code  Wk  startup.o [21]
+BusFault_Handler         0x20c'0495       0x4  Code  Wk  startup.o [21]
 CANFD_callback           0x206'1201     0x128  Code  Gb  CAN_task.o [3]
 CHECK_IPV6_ADDRESSES_SAME
                          0x208'2265      0x2a  Code  Gb  nx_ipv6_util.o [70]
@@ -10527,12 +10527,12 @@ DataFlash_bgo_ReadArea   0x206'b4e7      0x18  Code  Gb  Flash_driver.o [4]
 DataFlash_bgo_WriteArea
                          0x206'b475      0x72  Code  Gb  Flash_driver.o [4]
 DeInit_monitor_usb_driver
-                         0x20b'dfa5      0xc4  Code  Lc  Monitor_USB_drv.o [22]
+                         0x20b'dea1      0xc4  Code  Lc  Monitor_USB_drv.o [22]
 DeInit_monitor_usb_driver::__FUNCTION__
                          0x205'714c      0x1c  Data  Lc  Monitor_USB_drv.o [22]
-DebugMon_Handler         0x20c'0599       0x4  Code  Wk  startup.o [21]
+DebugMon_Handler         0x20c'0495       0x4  Code  Wk  startup.o [21]
 Decompress_mem_to_mem    0x206'a96d      0x3e  Code  Gb  compressors.o [5]
-Default_Handler          0x20c'0599       0x4  Code  Gb  startup.o [21]
+Default_Handler          0x20c'0495       0x4  Code  Gb  startup.o [21]
 Delay_m85                       0x1            Code  Gb  Sdelay.o [23]
 DeleteNode               0x207'08c3     0x10e  Code  Lc  lzss.o [5]
 DeleteNode               0x206'fdb1      0x96  Code  Gb  sixpack.o [5]
@@ -10550,7 +10550,7 @@ Determine_FreeMaster_interface_type
 Diagn_draw_callback      0x20a'13a1      0x12  Code  Gb  Screen_diagnostic_template.o [20]
 Diagn_event_callback     0x20a'13b3      0x4c  Code  Gb  Screen_diagnostic_template.o [20]
 Diagnostic_CAN           0x20b'3e61     0x156  Code  Gb  Monitor_CAN.o [24]
-Diagnostic_Motor         0x20b'9485     0x5f4  Code  Gb  Monitor_Motor.o [24]
+Diagnostic_Motor         0x20b'9381     0x5f4  Code  Gb  Monitor_Motor.o [24]
 Diagnostic_Motor::__FUNCTION__
                          0x205'1628      0x14  Data  Lc  Monitor_Motor.o [24]
 Diagnostic_Show_heap_state
@@ -10559,12 +10559,12 @@ Diagnostic_Show_pin_states
                          0x20b'4091      0x76  Code  Lc  Monitor_diagnostic.o [24]
 Diagnostic_Show_task_states
                          0x20b'4187     0x326  Code  Lc  Monitor_diagnostic.o [24]
-Diagnostic_TMC6200       0x20b'dadd      0x56  Code  Gb  Monitor_TMC6200.o [24]
+Diagnostic_TMC6200       0x20b'd9d9      0x56  Code  Gb  Monitor_TMC6200.o [24]
 Disable_can_command_processing
                          0x206'1057      0x26  Code  Gb  CAN_message_handler.o [3]
 Disable_can_command_processing::__FUNCTION__
                          0x200'05d8      0x20  Data  Lc  CAN_message_handler.o [3]
-Display_log_screen       0x20b'8785     0x360  Code  Lc  Monitor_log_viewer.o [24]
+Display_log_screen       0x20b'8681     0x360  Code  Lc  Monitor_log_viewer.o [24]
 Display_menu             0x20a'a761      0x66  Code  Gb  Monitor_main_menu.o [24]
 Display_possible_values
                          0x20a'c66b      0x7a  Code  Lc  Monitor_params_editor.o [24]
@@ -10576,10 +10576,10 @@ Do_FileX_performance_test
 Do_LittleFS_init         0x20b'6c47     0x158  Code  Gb  Monitor_LittleFS.o [24]
 Do_LittleFS_list_files   0x20b'6da5     0x3bc  Code  Gb  Monitor_LittleFS.o [24]
 Do_LittleFS_performance_test
-                         0x20b'7fad     0x5f0  Code  Gb  Monitor_LittleFS.o [24]
+                         0x20b'7ea9     0x5f0  Code  Gb  Monitor_LittleFS.o [24]
 Do_Reset                 0x20a'aba1       0x8  Code  Lc  Monitor_main_menu.o [24]
 Do_date_time_set         0x20a'a8fd     0x234  Code  Lc  Monitor_main_menu.o [24]
-Do_show_event_log        0x20b'8aed     0x230  Code  Gb  Monitor_log_viewer.o [24]
+Do_show_event_log        0x20b'89e9     0x230  Code  Gb  Monitor_log_viewer.o [24]
 Dtentox                  0x205'fad5     0x1a0  Code  Lc  strto64.o [80]
 Dtentox                  0x207'1009     0x154  Code  Lc  strto32.o [80]
 ELOGs                    0x206'219b      0x2a  Code  Gb  Logger.o [16]
@@ -11824,7 +11824,7 @@ Fm_usbfs_drv_init        0x208'7a31      0x8c  Code  Lc  FreeMaster_USB_drv.o [8
 Fm_usbfs_drv_printf      0x208'7c2d      0x5c  Code  Lc  FreeMaster_USB_drv.o [8]
 Fm_usbfs_drv_send_buf    0x208'7ae9      0x44  Code  Lc  FreeMaster_USB_drv.o [8]
 Fm_usbfs_drv_wait_ch     0x208'7b2d     0x100  Code  Lc  FreeMaster_USB_drv.o [8]
-Format_delta_time        0x20b'870d      0x78  Code  Lc  Monitor_log_viewer.o [24]
+Format_delta_time        0x20b'8609      0x78  Code  Lc  Monitor_log_viewer.o [24]
 Format_log_string        0x208'7549      0xbc  Code  Gb  FreeMaster_thread.o [8]
 FreeMaster_entry_exit_notify
                          0x208'7521      0x10  Code  Lc  FreeMaster_thread.o [8]
@@ -11897,7 +11897,7 @@ HW_SCE_p_func100         0x207'b89d      0x6c  Code  Gb  hw_sce_p_func100.o [38]
 HW_SCE_p_func101         0x207'b831      0x6c  Code  Gb  hw_sce_p_func101.o [38]
 HW_SCE_p_func102         0x207'b909      0x5c  Code  Gb  hw_sce_p_func102.o [38]
 HW_SCE_p_func103         0x207'b969      0xe0  Code  Gb  hw_sce_p_func103.o [38]
-HardFault_Handler        0x20c'0599       0x4  Code  Wk  startup.o [21]
+HardFault_Handler        0x20c'0495       0x4  Code  Wk  startup.o [21]
 Hw_timestump_diff64_us   0x205'c7fd      0x74  Code  Gb  Time_utils.o [23]
 IDLE_thread             0x2206'6664      0xe8  Data  Gb  IDLE_task.o [72]
 IDLE_thread_create       0x206'6e8d      0x34  Code  Gb  IDLE_task.o [72]
@@ -11958,7 +11958,7 @@ Init_diagn_screen        0x20a'1255      0x6c  Code  Gb  Screen_diagnostic_templ
 Init_diagnostic_main_screen
                          0x20a'0e09      0x38  Code  Gb  Screen_diagnostic_main.o [20]
 Init_monitor_usb_driver
-                         0x20b'ddd9     0x1cc  Code  Lc  Monitor_USB_drv.o [22]
+                         0x20b'dcd5     0x1cc  Code  Lc  Monitor_USB_drv.o [22]
 Init_monitor_usb_driver::__FUNCTION__
                          0x205'70c8      0x18  Data  Lc  Monitor_USB_drv.o [22]
 Init_save_params_mutex   0x206'6f3b      0x10  Code  Gb  IDLE_task.o [72]
@@ -12074,17 +12074,17 @@ Measure_reference_time_interval
                          0x206'6ee3      0x58  Code  Gb  IDLE_task.o [72]
 Measure_reference_time_interval::dwt_initialized
                         0x2208'0c76       0x1  Data  Lc  IDLE_task.o [72]
-MemManage_Handler        0x20c'0599       0x4  Code  Wk  startup.o [21]
+MemManage_Handler        0x20c'0495       0x4  Code  Wk  startup.o [21]
 Menu_press_key_handler   0x20a'a827      0x7c  Code  Gb  Monitor_main_menu.o [24]
-Mn_usb_drv_deinit        0x20b'e24f      0x28  Code  Lc  Monitor_USB_drv.o [22]
-Mn_usb_drv_init          0x20b'e0d5      0x28  Code  Lc  Monitor_USB_drv.o [22]
-Mn_usb_drv_printf        0x20b'e209      0x46  Code  Lc  Monitor_USB_drv.o [22]
-Mn_usb_drv_send_buf      0x20b'e0fd      0x2e  Code  Lc  Monitor_USB_drv.o [22]
-Mn_usb_drv_wait_ch       0x20b'e12b      0xde  Code  Lc  Monitor_USB_drv.o [22]
+Mn_usb_drv_deinit        0x20b'e14b      0x28  Code  Lc  Monitor_USB_drv.o [22]
+Mn_usb_drv_init          0x20b'dfd1      0x28  Code  Lc  Monitor_USB_drv.o [22]
+Mn_usb_drv_printf        0x20b'e105      0x46  Code  Lc  Monitor_USB_drv.o [22]
+Mn_usb_drv_send_buf      0x20b'dff9      0x2e  Code  Lc  Monitor_USB_drv.o [22]
+Mn_usb_drv_wait_ch       0x20b'e027      0xde  Code  Lc  Monitor_USB_drv.o [22]
 Monitor_USB_DeInit_callback
-                         0x20b'e07d      0x14  Code  Gb  Monitor_USB_drv.o [22]
+                         0x20b'df79      0x14  Code  Gb  Monitor_USB_drv.o [22]
 Monitor_USB_Init_callback
-                         0x20b'e069      0x14  Code  Gb  Monitor_USB_drv.o [22]
+                         0x20b'df65      0x14  Code  Gb  Monitor_USB_drv.o [22]
 Motdrv_tmc6200_GetDriverStatus
                          0x206'2f1b      0x36  Code  Gb  MotDrv_TMC6200.o [2]
 Motdrv_tmc6200_GetErrorString
@@ -12159,24 +12159,24 @@ Motor_soft_start_stop::__FUNCTION__
                          0x205'8d40      0x18  Data  Lc  Motor_Soft_Start.o [72]
 Motor_thread_create      0x206'41a5      0x3a  Code  Gb  Motor_Driver_task.o [72]
 NMI_Handler              0x206'07d9      0x3a  Code  Gb  bsp_group_irq.o [26]
-OSPI_chip_erase_full     0x20b'a2d5     0x6e8  Code  Gb  Monitor_OSPI.o [24]
+OSPI_chip_erase_full     0x20b'a1d1     0x6e8  Code  Gb  Monitor_OSPI.o [24]
 OSPI_dma_callback        0x20a'25d3      0x1a  Code  Gb  MC80_OSPI_drv.o [2]
 OSPI_test_comprehensive_memory
-                         0x20b'bc35     0x6fe  Code  Gb  Monitor_OSPI.o [24]
+                         0x20b'bb31     0x6fe  Code  Gb  Monitor_OSPI.o [24]
 OSPI_test_custom_operations
-                         0x20b'ab6d     0x9a8  Code  Gb  Monitor_OSPI.o [24]
+                         0x20b'aa69     0x9a8  Code  Gb  Monitor_OSPI.o [24]
 OSPI_test_custom_operations::results
                         0x2206'c898      0x18  Data  Lc  Monitor_OSPI.o [24]
 OSPI_test_custom_operations::settings
                         0x2206'c888      0x10  Data  Lc  Monitor_OSPI.o [24]
-OSPI_test_info           0x20b'9ded     0x210  Code  Gb  Monitor_OSPI.o [24]
+OSPI_test_info           0x20b'9ce9     0x210  Code  Gb  Monitor_OSPI.o [24]
 PARAM_EDITOR_HELP       0x2200'11f0       0x4  Data  Lc  Monitor_params_editor.o [24]
 PWM_start                0x206'985d      0x26  Code  Gb  PWM_timer_driver.o [4]
 Params_editor_press_key_handler
                          0x20a'c599      0xd2  Code  Gb  Monitor_params_editor.o [24]
 Parse_compile_date_time
                          0x205'c8eb      0x52  Code  Gb  Time_utils.o [23]
-PendSV_Handler           0x20c'095d      0x74  Code  Gb  tx_thread_schedule.o [61]
+PendSV_Handler           0x20c'0859      0x74  Code  Gb  tx_thread_schedule.o [61]
 Performance_stats_finalize
                          0x20b'678d      0x86  Code  Gb  Performance_Stats.o [24]
 Performance_stats_increment_crc_error
@@ -12205,27 +12205,27 @@ Pwm_update_all_phases_callback
                          0x206'9949     0x27e  Code  Gb  PWM_timer_driver.o [4]
 RAM_CODE$$Base          0x2200'0180             --   Gb  - Linker created -
 RAM_CODE$$Limit         0x2200'06cc             --   Gb  - Linker created -
-RAM_INIT_CODE$$Base      0x20c'190c             --   Gb  - Linker created -
-RAM_INIT_CODE$$Limit     0x20c'1e58             --   Gb  - Linker created -
+RAM_INIT_CODE$$Base      0x20c'1808             --   Gb  - Linker created -
+RAM_INIT_CODE$$Limit     0x20c'1d54             --   Gb  - Linker created -
 RAM_pool_create          0x206'a875      0x22  Code  Lc  Memory_manager.o [4]
 RM_BLOCK_MEDIA_SDMMC_CallbackSet
-                         0x20c'0457       0xa  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'0353       0xa  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_Close
-                         0x20c'04a5      0x18  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'03a1      0x18  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_Erase
-                         0x20c'043d      0x1a  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'0339      0x1a  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_InfoGet
-                         0x20c'0491      0x14  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'038d      0x14  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_MediaInit
-                         0x20c'03d5      0x34  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'02d1      0x34  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_Open
-                         0x20c'039d      0x38  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'0299      0x38  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_Read
-                         0x20c'0409      0x1a  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'0305      0x1a  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_StatusGet
-                         0x20c'0461      0x30  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'035d      0x30  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_BLOCK_MEDIA_SDMMC_Write
-                         0x20c'0423      0x1a  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'031f      0x1a  Code  Gb  rm_block_media_sdmmc.o [55]
 RM_FILEX_BLOCK_MEDIA_BlockDriver
                          0x208'8939      0x1e  Code  Gb  rm_filex_block_media.o [56]
 RM_FILEX_BLOCK_MEDIA_Close
@@ -12244,63 +12244,63 @@ RTC_set_system_DateTime
                          0x206'8759      0x46  Code  Gb  RTC_driver.o [4]
 RTC_set_system_DateTime::__FUNCTION__
                          0x205'9ed8      0x18  Data  Lc  RTC_driver.o [4]
-RTT_reset_buffer         0x20b'cec1      0x26  Code  Gb  Monitor_RTT.o [24]
+RTT_reset_buffer         0x20b'cdbd      0x26  Code  Gb  Monitor_RTT.o [24]
 R_AGT_Open               0x20a'0fdd      0xb4  Code  Gb  r_agt.o [39]
 R_AGT_Start              0x20a'1091      0x3c  Code  Gb  r_agt.o [39]
 R_BSP_FlashCacheEnable   0x206'0295      0x18  Code  Lc  bsp_clocks.o [26]
-R_BSP_FlashCacheEnable   0x20b'ec47      0x18  Code  Lc  r_flash_hp.o [46]
+R_BSP_FlashCacheEnable   0x20b'eb43      0x18  Code  Lc  r_flash_hp.o [46]
 R_BSP_Init_RTC           0x206'055f      0x1c  Code  Gb  bsp_clocks.o [26]
 R_BSP_IrqCfg             0x20a'0f7d      0x1a  Code  Lc  r_agt.o [39]
 R_BSP_IrqCfg             0x206'602d      0x1a  Code  Lc  r_canfd.o [40]
-R_BSP_IrqCfg             0x20b'e3e5      0x1a  Code  Lc  r_dmac.o [41]
-R_BSP_IrqCfg             0x20b'ecc1      0x1a  Code  Lc  r_flash_hp.o [46]
+R_BSP_IrqCfg             0x20b'e2e1      0x1a  Code  Lc  r_dmac.o [41]
+R_BSP_IrqCfg             0x20b'ebbd      0x1a  Code  Lc  r_flash_hp.o [46]
 R_BSP_IrqCfg             0x206'baf1      0x1a  Code  Lc  r_rtc.o [50]
-R_BSP_IrqCfg             0x20b'f6e9      0x1a  Code  Lc  r_sdhi.o [51]
+R_BSP_IrqCfg             0x20b'f5e5      0x1a  Code  Lc  r_sdhi.o [51]
 R_BSP_IrqCfg             0x206'8d25      0x1a  Code  Lc  r_spi_b.o [52]
 R_BSP_IrqCfg             0x20b'0595      0x1a  Code  Lc  r_usb_mcu.o [34]
 R_BSP_IrqCfgEnable       0x20a'0fc5      0x16  Code  Lc  r_agt.o [39]
 R_BSP_IrqCfgEnable       0x206'6075      0x16  Code  Lc  r_canfd.o [40]
-R_BSP_IrqCfgEnable       0x20b'e44d      0x16  Code  Lc  r_dmac.o [41]
-R_BSP_IrqCfgEnable       0x20b'ed2d      0x16  Code  Lc  r_flash_hp.o [46]
-R_BSP_IrqCfgEnable       0x20b'f755      0x16  Code  Lc  r_sdhi.o [51]
+R_BSP_IrqCfgEnable       0x20b'e349      0x16  Code  Lc  r_dmac.o [41]
+R_BSP_IrqCfgEnable       0x20b'ec29      0x16  Code  Lc  r_flash_hp.o [46]
+R_BSP_IrqCfgEnable       0x20b'f651      0x16  Code  Lc  r_sdhi.o [51]
 R_BSP_IrqCfgEnable       0x206'8d91      0x16  Code  Lc  r_spi_b.o [52]
 R_BSP_IrqCfgEnable       0x20b'05dd      0x16  Code  Lc  r_usb_mcu.o [34]
 R_BSP_IrqClearPending    0x20a'0f51      0x2c  Code  Lc  r_agt.o [39]
 R_BSP_IrqClearPending    0x206'6001      0x2c  Code  Lc  r_canfd.o [40]
-R_BSP_IrqClearPending    0x20b'e3bb      0x2a  Code  Lc  r_dmac.o [41]
-R_BSP_IrqClearPending    0x20b'ec95      0x2c  Code  Lc  r_flash_hp.o [46]
+R_BSP_IrqClearPending    0x20b'e2b7      0x2a  Code  Lc  r_dmac.o [41]
+R_BSP_IrqClearPending    0x20b'eb91      0x2c  Code  Lc  r_flash_hp.o [46]
 R_BSP_IrqClearPending    0x206'bac5      0x2c  Code  Lc  r_rtc.o [50]
-R_BSP_IrqClearPending    0x20b'f6bd      0x2c  Code  Lc  r_sdhi.o [51]
+R_BSP_IrqClearPending    0x20b'f5b9      0x2c  Code  Lc  r_sdhi.o [51]
 R_BSP_IrqClearPending    0x206'8cf9      0x2c  Code  Lc  r_spi_b.o [52]
 R_BSP_IrqClearPending    0x20b'0569      0x2c  Code  Lc  r_usb_mcu.o [34]
-R_BSP_IrqDisable         0x20b'e42b      0x22  Code  Lc  r_dmac.o [41]
-R_BSP_IrqDisable         0x20b'ed09      0x24  Code  Lc  r_flash_hp.o [46]
+R_BSP_IrqDisable         0x20b'e327      0x22  Code  Lc  r_dmac.o [41]
+R_BSP_IrqDisable         0x20b'ec05      0x24  Code  Lc  r_flash_hp.o [46]
 R_BSP_IrqDisable         0x206'bb39      0x24  Code  Lc  r_rtc.o [50]
-R_BSP_IrqDisable         0x20b'f731      0x24  Code  Lc  r_sdhi.o [51]
+R_BSP_IrqDisable         0x20b'f62d      0x24  Code  Lc  r_sdhi.o [51]
 R_BSP_IrqDisable         0x206'8d6d      0x24  Code  Lc  r_spi_b.o [52]
 R_BSP_IrqEnable          0x20a'0faf      0x16  Code  Lc  r_agt.o [39]
 R_BSP_IrqEnable          0x206'605f      0x16  Code  Lc  r_canfd.o [40]
-R_BSP_IrqEnable          0x20b'e415      0x16  Code  Lc  r_dmac.o [41]
-R_BSP_IrqEnable          0x20b'ecf3      0x16  Code  Lc  r_flash_hp.o [46]
+R_BSP_IrqEnable          0x20b'e311      0x16  Code  Lc  r_dmac.o [41]
+R_BSP_IrqEnable          0x20b'ebef      0x16  Code  Lc  r_flash_hp.o [46]
 R_BSP_IrqEnable          0x206'bb23      0x16  Code  Lc  r_rtc.o [50]
-R_BSP_IrqEnable          0x20b'f71b      0x16  Code  Lc  r_sdhi.o [51]
+R_BSP_IrqEnable          0x20b'f617      0x16  Code  Lc  r_sdhi.o [51]
 R_BSP_IrqEnable          0x206'8d57      0x16  Code  Lc  r_spi_b.o [52]
 R_BSP_IrqEnable          0x20b'05c7      0x16  Code  Lc  r_usb_mcu.o [34]
 R_BSP_IrqEnableNoClear   0x20a'0f99      0x16  Code  Lc  r_agt.o [39]
 R_BSP_IrqEnableNoClear   0x206'6049      0x16  Code  Lc  r_canfd.o [40]
-R_BSP_IrqEnableNoClear   0x20b'e401      0x14  Code  Lc  r_dmac.o [41]
-R_BSP_IrqEnableNoClear   0x20b'ecdd      0x16  Code  Lc  r_flash_hp.o [46]
+R_BSP_IrqEnableNoClear   0x20b'e2fd      0x14  Code  Lc  r_dmac.o [41]
+R_BSP_IrqEnableNoClear   0x20b'ebd9      0x16  Code  Lc  r_flash_hp.o [46]
 R_BSP_IrqEnableNoClear   0x206'bb0d      0x16  Code  Lc  r_rtc.o [50]
-R_BSP_IrqEnableNoClear   0x20b'f705      0x16  Code  Lc  r_sdhi.o [51]
+R_BSP_IrqEnableNoClear   0x20b'f601      0x16  Code  Lc  r_sdhi.o [51]
 R_BSP_IrqEnableNoClear   0x206'8d41      0x16  Code  Lc  r_spi_b.o [52]
 R_BSP_IrqEnableNoClear   0x20b'05b1      0x16  Code  Lc  r_usb_mcu.o [34]
 R_BSP_IrqStatusClear     0x20a'0f35      0x1c  Code  Lc  r_agt.o [39]
 R_BSP_IrqStatusClear     0x206'5fe5      0x1c  Code  Lc  r_canfd.o [40]
-R_BSP_IrqStatusClear     0x20b'e3a1      0x1a  Code  Lc  r_dmac.o [41]
-R_BSP_IrqStatusClear     0x20b'ea85      0x1c  Code  Lc  r_ether.o [44]
-R_BSP_IrqStatusClear     0x20b'ec79      0x1c  Code  Lc  r_flash_hp.o [46]
+R_BSP_IrqStatusClear     0x20b'e29d      0x1a  Code  Lc  r_dmac.o [41]
+R_BSP_IrqStatusClear     0x20b'e981      0x1c  Code  Lc  r_ether.o [44]
+R_BSP_IrqStatusClear     0x20b'eb75      0x1c  Code  Lc  r_flash_hp.o [46]
 R_BSP_IrqStatusClear     0x206'baa9      0x1c  Code  Lc  r_rtc.o [50]
-R_BSP_IrqStatusClear     0x20b'f6a1      0x1c  Code  Lc  r_sdhi.o [51]
+R_BSP_IrqStatusClear     0x20b'f59d      0x1c  Code  Lc  r_sdhi.o [51]
 R_BSP_IrqStatusClear     0x206'8cdd      0x1c  Code  Lc  r_spi_b.o [52]
 R_BSP_IrqStatusClear     0x20b'13ed      0x1c  Code  Lc  r_usb_dma.o [34]
 R_BSP_IrqStatusClear     0x20b'054d      0x1c  Code  Lc  r_usb_mcu.o [34]
@@ -12317,28 +12317,28 @@ R_BSP_SubClockStabilizeWaitAfterReset
 R_BSP_WarmStart          0x209'fb19      0x16  Code  Gb  hal_entry.o [72]
 R_CANFD_Open             0x206'608d     0x252  Code  Gb  r_canfd.o [40]
 R_CANFD_Write            0x206'62e1     0x116  Code  Gb  r_canfd.o [40]
-R_DMAC_CallbackSet       0x20b'e597       0x8  Code  Gb  r_dmac.o [41]
-R_DMAC_Close             0x20b'e59f      0x38  Code  Gb  r_dmac.o [41]
-R_DMAC_Disable           0x20b'e557       0xa  Code  Gb  r_dmac.o [41]
-R_DMAC_Enable            0x20b'e54f       0x8  Code  Gb  r_dmac.o [41]
-R_DMAC_InfoGet           0x20b'e561      0x32  Code  Gb  r_dmac.o [41]
-R_DMAC_Open              0x20b'e465      0x62  Code  Gb  r_dmac.o [41]
-R_DMAC_Reconfigure       0x20b'e4c7      0x1c  Code  Gb  r_dmac.o [41]
-R_DMAC_Reload            0x20b'e593       0x4  Code  Gb  r_dmac.o [41]
-R_DMAC_Reset             0x20b'e4e3      0x54  Code  Gb  r_dmac.o [41]
-R_DMAC_SoftwareStart     0x20b'e537       0xe  Code  Gb  r_dmac.o [41]
-R_DMAC_SoftwareStop      0x20b'e545       0xa  Code  Gb  r_dmac.o [41]
-R_DTC_CallbackSet        0x20b'e937       0x4  Code  Gb  r_dtc.o [42]
-R_DTC_Close              0x20b'e93b      0x24  Code  Gb  r_dtc.o [42]
-R_DTC_Disable            0x20b'e8d7       0xe  Code  Gb  r_dtc.o [42]
-R_DTC_Enable             0x20b'e8cf       0x8  Code  Gb  r_dtc.o [42]
-R_DTC_InfoGet            0x20b'e8e5      0x4e  Code  Gb  r_dtc.o [42]
-R_DTC_Open               0x20b'e7e9      0x46  Code  Gb  r_dtc.o [42]
-R_DTC_Reconfigure        0x20b'e82f      0x2e  Code  Gb  r_dtc.o [42]
-R_DTC_Reload             0x20b'e933       0x4  Code  Gb  r_dtc.o [42]
-R_DTC_Reset              0x20b'e85d      0x6a  Code  Gb  r_dtc.o [42]
-R_DTC_SoftwareStart      0x20b'e8c7       0x4  Code  Gb  r_dtc.o [42]
-R_DTC_SoftwareStop       0x20b'e8cb       0x4  Code  Gb  r_dtc.o [42]
+R_DMAC_CallbackSet       0x20b'e493       0x8  Code  Gb  r_dmac.o [41]
+R_DMAC_Close             0x20b'e49b      0x38  Code  Gb  r_dmac.o [41]
+R_DMAC_Disable           0x20b'e453       0xa  Code  Gb  r_dmac.o [41]
+R_DMAC_Enable            0x20b'e44b       0x8  Code  Gb  r_dmac.o [41]
+R_DMAC_InfoGet           0x20b'e45d      0x32  Code  Gb  r_dmac.o [41]
+R_DMAC_Open              0x20b'e361      0x62  Code  Gb  r_dmac.o [41]
+R_DMAC_Reconfigure       0x20b'e3c3      0x1c  Code  Gb  r_dmac.o [41]
+R_DMAC_Reload            0x20b'e48f       0x4  Code  Gb  r_dmac.o [41]
+R_DMAC_Reset             0x20b'e3df      0x54  Code  Gb  r_dmac.o [41]
+R_DMAC_SoftwareStart     0x20b'e433       0xe  Code  Gb  r_dmac.o [41]
+R_DMAC_SoftwareStop      0x20b'e441       0xa  Code  Gb  r_dmac.o [41]
+R_DTC_CallbackSet        0x20b'e833       0x4  Code  Gb  r_dtc.o [42]
+R_DTC_Close              0x20b'e837      0x24  Code  Gb  r_dtc.o [42]
+R_DTC_Disable            0x20b'e7d3       0xe  Code  Gb  r_dtc.o [42]
+R_DTC_Enable             0x20b'e7cb       0x8  Code  Gb  r_dtc.o [42]
+R_DTC_InfoGet            0x20b'e7e1      0x4e  Code  Gb  r_dtc.o [42]
+R_DTC_Open               0x20b'e6e5      0x46  Code  Gb  r_dtc.o [42]
+R_DTC_Reconfigure        0x20b'e72b      0x2e  Code  Gb  r_dtc.o [42]
+R_DTC_Reload             0x20b'e82f       0x4  Code  Gb  r_dtc.o [42]
+R_DTC_Reset              0x20b'e759      0x6a  Code  Gb  r_dtc.o [42]
+R_DTC_SoftwareStart      0x20b'e7c3       0x4  Code  Gb  r_dtc.o [42]
+R_DTC_SoftwareStop       0x20b'e7c7       0x4  Code  Gb  r_dtc.o [42]
 R_ELC_Close              0x20a'9a11       0xe  Code  Gb  r_elc.o [43]
 R_ELC_Disable            0x20a'9a5b       0xa  Code  Gb  r_elc.o [43]
 R_ELC_Enable             0x20a'9a51       0xa  Code  Gb  r_elc.o [43]
@@ -12348,82 +12348,82 @@ R_ELC_Open               0x20a'99b5      0x5c  Code  Gb  r_elc.o [43]
 R_ELC_SoftwareEventGenerate
                          0x20a'9a1f      0x18  Code  Gb  r_elc.o [43]
 R_FLASH_HP_AccessWindowClear
-                         0x20b'ee91       0x6  Code  Gb  r_flash_hp.o [46]
+                         0x20b'ed8d       0x6  Code  Gb  r_flash_hp.o [46]
 R_FLASH_HP_AccessWindowSet
-                         0x20b'ee8b       0x6  Code  Gb  r_flash_hp.o [46]
+                         0x20b'ed87       0x6  Code  Gb  r_flash_hp.o [46]
 R_FLASH_HP_AntiRollbackCounterIncrement
-                         0x20b'ef2d      0x6c  Code  Gb  r_flash_hp.o [46]
+                         0x20b'ee29      0x6c  Code  Gb  r_flash_hp.o [46]
 R_FLASH_HP_AntiRollbackCounterRead
-                         0x20b'efb5      0x20  Code  Gb  r_flash_hp.o [46]
+                         0x20b'eeb1      0x20  Code  Gb  r_flash_hp.o [46]
 R_FLASH_HP_AntiRollbackCounterRefresh
-                         0x20b'ef99      0x1c  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_BankSwap      0x20b'eead       0xc  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_BlankCheck    0x20b'ee33      0x38  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_CallbackSet   0x20b'ef23       0xa  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_Close         0x20b'eedd      0x46  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_Erase         0x20b'edd5      0x5e  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_IdCodeSet     0x20b'ee85       0x6  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_InfoGet       0x20b'eec1      0x1c  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_Open          0x20b'ed43      0x6a  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_Reset         0x20b'ee97       0x8  Code  Gb  r_flash_hp.o [46]
+                         0x20b'ee95      0x1c  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_BankSwap      0x20b'eda9       0xc  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_BlankCheck    0x20b'ed2f      0x38  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_CallbackSet   0x20b'ee1f       0xa  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_Close         0x20b'edd9      0x46  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_Erase         0x20b'ecd1      0x5e  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_IdCodeSet     0x20b'ed81       0x6  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_InfoGet       0x20b'edbd      0x1c  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_Open          0x20b'ec3f      0x6a  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_Reset         0x20b'ed93       0x8  Code  Gb  r_flash_hp.o [46]
 R_FLASH_HP_StartUpAreaSelect
-                         0x20b'ee9f       0xe  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_StatusGet     0x20b'ee6b      0x1a  Code  Gb  r_flash_hp.o [46]
+                         0x20b'ed9b       0xe  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_StatusGet     0x20b'ed67      0x1a  Code  Gb  r_flash_hp.o [46]
 R_FLASH_HP_UpdateFlashClockFreq
-                         0x20b'eeb9       0x8  Code  Gb  r_flash_hp.o [46]
+                         0x20b'edb5       0x8  Code  Gb  r_flash_hp.o [46]
 R_FLASH_HP_UserLockableAreaWrite
-                         0x20b'efd5       0x8  Code  Gb  r_flash_hp.o [46]
-R_FLASH_HP_Write         0x20b'edad      0x28  Code  Gb  r_flash_hp.o [46]
+                         0x20b'eed1       0x8  Code  Gb  r_flash_hp.o [46]
+R_FLASH_HP_Write         0x20b'eca9      0x28  Code  Gb  r_flash_hp.o [46]
 R_FSP_CurrentIrqGet      0x20a'0f11       0xa  Code  Lc  r_agt.o [39]
 R_FSP_CurrentIrqGet      0x206'5fc1       0xa  Code  Lc  r_canfd.o [40]
-R_FSP_CurrentIrqGet      0x20b'e381       0xa  Code  Lc  r_dmac.o [41]
-R_FSP_CurrentIrqGet      0x20b'ea6d       0xa  Code  Lc  r_ether.o [44]
-R_FSP_CurrentIrqGet      0x20b'ebc5       0xa  Code  Lc  r_flash_hp.o [46]
+R_FSP_CurrentIrqGet      0x20b'e27d       0xa  Code  Lc  r_dmac.o [41]
+R_FSP_CurrentIrqGet      0x20b'e969       0xa  Code  Lc  r_ether.o [44]
+R_FSP_CurrentIrqGet      0x20b'eac1       0xa  Code  Lc  r_flash_hp.o [46]
 R_FSP_CurrentIrqGet      0x206'ba85       0xa  Code  Lc  r_rtc.o [50]
-R_FSP_CurrentIrqGet      0x20b'f605       0xa  Code  Lc  r_sdhi.o [51]
+R_FSP_CurrentIrqGet      0x20b'f501       0xa  Code  Lc  r_sdhi.o [51]
 R_FSP_CurrentIrqGet      0x206'8cb9       0xa  Code  Lc  r_spi_b.o [52]
 R_FSP_CurrentIrqGet      0x20b'0529       0xa  Code  Lc  r_usb_mcu.o [34]
 R_FSP_CurrentIrqGet      0x20b'3025       0xa  Code  Lc  r_usb_pinthandler_usbip0.o [31]
 R_FSP_IsrContextGet      0x20a'0f27       0xc  Code  Lc  r_agt.o [39]
 R_FSP_IsrContextGet      0x206'5fd7       0xc  Code  Lc  r_canfd.o [40]
-R_FSP_IsrContextGet      0x20b'e395       0xa  Code  Lc  r_dmac.o [41]
-R_FSP_IsrContextGet      0x20b'ea77       0xc  Code  Lc  r_ether.o [44]
-R_FSP_IsrContextGet      0x20b'ec6b       0xc  Code  Lc  r_flash_hp.o [46]
+R_FSP_IsrContextGet      0x20b'e291       0xa  Code  Lc  r_dmac.o [41]
+R_FSP_IsrContextGet      0x20b'e973       0xc  Code  Lc  r_ether.o [44]
+R_FSP_IsrContextGet      0x20b'eb67       0xc  Code  Lc  r_flash_hp.o [46]
 R_FSP_IsrContextGet      0x206'ba9b       0xc  Code  Lc  r_rtc.o [50]
-R_FSP_IsrContextGet      0x20b'f693       0xc  Code  Lc  r_sdhi.o [51]
+R_FSP_IsrContextGet      0x20b'f58f       0xc  Code  Lc  r_sdhi.o [51]
 R_FSP_IsrContextGet      0x206'8ccf       0xc  Code  Lc  r_spi_b.o [52]
 R_FSP_IsrContextGet      0x20b'13e1       0xc  Code  Lc  r_usb_dma.o [34]
 R_FSP_IsrContextGet      0x20b'053f       0xc  Code  Lc  r_usb_mcu.o [34]
 R_FSP_IsrContextGet      0x20b'302f       0xa  Code  Lc  r_usb_pinthandler_usbip0.o [31]
 R_FSP_IsrContextSet      0x20a'0f1b       0xc  Code  Lc  r_agt.o [39]
 R_FSP_IsrContextSet      0x206'5fcb       0xc  Code  Lc  r_canfd.o [40]
-R_FSP_IsrContextSet      0x20b'e38b       0xa  Code  Lc  r_dmac.o [41]
-R_FSP_IsrContextSet      0x20b'ec5f       0xc  Code  Lc  r_flash_hp.o [46]
+R_FSP_IsrContextSet      0x20b'e287       0xa  Code  Lc  r_dmac.o [41]
+R_FSP_IsrContextSet      0x20b'eb5b       0xc  Code  Lc  r_flash_hp.o [46]
 R_FSP_IsrContextSet      0x206'ba8f       0xc  Code  Lc  r_rtc.o [50]
-R_FSP_IsrContextSet      0x20b'f687       0xc  Code  Lc  r_sdhi.o [51]
+R_FSP_IsrContextSet      0x20b'f583       0xc  Code  Lc  r_sdhi.o [51]
 R_FSP_IsrContextSet      0x206'8cc3       0xc  Code  Lc  r_spi_b.o [52]
 R_FSP_IsrContextSet      0x20b'0533       0xc  Code  Lc  r_usb_mcu.o [34]
-R_FSP_SystemClockHzGet   0x20b'ebcf      0x78  Code  Lc  r_flash_hp.o [46]
-R_FSP_SystemClockHzGet   0x20b'f60f      0x78  Code  Lc  r_sdhi.o [51]
+R_FSP_SystemClockHzGet   0x20b'eacb      0x78  Code  Lc  r_flash_hp.o [46]
+R_FSP_SystemClockHzGet   0x20b'f50b      0x78  Code  Lc  r_sdhi.o [51]
 R_IOPORT_Open            0x209'fb3d      0x10  Code  Gb  r_ioport.o [47]
 R_RTC_CalendarTimeGet    0x206'bc23      0xb6  Code  Gb  r_rtc.o [50]
 R_RTC_CalendarTimeSet    0x206'bb91      0x92  Code  Gb  r_rtc.o [50]
 R_RTC_ClockSourceSet     0x206'bb85       0xc  Code  Gb  r_rtc.o [50]
 R_RTC_InfoGet            0x206'bcd9      0x14  Code  Gb  r_rtc.o [50]
 R_RTC_Open               0x206'bb5d      0x28  Code  Gb  r_rtc.o [50]
-R_SDHI_CallbackSet       0x20b'fa1f      0x10  Code  Gb  r_sdhi.o [51]
-R_SDHI_Close             0x20b'fa2f      0x3a  Code  Gb  r_sdhi.o [51]
-R_SDHI_Erase             0x20b'f9b5      0x6a  Code  Gb  r_sdhi.o [51]
-R_SDHI_IoIntEnable       0x20b'f97b       0x4  Code  Gb  r_sdhi.o [51]
-R_SDHI_MediaInit         0x20b'f85d      0x54  Code  Gb  r_sdhi.o [51]
-R_SDHI_Open              0x20b'f76d      0xf0  Code  Gb  r_sdhi.o [51]
-R_SDHI_Read              0x20b'f8b1      0x56  Code  Gb  r_sdhi.o [51]
-R_SDHI_ReadIo            0x20b'f96b       0x4  Code  Gb  r_sdhi.o [51]
-R_SDHI_ReadIoExt         0x20b'f973       0x4  Code  Gb  r_sdhi.o [51]
-R_SDHI_StatusGet         0x20b'f97f      0x36  Code  Gb  r_sdhi.o [51]
-R_SDHI_Write             0x20b'f907      0x64  Code  Gb  r_sdhi.o [51]
-R_SDHI_WriteIo           0x20b'f96f       0x4  Code  Gb  r_sdhi.o [51]
-R_SDHI_WriteIoExt        0x20b'f977       0x4  Code  Gb  r_sdhi.o [51]
+R_SDHI_CallbackSet       0x20b'f91b      0x10  Code  Gb  r_sdhi.o [51]
+R_SDHI_Close             0x20b'f92b      0x3a  Code  Gb  r_sdhi.o [51]
+R_SDHI_Erase             0x20b'f8b1      0x6a  Code  Gb  r_sdhi.o [51]
+R_SDHI_IoIntEnable       0x20b'f877       0x4  Code  Gb  r_sdhi.o [51]
+R_SDHI_MediaInit         0x20b'f759      0x54  Code  Gb  r_sdhi.o [51]
+R_SDHI_Open              0x20b'f669      0xf0  Code  Gb  r_sdhi.o [51]
+R_SDHI_Read              0x20b'f7ad      0x56  Code  Gb  r_sdhi.o [51]
+R_SDHI_ReadIo            0x20b'f867       0x4  Code  Gb  r_sdhi.o [51]
+R_SDHI_ReadIoExt         0x20b'f86f       0x4  Code  Gb  r_sdhi.o [51]
+R_SDHI_StatusGet         0x20b'f87b      0x36  Code  Gb  r_sdhi.o [51]
+R_SDHI_Write             0x20b'f803      0x64  Code  Gb  r_sdhi.o [51]
+R_SDHI_WriteIo           0x20b'f86b       0x4  Code  Gb  r_sdhi.o [51]
+R_SDHI_WriteIoExt        0x20b'f873       0x4  Code  Gb  r_sdhi.o [51]
 R_SPI_B_Close            0x206'8e13      0x78  Code  Gb  r_spi_b.o [52]
 R_SPI_B_Open             0x206'8da7      0x4e  Code  Gb  r_spi_b.o [52]
 R_SPI_B_Write            0x206'8df5      0x10  Code  Gb  r_spi_b.o [52]
@@ -12437,9 +12437,9 @@ Recreate_file_for_write::__FUNCTION__
 Request_save_app_settings
                          0x207'c29b       0xe  Code  Gb  FreeMaster_command_handler.o [8]
 Request_save_settings    0x206'6f4b      0x4e  Code  Gb  IDLE_task.o [72]
-Reset_Handler            0x20c'058d       0xc  Code  Gb  startup.o [21]
+Reset_Handler            0x20c'0489       0xc  Code  Gb  startup.o [21]
 Reset_SoC                0x207'c2a9       0x8  Code  Gb  FreeMaster_command_handler.o [8]
-Reset_rtt_buffer_menu    0x20b'cf0d      0x4a  Code  Gb  Monitor_RTT.o [24]
+Reset_rtt_buffer_menu    0x20b'ce09      0x4a  Code  Gb  Monitor_RTT.o [24]
 Reset_system             0x206'0281      0x14  Code  Gb  App_utils.o [23]
 Restore_can_command_processing
                          0x206'107d      0x2a  Code  Gb  CAN_message_handler.o [3]
@@ -12490,7 +12490,7 @@ SPI0_wait_transfer_complete
                          0x206'8b9d      0x30  Code  Gb  SPI0_bus.o [4]
 START_OF_RAM$$Base      0x2200'0000             --   Gb  - Linker created -
 START_OF_RAM$$Limit     0x2200'06cc             --   Gb  - Linker created -
-SVC_Handler              0x20c'0599       0x4  Code  Wk  startup.o [21]
+SVC_Handler              0x20c'0495       0x4  Code  Wk  startup.o [21]
 S_RAM                   0x2206'e774      0x80  Data  Gb  r_sce_adapt.o [25]
 Save_issue_counters      0x206'8b01       0x4  Code  Wk  Logger.o [16]
 Save_motion_buffer       0x206'8af9       0x4  Code  Wk  Logger.o [16]
@@ -12501,7 +12501,7 @@ Save_settings_to_DataFlash::__FUNCTION__
                          0x205'913c      0x1c  Data  Lc  NV_store.o [17]
 Save_settings_to_file    0x206'7609      0x9e  Code  Gb  NV_store.o [17]
 Scanf_from_file          0x206'aaaf      0x28  Code  Gb  FS_utils.o [7]
-SecureFault_Handler      0x20c'0599       0x4  Code  Wk  startup.o [21]
+SecureFault_Handler      0x20c'0495       0x4  Code  Wk  startup.o [21]
 Send_message_to_VT100_task_manager
                          0x20a'9a99      0x10  Code  Gb  Monitor_VT100_manager.o [24]
 Serialize_device_description_to_obj
@@ -12520,19 +12520,19 @@ Set_bgo_status           0x206'b3ff       0x8  Code  Gb  Flash_driver.o [4]
 Set_monitor_func         0x20a'a749      0x18  Code  Gb  Monitor_main_menu.o [24]
 Set_usb_mode             0x20a'a1ab      0xdc  Code  Gb  USB_init.o [22]
 Show_parameters_menu     0x20a'c35b     0x238  Code  Gb  Monitor_params_editor.o [24]
-Show_rtt_addresses       0x20b'c571     0x1f0  Code  Gb  Monitor_RTT.o [24]
-Show_rtt_buffer_status   0x20b'cd59     0x12a  Code  Gb  Monitor_RTT.o [24]
+Show_rtt_addresses       0x20b'c46d     0x1f0  Code  Gb  Monitor_RTT.o [24]
+Show_rtt_buffer_status   0x20b'cc55     0x12a  Code  Gb  Monitor_RTT.o [24]
 Show_window_splash       0x20a'0725      0x5a  Code  Gb  Screen_splash.o [20]
 Splash_draw_callback     0x20a'084f      0x12  Code  Gb  Screen_splash.o [20]
 Splash_event_callback    0x20a'0861      0x4e  Code  Gb  Screen_splash.o [20]
 StringRewind             0x207'700f       0x6  Code  Lc  compress_io.o [5]
 Switch_Flash_driver_to_bgo
                          0x206'b4ff      0x6a  Code  Gb  Flash_driver.o [4]
-SysTick_Config           0x20c'0889      0x2e  Code  Lc  tx_initialize_low_level.o [61]
-SysTick_Handler          0x20c'09d1       0x8  Code  Gb  tx_thread_schedule.o [61]
+SysTick_Config           0x20c'0785      0x2e  Code  Lc  tx_initialize_low_level.o [61]
+SysTick_Handler          0x20c'08cd       0x8  Code  Gb  tx_thread_schedule.o [61]
 SystemCoreClock         0x2208'6634       0x4  Data  Gb  system.o [21]
 SystemCoreClockUpdate    0x206'02ad      0x9c  Code  Gb  bsp_clocks.o [26]
-SystemInit               0x20c'059d     0x11c  Code  Gb  system.o [21]
+SystemInit               0x20c'0499     0x11c  Code  Gb  system.o [21]
 TFT_Set_rect             0x20a'0217      0xc2  Code  Gb  SPI_Display.o [2]
 TFT_clear                0x20a'01f7      0x20  Code  Gb  SPI_Display.o [2]
 TFT_display_on           0x20a'01db       0xa  Code  Gb  SPI_Display.o [2]
@@ -12576,18 +12576,18 @@ Task_VT100_delete::__FUNCTION__
                          0x205'7958      0x14  Data  Lc  Monitor_VT100_manager.o [24]
 Task_VT100_start         0x20a'9ebf      0x24  Code  Gb  Monitor_VT100_manager.o [24]
 Task_VT100_suspend       0x20a'9ee3      0x24  Code  Gb  Monitor_VT100_manager.o [24]
-Test_basic_rtt_output    0x20b'c489      0xe8  Code  Gb  Monitor_RTT.o [24]
+Test_basic_rtt_output    0x20b'c385      0xe8  Code  Gb  Monitor_RTT.o [24]
 Test_patterns_fill_buffer
                          0x20b'6535      0x86  Code  Gb  Test_Patterns.o [24]
 Test_patterns_get_name   0x20b'6609      0x1c  Code  Gb  Test_Patterns.o [24]
 Test_patterns_verify_buffer
                          0x20b'65bb      0x4e  Code  Gb  Test_Patterns.o [24]
 Test_rtt_buffer_overflow
-                         0x20b'c939     0x108  Code  Gb  Monitor_RTT.o [24]
+                         0x20b'c835     0x108  Code  Gb  Monitor_RTT.o [24]
 Test_rtt_multiple_buffers
-                         0x20b'ca41     0x19e  Code  Gb  Monitor_RTT.o [24]
-Test_rtt_performance     0x20b'c761     0x1d4  Code  Gb  Monitor_RTT.o [24]
-Test_rtt_stress_test     0x20b'cbdf     0x150  Code  Gb  Monitor_RTT.o [24]
+                         0x20b'c93d     0x19e  Code  Gb  Monitor_RTT.o [24]
+Test_rtt_performance     0x20b'c65d     0x1d4  Code  Gb  Monitor_RTT.o [24]
+Test_rtt_stress_test     0x20b'cadb     0x150  Code  Gb  Monitor_RTT.o [24]
 Thread_FreeMaster        0x208'7653      0xc2  Code  Lc  FreeMaster_thread.o [8]
 Thread_FreeMaster::__FUNCTION__
                          0x200'18a8      0x14  Data  Lc  FreeMaster_thread.o [8]
@@ -12616,7 +12616,7 @@ Uncompress_lzss          0x207'0bf7     0x140  Code  Gb  lzss.o [5]
 Uncompress_sixp          0x207'0539     0x15e  Code  Gb  sixpack.o [5]
 UpdateFreq               0x206'fb61      0x92  Code  Lc  sixpack.o [5]
 UpdateModel              0x206'fbf3     0x11e  Code  Lc  sixpack.o [5]
-UsageFault_Handler       0x20c'0599       0x4  Code  Wk  startup.o [21]
+UsageFault_Handler       0x20c'0495       0x4  Code  Wk  startup.o [21]
 VT100_edit_string_in_pos
                          0x20a'ac29     0x116  Code  Gb  Monitor_utilites.o [24]
 VT100_edit_uinteger_hex_val
@@ -12711,24 +12711,24 @@ _Create_freemaster_pipe
                          0x208'773d      0x8a  Code  Lc  FreeMaster_thread.o [8]
 _Create_freemaster_pipe::__FUNCTION__
                          0x200'19ec      0x18  Data  Lc  FreeMaster_thread.o [8]
-_Create_receiving_task   0x20b'dd19      0x9e  Code  Lc  Monitor_USB_drv.o [22]
+_Create_receiving_task   0x20b'dc15      0x9e  Code  Lc  Monitor_USB_drv.o [22]
 _Create_receiving_task::__FUNCTION__
                          0x205'706c      0x18  Data  Lc  Monitor_USB_drv.o [22]
 _Deinit_diagnostic_screen
                          0x20a'0d0f      0x1c  Code  Lc  Screen_diagnostic_main.o [20]
-_Delete_receiving_task   0x20b'ddb7      0x22  Code  Lc  Monitor_USB_drv.o [22]
+_Delete_receiving_task   0x20b'dcb3      0x22  Code  Lc  Monitor_USB_drv.o [22]
 _Diagnostic_screen_callback
                          0x20a'0d2b      0xd4  Code  Lc  Screen_diagnostic_main.o [20]
 _DoInit                  0x20a'95cd      0x6a  Code  Lc  SEGGER_RTT.o [19]
 _DoInit::_aInitStr       0x205'a0b0      0x14  Data  Lc  SEGGER_RTT.o [19]
 _Do_delete_test          0x20b'56bd      0xf0  Code  Lc  Monitor_FileX.o [24]
-_Do_delete_test          0x20b'7c81      0xe6  Code  Lc  Monitor_LittleFS.o [24]
+_Do_delete_test          0x20b'7b95      0xc2  Code  Lc  Monitor_LittleFS.o [24]
 _Do_format_test          0x20b'57d9     0x130  Code  Lc  Monitor_FileX.o [24]
-_Do_format_test          0x20b'7d95      0xbe  Code  Lc  Monitor_LittleFS.o [24]
+_Do_format_test          0x20b'7c69      0xbe  Code  Lc  Monitor_LittleFS.o [24]
 _Do_full_test            0x20b'5921      0xc0  Code  Lc  Monitor_FileX.o [24]
-_Do_full_test            0x20b'7e7d      0xe2  Code  Lc  Monitor_LittleFS.o [24]
+_Do_full_test            0x20b'7d5d      0xe2  Code  Lc  Monitor_LittleFS.o [24]
 _Do_read_test            0x20b'526d     0x408  Code  Lc  Monitor_FileX.o [24]
-_Do_read_test            0x20b'7725     0x548  Code  Lc  Monitor_LittleFS.o [24]
+_Do_read_test            0x20b'7709     0x468  Code  Lc  Monitor_LittleFS.o [24]
 _Do_write_test           0x20b'4dc9     0x400  Code  Lc  Monitor_FileX.o [24]
 _Do_write_test           0x20b'721d     0x3f8  Code  Lc  Monitor_LittleFS.o [24]
 _Emergency_stop_all_motors
@@ -12885,7 +12885,7 @@ _GetN                    0x205'd87f      0x22  Code  Lc  xscanffull_nomb.o [79]
 _Get_actual_direction    0x206'59b3      0x4a  Code  Lc  Motor_Soft_Start.o [72]
 _Get_actual_motor_direction
                          0x206'47f7      0x4a  Code  Lc  Motor_Driver_task.o [72]
-_Get_algorithm_str       0x20b'93c9      0x26  Code  Lc  Monitor_Motor.o [24]
+_Get_algorithm_str       0x20b'92c5      0x26  Code  Lc  Monitor_Motor.o [24]
 _Get_conflicting_motor   0x206'59fd      0x28  Code  Lc  Motor_Soft_Start.o [72]
 _Get_driver_temperature_x10
                          0x206'0f11      0x3a  Code  Lc  CAN_message_handler.o [3]
@@ -12898,13 +12898,13 @@ _Get_mn_caption          0x20a'c1f1      0x46  Code  Lc  Monitor_params_editor.o
 _Get_mn_prevlev          0x20a'c237      0x44  Code  Lc  Monitor_params_editor.o [24]
 _Get_motor_current_x10   0x206'0fe9      0x46  Code  Lc  CAN_message_handler.o [3]
 _Get_motor_direction_str
-                         0x20b'9307      0x2a  Code  Lc  Monitor_Motor.o [24]
-_Get_motor_status_str    0x20b'92c7      0x40  Code  Lc  Monitor_Motor.o [24]
+                         0x20b'9203      0x2a  Code  Lc  Monitor_Motor.o [24]
+_Get_motor_status_str    0x20b'91c3      0x40  Code  Lc  Monitor_Motor.o [24]
 _Get_movement_info       0x206'0ea5      0x48  Code  Lc  CAN_message_handler.o [3]
 _Get_paired_motor        0x206'4731      0x28  Code  Lc  Motor_Driver_task.o [72]
 _Get_parameter_data_type
                          0x206'1ea5      0x4a  Code  Lc  CAN_parameter_exchange.o [3]
-_Get_phase_state_str     0x20b'9331      0x94  Code  Lc  Monitor_Motor.o [24]
+_Get_phase_state_str     0x20b'922d      0x94  Code  Lc  Monitor_Motor.o [24]
 _Get_position_sensor_value
                          0x206'0eed      0x22  Code  Lc  CAN_message_handler.o [3]
 _Get_selector_caption    0x20a'c27b      0xe0  Code  Lc  Monitor_params_editor.o [24]
@@ -12914,7 +12914,7 @@ _Get_task_state_str      0x20b'4107      0x80  Code  Lc  Monitor_diagnostic.o [2
 _GetstrFullNoMb          0x205'e3a9     0x1a0  Code  Lc  xscanffull_nomb.o [79]
 _Goto_to_edit_param      0x20a'c6ed     0x124  Code  Lc  Monitor_params_editor.o [24]
 _Handle_calibration_request
-                         0x20b'9a81      0x2e  Code  Lc  Monitor_Motor.o [24]
+                         0x20b'997d      0x2e  Code  Lc  Monitor_Motor.o [24]
 _Handle_calibration_request::__FUNCTION__
                          0x205'1c10      0x1c  Data  Lc  Monitor_Motor.o [24]
 _Handle_periodic_calibration
@@ -12995,34 +12995,34 @@ _Mc80_ospi_status_sub    0x20a'2285      0x76  Code  Lc  MC80_OSPI_drv.o [2]
 _Mc80_ospi_xip           0x20a'24ff      0x8e  Code  Lc  MC80_OSPI_drv.o [2]
 _Monitor_tmc6200_drivers
                          0x206'7de1      0x68  Code  Lc  TMC6200_Monitoring_task.o [72]
-_Motor_diag_print_adc    0x20b'8d61     0x532  Code  Lc  Monitor_Motor.o [24]
+_Motor_diag_print_adc    0x20b'8c5d     0x532  Code  Lc  Monitor_Motor.o [24]
 _Ospi_calculate_checksum
-                         0x20b'bb19      0x3c  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'ba15      0x3c  Code  Lc  Monitor_OSPI.o [24]
 _Ospi_compare_buffers_detailed
-                         0x20b'b93d      0xd4  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'b839      0xd4  Code  Lc  Monitor_OSPI.o [24]
 _Ospi_display_custom_menu
-                         0x20b'9c49     0x1a4  Code  Lc  Monitor_OSPI.o [24]
-_Ospi_display_speed      0x20b'b899      0x70  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'9b45     0x1a4  Code  Lc  Monitor_OSPI.o [24]
+_Ospi_display_speed      0x20b'b795      0x70  Code  Lc  Monitor_OSPI.o [24]
 _Ospi_dma_event_flags_cleanup
                          0x20a'263d      0x1a  Code  Lc  MC80_OSPI_drv.o [2]
 _Ospi_dma_event_flags_initialize
                          0x20a'2609      0x2e  Code  Lc  MC80_OSPI_drv.o [2]
 _Ospi_ensure_driver_open
-                         0x20b'a173      0x4c  Code  Lc  Monitor_OSPI.o [24]
-_Ospi_generate_pattern   0x20b'b845      0x54  Code  Lc  Monitor_OSPI.o [24]
-_Ospi_get_pattern_type   0x20b'b521      0x94  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'a06f      0x4c  Code  Lc  Monitor_OSPI.o [24]
+_Ospi_generate_pattern   0x20b'b741      0x54  Code  Lc  Monitor_OSPI.o [24]
+_Ospi_get_pattern_type   0x20b'b41d      0x94  Code  Lc  Monitor_OSPI.o [24]
 _Ospi_get_pattern_value
-                         0x20b'b5f1     0x228  Code  Lc  Monitor_OSPI.o [24]
-_Ospi_prng_rand          0x20b'9c19      0x1c  Code  Lc  Monitor_OSPI.o [24]
-_Ospi_prng_rand32        0x20b'9c35      0x14  Code  Lc  Monitor_OSPI.o [24]
-_Ospi_prng_seed          0x20b'9c11       0x8  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'b4ed     0x228  Code  Lc  Monitor_OSPI.o [24]
+_Ospi_prng_rand          0x20b'9b15      0x1c  Code  Lc  Monitor_OSPI.o [24]
+_Ospi_prng_rand32        0x20b'9b31      0x14  Code  Lc  Monitor_OSPI.o [24]
+_Ospi_prng_seed          0x20b'9b0d       0x8  Code  Lc  Monitor_OSPI.o [24]
 _Ospi_select_alignment_type
-                         0x20b'a0b1      0xc2  Code  Lc  Monitor_OSPI.o [24]
-_Ospi_select_protocol    0x20b'9ffd      0xac  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'9fad      0xc2  Code  Lc  Monitor_OSPI.o [24]
+_Ospi_select_protocol    0x20b'9ef9      0xac  Code  Lc  Monitor_OSPI.o [24]
 _Ospi_verify_erase_data
-                         0x20b'bab9      0x50  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'b9b5      0x50  Code  Lc  Monitor_OSPI.o [24]
 _Ospi_verify_write_data
-                         0x20b'ba21      0x8a  Code  Lc  Monitor_OSPI.o [24]
+                         0x20b'b91d      0x8a  Code  Lc  Monitor_OSPI.o [24]
 _PWM_set_ADC_trigger     0x206'9813      0x4a  Code  Lc  PWM_timer_driver.o [4]
 _PWM_triangle_buffered_init
                          0x206'9751      0xc2  Code  Lc  PWM_timer_driver.o [4]
@@ -13041,9 +13041,9 @@ _Print_littlefs_info     0x20b'6b61      0xe6  Code  Lc  Monitor_LittleFS.o [24]
 _Print_statistics        0x20b'4c39      0x14  Code  Lc  Monitor_FileX.o [24]
 _Print_stats             0x20b'6ab1       0xe  Code  Lc  Monitor_LittleFS.o [24]
 _Print_test_config       0x20b'4b79      0xc0  Code  Lc  Monitor_FileX.o [24]
-_Print_tmc6200_menu      0x20b'd605      0x3a  Code  Lc  Monitor_TMC6200.o [24]
+_Print_tmc6200_menu      0x20b'd501      0x3a  Code  Lc  Monitor_TMC6200.o [24]
 _Print_tmc6200_registers
-                         0x20b'd0ed     0x518  Code  Lc  Monitor_TMC6200.o [24]
+                         0x20b'cfe9     0x518  Code  Lc  Monitor_TMC6200.o [24]
 _Print_tree_indent       0x20b'49fd      0x48  Code  Lc  Monitor_FileX.o [24]
 _Print_tree_indent       0x20b'6a69      0x48  Code  Lc  Monitor_LittleFS.o [24]
 _PrintfFullNoMb          0x205'e5cb     0xc9e  Code  Gb  xprintffull_nomb.o [79]
@@ -13059,18 +13059,18 @@ _Process_tmc6200_commands
                          0x206'800b     0x120  Code  Lc  TMC6200_Monitoring_task.o [72]
 _Process_tmc6200_commands::__FUNCTION__
                          0x205'abd4      0x1c  Data  Lc  TMC6200_Monitoring_task.o [72]
-_Prout                   0x20c'64a1      0x16  Code  Gb  xprout.o [79]
+_Prout                   0x20c'639d      0x16  Code  Gb  xprout.o [79]
 _Push_dir_to_stack       0x20b'4831      0x56  Code  Lc  Monitor_FileX.o [24]
 _Push_dir_to_stack       0x20b'69d1      0x56  Code  Lc  Monitor_LittleFS.o [24]
 _PutcharsFullNoMb        0x205'f405      0x2e  Code  Lc  xprintffull_nomb.o [79]
-_Receiving_task          0x20b'dc95      0x84  Code  Lc  Monitor_USB_drv.o [22]
+_Receiving_task          0x20b'db91      0x84  Code  Lc  Monitor_USB_drv.o [22]
 _Reset_motor_max_currents_on_start
                          0x206'4df9      0x50  Code  Lc  Motor_Driver_task.o [72]
 _Reset_motor_max_currents_on_start::__FUNCTION__
                          0x205'889c      0x24  Data  Lc  Motor_Driver_task.o [72]
 _Reset_rtc_time_values   0x206'8825      0x26  Code  Lc  RTC_driver.o [4]
 _Restore_en_signal_states
-                         0x20b'9293      0x34  Code  Lc  Monitor_Motor.o [24]
+                         0x20b'918f      0x34  Code  Lc  Monitor_Motor.o [24]
 _Restore_en_signal_states::__FUNCTION__
                          0x205'1574      0x1c  Data  Lc  Monitor_Motor.o [24]
 _SEGGER_RTT             0x2200'2000    0x1000  Data  Gb  SEGGER_RTT.o [19]
@@ -13113,14 +13113,14 @@ _Splash_screen_process   0x20a'07b5      0x9a  Code  Lc  Screen_splash.o [20]
 _Stop_motor              0x206'3865      0xcc  Code  Lc  Motor_Driver_task.o [72]
 _Sync_individual_max_current_variables
                          0x206'4b81      0x66  Code  Lc  Motor_Driver_task.o [72]
-_TMC6200_input_all       0x20b'd659     0x1d2  Code  Lc  Monitor_TMC6200.o [24]
-_TMC6200_mode_monitor    0x20b'd991     0x14c  Code  Lc  Monitor_TMC6200.o [24]
-_TMC6200_mode_reg_dump   0x20b'd831     0x15a  Code  Lc  Monitor_TMC6200.o [24]
+_TMC6200_input_all       0x20b'd555     0x1d2  Code  Lc  Monitor_TMC6200.o [24]
+_TMC6200_mode_monitor    0x20b'd88d     0x14c  Code  Lc  Monitor_TMC6200.o [24]
+_TMC6200_mode_reg_dump   0x20b'd72d     0x15a  Code  Lc  Monitor_TMC6200.o [24]
 _Tmc6200_monitoring_thread_entry
                          0x206'8251      0x2c  Code  Lc  TMC6200_Monitoring_task.o [72]
 _Tmc6200_monitoring_thread_entry::__FUNCTION__
                          0x205'af04      0x24  Data  Lc  TMC6200_Monitoring_task.o [72]
-_Toggle_algorithm        0x20b'93ef      0x3e  Code  Lc  Monitor_Motor.o [24]
+_Toggle_algorithm        0x20b'92eb      0x3e  Code  Lc  Monitor_Motor.o [24]
 _Toggle_algorithm::__FUNCTION__
                          0x205'15f4      0x14  Data  Lc  Monitor_Motor.o [24]
 _USB_dev_init            0x20a'a391     0x126  Code  Lc  USB_init.o [22]
@@ -13160,13 +13160,13 @@ __NVIC_SetPriority       0x205'b5f9      0x28  Code  Lc  ADC_driver.o [4]
 __NVIC_SetPriority       0x20a'165f      0x28  Code  Lc  MC80_OSPI_drv.o [2]
 __NVIC_SetPriority       0x20a'0ee9      0x28  Code  Lc  r_agt.o [39]
 __NVIC_SetPriority       0x206'5f99      0x28  Code  Lc  r_canfd.o [40]
-__NVIC_SetPriority       0x20b'e35d      0x24  Code  Lc  r_dmac.o [41]
-__NVIC_SetPriority       0x20b'eb9d      0x28  Code  Lc  r_flash_hp.o [46]
+__NVIC_SetPriority       0x20b'e259      0x24  Code  Lc  r_dmac.o [41]
+__NVIC_SetPriority       0x20b'ea99      0x28  Code  Lc  r_flash_hp.o [46]
 __NVIC_SetPriority       0x206'ba5d      0x28  Code  Lc  r_rtc.o [50]
-__NVIC_SetPriority       0x20b'f5dd      0x28  Code  Lc  r_sdhi.o [51]
+__NVIC_SetPriority       0x20b'f4d9      0x28  Code  Lc  r_sdhi.o [51]
 __NVIC_SetPriority       0x206'8c91      0x28  Code  Lc  r_spi_b.o [52]
 __NVIC_SetPriority       0x20b'0501      0x28  Code  Lc  r_usb_mcu.o [34]
-__NVIC_SetPriority       0x20c'0865      0x24  Code  Lc  tx_initialize_low_level.o [61]
+__NVIC_SetPriority       0x20c'0761      0x24  Code  Lc  tx_initialize_low_level.o [61]
 __Vectors                0x200'0000      0x40  Data  Gb  startup.o [21]
 __aeabi_assert           0x206'e99d      0x24  Code  Gb  ABIassert.o [82]
 __aeabi_cdcmple          0x205'f9fd            Code  Gb  DblCmpLe.o [80]
@@ -13181,7 +13181,7 @@ __aeabi_errno_addr       0x205'd3f5       0xc  Code  Gb  errno.o [79]
 __aeabi_i2d              0x205'fa73       0xe  Code  Gb  S32ToDbl.o [80]
 __aeabi_l2d              0x207'6621            Code  Gb  S64ToDbl.o [80]
 __aeabi_ldiv0            0x205'd869            Code  Gb  I64DivZer.o [81]
-__aeabi_memclr           0x20b'dc8d            Code  Gb  ABImemclr.o [81]
+__aeabi_memclr           0x20b'db89            Code  Gb  ABImemclr.o [81]
 __aeabi_memclr4          0x206'a055            Code  Gb  ABImemclr4.o [81]
 __aeabi_memcpy           0x205'd1dd            Code  Gb  ABImemcpy.o [81]
 __aeabi_memcpy4          0x205'd1fd            Code  Gb  ABImemcpy.o [81]
@@ -13192,19 +13192,19 @@ __aeabi_memmove8         0x207'6519            Code  Gb  ABImemmove.o [81]
 __aeabi_memset           0x205'ca09            Code  Gb  ABImemset.o [81]
 __aeabi_ui2d             0x205'fab3       0xe  Code  Gb  U32ToDbl.o [80]
 __aeabi_uldivmod         0x205'cfad            Code  Gb  I64DivMod.o [81]
-__basic_free             0x20c'17b5      0x16  Code  Gb  heap0.o [79]
-__basic_free_intern      0x20c'17cb      0x74  Code  Lc  heap0.o [79]
-__basic_malloc           0x20c'1709      0x18  Code  Gb  heap0.o [79]
-__basic_malloc_intern    0x20c'1721      0x94  Code  Lc  heap0.o [79]
+__basic_free             0x20c'16b1      0x16  Code  Gb  heap0.o [79]
+__basic_free_intern      0x20c'16c7      0x74  Code  Lc  heap0.o [79]
+__basic_malloc           0x20c'1605      0x18  Code  Gb  heap0.o [79]
+__basic_malloc_intern    0x20c'161d      0x94  Code  Lc  heap0.o [79]
 __bl_FSP_BOOTABLE_IMAGE {Abs}
                                 0x1             --   Gb  <internal module>
 __bln_FSP_BOOTABLE_IMAGE {Abs}
                                 0x1             --   Gb  <internal module>
-__call_ctors             0x20c'0805      0x18  Code  Gb  cppinit.o [79]
-__data_GetMemChunk       0x20c'1845      0x2c  Code  Gb  xgetmemchunk.o [79]
+__call_ctors             0x20c'0701      0x18  Code  Gb  cppinit.o [79]
+__data_GetMemChunk       0x20c'1741      0x2c  Code  Gb  xgetmemchunk.o [79]
 __data_GetMemChunk::start
                         0x2208'0c2c       0x4  Data  Lc  xgetmemchunk.o [79]
-__dwrite                 0x20c'64e7      0x1e  Code  Gb  dwrite.o [82]
+__dwrite                 0x20c'63e3      0x1e  Code  Gb  dwrite.o [82]
 __exit                   0x206'026d      0x14  Code  Gb  exit.o [82]
 __iar_Errno             0x2208'6638       0x4  Tls   Gb  errno.o [79]
 __iar_Fail_s             0x205'f8a5      0x1c  Code  Gb  xfail_s.o [79]
@@ -13233,7 +13233,7 @@ __iar_frexp32            0x207'7485            Code  Gb  frexpf.o [80]
 __iar_frexp64            0x205'f975            Code  Gb  frexp.o [80]
 __iar_frexpf             0x207'7499            Code  Gb  frexpf.o [80]
 __iar_frexpl             0x205'f999            Code  Gb  frexp.o [80]
-__iar_init_vfp           0x20c'16e5            Code  Gb  fpinit_M.o [80]
+__iar_init_vfp           0x20c'15e1            Code  Gb  fpinit_M.o [80]
 __iar_ldexp32            0x207'74cd            Code  Gb  ldexpf.o [80]
 __iar_ldexp64            0x205'f54d            Code  Gb  ldexp.o [80]
 __iar_log32              0x205'cb11            Code  Gb  logf.o [80]
@@ -13248,8 +13248,8 @@ __iar_scalbln32          0x207'74cd            Code  Gb  ldexpf.o [80]
 __iar_scalbln64          0x205'f54d            Code  Gb  ldexp.o [80]
 __iar_scalbn32           0x207'74cd            Code  Gb  ldexpf.o [80]
 __iar_scalbn64           0x205'f54d            Code  Gb  ldexp.o [80]
-__iar_sh_stdout_swo      0x20c'1871      0x4c  Code  Gb  iarwstdswo.o [82]
-__iar_sh_write           0x20c'6505      0x22  Code  Gb  iarwrite.o [82]
+__iar_sh_stdout_swo      0x20c'176d      0x4c  Code  Gb  iarwstdswo.o [82]
+__iar_sh_write           0x20c'6401      0x22  Code  Gb  iarwrite.o [82]
 __iar_softfp___iar_Sto64
                          0x205'f52f       0x8  Code  Gb  math_wrappers64.o [80]
 __iar_softfp___iar_frexp64
@@ -13317,7 +13317,7 @@ __tz_QSPI_FLASH_S {Abs}
                         0x6000'0000             --   Gb  <internal module>
 __tz_RAM_S {Abs}        0x2200'0000             --   Gb  <internal module>
 __tz_SDRAM_S {Abs}      0x6800'0000             --   Gb  <internal module>
-__write                  0x20c'64d7      0x10  Code  Gb  write.o [82]
+__write                  0x20c'63d3      0x10  Code  Gb  write.o [82]
 _acDownBuffer           0x2200'4000    0x1000  Data  Lc  SEGGER_RTT.o [19]
 _acUpBuffer             0x2200'3000    0x1000  Data  Lc  SEGGER_RTT.o [19]
 _bit_buffer             0x2204'67ac       0x4  Data  Lc  gx_image_reader_png_decode.o [71]
@@ -13570,7 +13570,7 @@ _gx_canvas_rectangle_draw
                          0x208'ea6b     0x1be  Code  Gb  gx_canvas_rectangle_draw.o [71]
 _gx_canvas_rectangle_fill
                          0x208'ea05      0x66  Code  Lc  gx_canvas_rectangle_draw.o [71]
-_gx_canvas_shift         0x20c'2b5b      0x18  Code  Gb  gx_canvas_shift.o [71]
+_gx_canvas_shift         0x20c'2a57      0x18  Code  Gb  gx_canvas_shift.o [71]
 _gx_canvas_text_draw_ext
                          0x208'ec2d     0x176  Code  Gb  gx_canvas_text_draw.o [71]
 _gx_context_brush_default
@@ -13601,13 +13601,13 @@ _gx_display_driver_16bpp_4444argb_pixelmap_compressed_write
 _gx_display_driver_16bpp_4444argb_pixelmap_raw_write
                          0x209'1ce7      0xc2  Code  Lc  gx_display_driver_16bpp_pixelmap_draw.o [71]
 _gx_display_driver_16bpp_block_move
-                         0x20c'2b73     0x210  Code  Gb  gx_display_driver_16bpp_block_move.o [71]
+                         0x20c'2a6f     0x210  Code  Gb  gx_display_driver_16bpp_block_move.o [71]
 _gx_display_driver_16bpp_canvas_copy
-                         0x20c'2d83      0xc4  Code  Gb  gx_display_driver_16bpp_canvas_copy.o [71]
+                         0x20c'2c7f      0xc4  Code  Gb  gx_display_driver_16bpp_canvas_copy.o [71]
 _gx_display_driver_16bpp_glyph_1bit_draw
-                         0x20c'3bed     0x384  Code  Gb  gx_display_driver_565rgb_glyph_1bit_draw.o [71]
+                         0x20c'3ae9     0x384  Code  Gb  gx_display_driver_565rgb_glyph_1bit_draw.o [71]
 _gx_display_driver_16bpp_horizontal_line_draw
-                         0x20c'2e47      0x64  Code  Gb  gx_display_driver_16bpp_horizontal_line_draw.o [71]
+                         0x20c'2d43      0x64  Code  Gb  gx_display_driver_16bpp_horizontal_line_draw.o [71]
 _gx_display_driver_16bpp_horizontal_pattern_line_draw
                          0x206'9477      0x4a  Code  Gb  gx_display_driver_16bpp_horizontal_pattern_line_draw.o [71]
 _gx_display_driver_16bpp_pixel_write
@@ -13623,37 +13623,37 @@ _gx_display_driver_16bpp_pixelmap_simple_alpha_rotate
 _gx_display_driver_16bpp_pixelmap_simple_rotate
                          0x208'fbd9     0x1dc  Code  Gb  gx_display_driver_16bpp_pixelmap_rotate.o [71]
 _gx_display_driver_16bpp_row_pitch_get
-                         0x20c'2ef3       0x8  Code  Gb  gx_display_driver_16bpp_row_pitch_get.o [71]
+                         0x20c'2def       0x8  Code  Gb  gx_display_driver_16bpp_row_pitch_get.o [71]
 _gx_display_driver_16bpp_simple_line_draw
-                         0x20c'2efb     0x5a2  Code  Gb  gx_display_driver_16bpp_simple_line_draw.o [71]
+                         0x20c'2df7     0x5a2  Code  Gb  gx_display_driver_16bpp_simple_line_draw.o [71]
 _gx_display_driver_16bpp_vertical_line_draw
-                         0x20c'3953      0x64  Code  Gb  gx_display_driver_16bpp_vertical_line_draw.o [71]
+                         0x20c'384f      0x64  Code  Gb  gx_display_driver_16bpp_vertical_line_draw.o [71]
 _gx_display_driver_16bpp_vertical_pattern_line_draw
-                         0x20c'3a03      0x54  Code  Gb  gx_display_driver_16bpp_vertical_pattern_line_draw.o [71]
+                         0x20c'38ff      0x54  Code  Gb  gx_display_driver_16bpp_vertical_pattern_line_draw.o [71]
 _gx_display_driver_565rgb_4444argb_pixelmap_raw_blend
                          0x209'3fdf      0xbe  Code  Lc  gx_display_driver_16bpp_pixelmap_blend.o [71]
 _gx_display_driver_565rgb_YCbCr2RGB
                          0x208'fff5      0x80  Code  Gb  gx_display_driver_565rgb_jpeg_draw.o [71]
 _gx_display_driver_565rgb_canvas_blend
-                         0x20c'3a57     0x196  Code  Gb  gx_display_driver_565rgb_canvas_blend.o [71]
+                         0x20c'3953     0x196  Code  Gb  gx_display_driver_565rgb_canvas_blend.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_alpha_blend
-                         0x20c'3fdf      0x9c  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'3edb      0x9c  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_alpha_write
-                         0x20c'4385      0x7a  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'4281      0x7a  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_alpha_blend
-                         0x20c'41bb     0x172  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'40b7     0x172  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_alpha_write
-                         0x20c'44eb     0x142  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'43e7     0x142  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_blend
-                         0x20c'407b     0x140  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'3f77     0x140  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_write
-                         0x20c'43ff      0xec  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'42fb      0xec  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_draw
-                         0x20c'462d      0xd6  Code  Gb  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'4529      0xd6  Code  Gb  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_raw_blend
-                         0x20c'3f71      0x6e  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'3e6d      0x6e  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_raw_write
-                         0x20c'432d      0x58  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
+                         0x20c'4229      0x58  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [71]
 _gx_display_driver_565rgb_jpeg_draw
                          0x209'0147      0x18  Code  Gb  gx_display_driver_565rgb_jpeg_draw.o [71]
 _gx_display_driver_565rgb_mcu_draw
@@ -13707,9 +13707,9 @@ _gx_display_driver_generic_aliased_ellipse_draw
 _gx_display_driver_generic_aliased_filled_circle_draw
                          0x209'659d     0x32c  Code  Gb  gx_display_driver_generic_aliased_filled_circle_draw.o [71]
 _gx_display_driver_generic_aliased_fixed_point_line_draw
-                         0x20c'4703     0x53e  Code  Gb  gx_display_driver_generic_aliased_fixed_point_line_draw.o [71]
+                         0x20c'45ff     0x53e  Code  Gb  gx_display_driver_generic_aliased_fixed_point_line_draw.o [71]
 _gx_display_driver_generic_aliased_line_draw
-                         0x20c'4c41     0x5d2  Code  Gb  gx_display_driver_generic_aliased_line_draw.o [71]
+                         0x20c'4b3d     0x5d2  Code  Gb  gx_display_driver_generic_aliased_line_draw.o [71]
 _gx_display_driver_generic_aliased_wide_arc_draw
                          0x209'7191     0x348  Code  Gb  gx_display_driver_generic_aliased_wide_arc_draw.o [71]
 _gx_display_driver_generic_aliased_wide_circle_draw
@@ -13717,17 +13717,17 @@ _gx_display_driver_generic_aliased_wide_circle_draw
 _gx_display_driver_generic_aliased_wide_ellipse_draw
                          0x209'7849     0x444  Code  Gb  gx_display_driver_generic_aliased_wide_ellipse_draw.o [71]
 _gx_display_driver_generic_aliased_wide_line_draw
-                         0x20c'5213     0x1a4  Code  Gb  gx_display_driver_generic_aliased_wide_line_draw.o [71]
+                         0x20c'510f     0x1a4  Code  Gb  gx_display_driver_generic_aliased_wide_line_draw.o [71]
 _gx_display_driver_generic_alphamap_compressed_alpha_draw
-                         0x20c'5445     0x124  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
+                         0x20c'5341     0x124  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
 _gx_display_driver_generic_alphamap_compressed_draw
-                         0x20c'55e9     0x10e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
+                         0x20c'54e5     0x10e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
 _gx_display_driver_generic_alphamap_draw
-                         0x20c'56f7      0x40  Code  Gb  gx_display_driver_generic_alphamap_draw.o [71]
+                         0x20c'55f3      0x40  Code  Gb  gx_display_driver_generic_alphamap_draw.o [71]
 _gx_display_driver_generic_alphamap_raw_alpha_draw
-                         0x20c'53b7      0x8e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
+                         0x20c'52b3      0x8e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
 _gx_display_driver_generic_alphamap_raw_draw
-                         0x20c'5569      0x80  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
+                         0x20c'5465      0x80  Code  Lc  gx_display_driver_generic_alphamap_draw.o [71]
 _gx_display_driver_generic_arc_draw
                          0x209'7c8d     0x2a4  Code  Gb  gx_display_driver_generic_arc_draw.o [71]
 _gx_display_driver_generic_arc_fill
@@ -13743,13 +13743,13 @@ _gx_display_driver_generic_ellipse_fill
 _gx_display_driver_generic_filled_circle_draw
                          0x209'8fd1     0x25c  Code  Gb  gx_display_driver_generic_filled_circle_draw.o [71]
 _gx_display_driver_generic_glyph_4bit_draw
-                         0x20c'5737     0x2be  Code  Gb  gx_display_driver_generic_glyph_4bpp_draw.o [71]
+                         0x20c'5633     0x2be  Code  Gb  gx_display_driver_generic_glyph_4bpp_draw.o [71]
 _gx_display_driver_generic_glyph_8bit_draw
-                         0x20c'59f5     0x132  Code  Gb  gx_display_driver_generic_glyph_8bpp_draw.o [71]
+                         0x20c'58f1     0x132  Code  Gb  gx_display_driver_generic_glyph_8bpp_draw.o [71]
 _gx_display_driver_generic_pie_fill
-                         0x20c'5b27     0x162  Code  Gb  gx_display_driver_generic_pie_fill.o [71]
+                         0x20c'5a23     0x162  Code  Gb  gx_display_driver_generic_pie_fill.o [71]
 _gx_display_driver_generic_polygon_draw
-                         0x20c'5c89      0x70  Code  Gb  gx_display_driver_generic_polygon_draw.o [71]
+                         0x20c'5b85      0x70  Code  Gb  gx_display_driver_generic_polygon_draw.o [71]
 _gx_display_driver_generic_polygon_fill
                          0x209'9785     0x14c  Code  Gb  gx_display_driver_generic_polygon_fill.o [71]
 _gx_display_driver_generic_polygon_fill::aet
@@ -13765,7 +13765,7 @@ _gx_display_driver_generic_simple_pie_fill
 _gx_display_driver_generic_simple_wide_arc_draw
                          0x209'a279     0x56e  Code  Lc  gx_display_driver_generic_wide_arc_draw.o [71]
 _gx_display_driver_generic_simple_wide_line_draw
-                         0x20c'5cf9     0x18e  Code  Gb  gx_display_driver_generic_simple_wide_line_draw.o [71]
+                         0x20c'5bf5     0x18e  Code  Gb  gx_display_driver_generic_simple_wide_line_draw.o [71]
 _gx_display_driver_generic_wide_arc_draw
                          0x209'a7f1     0x308  Code  Gb  gx_display_driver_generic_wide_arc_draw.o [71]
 _gx_display_driver_generic_wide_circle_draw
@@ -13777,7 +13777,7 @@ _gx_display_driver_generic_wide_line_fill
 _gx_display_driver_generic_wide_line_points_calculate
                          0x209'b4b9     0x1d8  Code  Gb  gx_display_driver_generic_wide_line_points_calculate.o [71]
 _gx_display_driver_horizontal_line_alpha_draw
-                         0x20c'2eab      0x48  Code  Gb  gx_display_driver_horizontal_line_alpha_draw.o [71]
+                         0x20c'2da7      0x48  Code  Gb  gx_display_driver_horizontal_line_alpha_draw.o [71]
 _gx_display_driver_polygon_active_edge_insert
                          0x209'9423      0x8c  Code  Lc  gx_display_driver_generic_polygon_fill.o [71]
 _gx_display_driver_polygon_active_edge_table_update_and_restore
@@ -13793,9 +13793,9 @@ _gx_display_driver_polygon_pixelmap_scan_line_draw
 _gx_display_driver_polygon_scan_line_draw
                          0x209'9505      0xac  Code  Lc  gx_display_driver_generic_polygon_fill.o [71]
 _gx_display_driver_simple_line_alpha_draw
-                         0x20c'349d     0x4b6  Code  Gb  gx_display_driver_simple_line_alpha_draw.o [71]
+                         0x20c'3399     0x4b6  Code  Gb  gx_display_driver_simple_line_alpha_draw.o [71]
 _gx_display_driver_vertical_line_alpha_draw
-                         0x20c'39b7      0x4c  Code  Gb  gx_display_driver_vertical_line_alpha_draw.o [71]
+                         0x20c'38b3      0x4c  Code  Gb  gx_display_driver_vertical_line_alpha_draw.o [71]
 _gx_display_font_table_set
                          0x209'f091       0xe  Code  Gb  gx_display_font_table_set.o [71]
 _gx_display_language_table_set_ext
@@ -14008,7 +14008,7 @@ _gx_multi_line_text_view_create
 _gx_multi_line_text_view_display_info_get
                          0x209'c9c5     0x170  Code  Gb  gx_multi_line_text_view_display_info_get.o [71]
 _gx_multi_line_text_view_draw
-                         0x20c'5e87      0x32  Code  Gb  gx_multi_line_text_view_draw.o [71]
+                         0x20c'5d83      0x32  Code  Gb  gx_multi_line_text_view_draw.o [71]
 _gx_multi_line_text_view_event_process
                          0x209'b965      0xf0  Code  Gb  gx_multi_line_text_view_event_process.o [71]
 _gx_multi_line_text_view_line_cache_update
@@ -14044,15 +14044,15 @@ _gx_multi_line_text_view_visible_rows_compute
 _gx_multi_line_text_view_whitespace_set
                          0x209'f3a9      0x36  Code  Gb  gx_multi_line_text_view_whitespace_set.o [71]
 _gx_prompt_create        0x209'd1d9      0x64  Code  Gb  gx_prompt_create.o [71]
-_gx_prompt_draw          0x20c'5eb9      0x18  Code  Gb  gx_prompt_draw.o [71]
+_gx_prompt_draw          0x20c'5db5      0x18  Code  Gb  gx_prompt_draw.o [71]
 _gx_prompt_event_process
                          0x209'd23d      0x44  Code  Gb  gx_prompt_event_process.o [71]
 _gx_prompt_font_set      0x209'f481      0x14  Code  Gb  gx_prompt_font_set.o [71]
 _gx_prompt_text_color_set
                          0x209'f4d5      0x18  Code  Gb  gx_prompt_text_color_set.o [71]
-_gx_prompt_text_draw     0x20c'5ef7      0x52  Code  Gb  gx_prompt_text_draw.o [71]
+_gx_prompt_text_draw     0x20c'5df3      0x52  Code  Gb  gx_prompt_text_draw.o [71]
 _gx_prompt_text_get_ext
-                         0x20c'602b      0x22  Code  Gb  gx_prompt_text_get.o [71]
+                         0x20c'5f27      0x22  Code  Gb  gx_prompt_text_get.o [71]
 _gx_prompt_text_set_ext
                          0x209'f551      0x48  Code  Gb  gx_prompt_text_set.o [71]
 _gx_rich_text_resource_id_read
@@ -14072,11 +14072,11 @@ _gx_rich_text_view_context_save
 _gx_rich_text_view_create
                          0x209'd385      0x58  Code  Gb  gx_rich_text_view_create.o [71]
 _gx_rich_text_view_draw
-                         0x20c'604d      0x18  Code  Gb  gx_rich_text_view_draw.o [71]
+                         0x20c'5f49      0x18  Code  Gb  gx_rich_text_view_draw.o [71]
 _gx_rich_text_view_line_info_get
                          0x209'dc8b     0x1fa  Code  Gb  gx_rich_text_view_line_info_get.o [71]
 _gx_rich_text_view_scroll_info_get
-                         0x20c'6065      0xd0  Code  Gb  gx_rich_text_view_scroll_info_get.o [71]
+                         0x20c'5f61      0xd0  Code  Gb  gx_rich_text_view_scroll_info_get.o [71]
 _gx_rich_text_view_single_line_draw
                          0x209'd771     0x252  Code  Lc  gx_rich_text_view_text_draw.o [71]
 _gx_rich_text_view_tag_close
@@ -14294,7 +14294,7 @@ _gx_utility_utf8_string_character_get
 _gx_widget_allocate      0x209'e809      0x2c  Code  Gb  gx_widget_allocate.o [71]
 _gx_widget_attach        0x208'ca2b      0x2e  Code  Gb  gx_widget_attach.o [71]
 _gx_widget_background_draw
-                         0x20c'5ed1      0x26  Code  Gb  gx_widget_background_draw.o [71]
+                         0x20c'5dcd      0x26  Code  Gb  gx_widget_background_draw.o [71]
 _gx_widget_block_move    0x208'c64f      0xce  Code  Gb  gx_widget_block_move.o [71]
 _gx_widget_border_draw   0x209'e91d     0x50a  Code  Gb  gx_widget_border_draw.o [71]
 _gx_widget_border_width_get
@@ -14322,7 +14322,7 @@ _gx_widget_delete        0x208'c9fd      0x2e  Code  Gb  gx_widget_delete.o [71]
 _gx_widget_delete_helper
                          0x208'c99d      0x5c  Code  Lc  gx_widget_delete.o [71]
 _gx_widget_detach        0x208'c935      0x2a  Code  Gb  gx_widget_detach.o [71]
-_gx_widget_draw          0x20c'6135      0x12  Code  Gb  gx_widget_draw.o [71]
+_gx_widget_draw          0x20c'6031      0x12  Code  Gb  gx_widget_draw.o [71]
 _gx_widget_draw_set      0x209'f8e1       0x6  Code  Gb  gx_widget_draw_set.o [71]
 _gx_widget_event_generate
                          0x209'c55b      0x36  Code  Gb  gx_widget_event_generate.o [71]
@@ -14361,7 +14361,7 @@ _gx_widget_status_remove
 _gx_widget_string_get_ext
                          0x209'c199      0x38  Code  Gb  gx_widget_string_get.o [71]
 _gx_widget_text_draw_ext
-                         0x20c'5f49      0xe2  Code  Gb  gx_widget_text_draw.o [71]
+                         0x20c'5e45      0xe2  Code  Gb  gx_widget_text_draw.o [71]
 _gx_widget_unlink        0x208'd5c5      0x74  Code  Gb  gx_widget_unlink.o [71]
 _gx_widget_width_get     0x208'cf8d       0xe  Code  Gb  gx_widget_width_get.o [71]
 _gx_window_background_draw
@@ -14377,11 +14377,11 @@ _gx_window_event_process
                          0x209'ba55     0x178  Code  Gb  gx_window_event_process.o [71]
 _gx_window_root_create   0x209'ee41      0x70  Code  Gb  gx_window_root_create.o [71]
 _gx_window_root_event_process
-                         0x20c'6147      0x46  Code  Gb  gx_window_root_event_process.o [71]
+                         0x20c'6043      0x46  Code  Gb  gx_window_root_event_process.o [71]
 _gx_window_root_find     0x208'db87      0x20  Code  Gb  gx_window_root_find.o [71]
 _gx_window_scroll        0x209'c121      0x78  Code  Gb  gx_window_scroll.o [71]
 _gx_window_scroll_info_get
-                         0x20c'618d      0xb4  Code  Gb  gx_window_scroll_info_get.o [71]
+                         0x20c'6089      0xb4  Code  Gb  gx_window_scroll_info_get.o [71]
 _gx_window_scrollbar_find
                          0x209'c21d      0x2e  Code  Gb  gx_window_scrollbar_find.o [71]
 _gx_window_view_update_detect
@@ -14523,7 +14523,7 @@ _nx_packet_data_append   0x208'3ce5     0x130  Code  Gb  nx_packet_data_append.o
 _nx_packet_data_extract_offset
                          0x208'4297      0x9e  Code  Gb  nx_packet_data_extract_offset.o [70]
 _nx_packet_pool_cleanup
-                         0x20b'e279      0x74  Code  Gb  nx_packet_pool_cleanup.o [70]
+                         0x20b'e175      0x74  Code  Gb  nx_packet_pool_cleanup.o [70]
 _nx_packet_release       0x208'30dd      0xe0  Code  Gb  nx_packet_release.o [70]
 _nx_packet_transmit_release
                          0x208'2a57      0x4a  Code  Gb  nx_packet_transmit_release.o [70]
@@ -14597,7 +14597,7 @@ _nx_tcp_transmit_timer_rate
 _nx_udp_bind_cleanup     0x208'6a19      0x74  Code  Gb  nx_udp_bind_cleanup.o [70]
 _nx_udp_free_port_find   0x208'5655      0x72  Code  Gb  nx_udp_free_port_find.o [70]
 _nx_udp_receive_cleanup
-                         0x20b'e2ed      0x70  Code  Gb  nx_udp_receive_cleanup.o [70]
+                         0x20b'e1e9      0x70  Code  Gb  nx_udp_receive_cleanup.o [70]
 _nx_udp_socket_bind      0x208'3a31     0x170  Code  Gb  nx_udp_socket_bind.o [70]
 _nx_udp_socket_create    0x208'379d      0xc4  Code  Gb  nx_udp_socket_create.o [70]
 _nx_udp_socket_delete    0x208'3871      0x74  Code  Gb  nx_udp_socket_delete.o [70]
@@ -14681,7 +14681,7 @@ _nxe_udp_socket_unbind   0x208'2741      0x4c  Code  Gb  nxe_udp_socket_unbind.o
 _timer_event_processing
                          0x20a'139d       0x4  Code  Lc  Screen_diagnostic_template.o [20]
 _tx_block_allocate       0x208'34cd      0xd0  Code  Gb  tx_block_allocate.o [73]
-_tx_block_pool_cleanup   0x20c'0d8d      0x98  Code  Gb  tx_block_pool_cleanup.o [73]
+_tx_block_pool_cleanup   0x20c'0c89      0x98  Code  Gb  tx_block_pool_cleanup.o [73]
 _tx_block_pool_create    0x20b'3785      0xb4  Code  Gb  tx_block_pool_create.o [73]
 _tx_block_pool_created_count
                         0x2207'130c       0x4  Data  Gb  tx_initialize_high_level.o [73]
@@ -14698,7 +14698,7 @@ _tx_block_pool_performance_timeout_count
 _tx_block_release        0x208'36f9      0x80  Code  Gb  tx_block_release.o [73]
 _tx_build_options       0x2207'13f0       0x4  Data  Gb  tx_thread_initialize.o [73]
 _tx_byte_allocate        0x207'6d09      0xfc  Code  Gb  tx_byte_allocate.o [73]
-_tx_byte_pool_cleanup    0x20c'0e25      0x98  Code  Gb  tx_byte_pool_cleanup.o [73]
+_tx_byte_pool_cleanup    0x20c'0d21      0x98  Code  Gb  tx_byte_pool_cleanup.o [73]
 _tx_byte_pool_create     0x207'6c6d      0x9c  Code  Gb  tx_byte_pool_create.o [73]
 _tx_byte_pool_created_count
                         0x2207'1324       0x4  Data  Gb  tx_initialize_high_level.o [73]
@@ -14724,7 +14724,7 @@ _tx_byte_pool_performance_timeout_count
 _tx_byte_pool_search     0x207'949d     0x174  Code  Gb  tx_byte_pool_search.o [73]
 _tx_byte_release         0x207'6e05     0x14c  Code  Gb  tx_byte_release.o [73]
 _tx_event_flags_cleanup
-                         0x20c'0ebd      0xa0  Code  Gb  tx_event_flags_cleanup.o [73]
+                         0x20c'0db9      0xa0  Code  Gb  tx_event_flags_cleanup.o [73]
 _tx_event_flags_create   0x205'd37d      0x58  Code  Gb  tx_event_flags_create.o [73]
 _tx_event_flags_created_count
                         0x2207'12d4       0x4  Data  Gb  tx_initialize_high_level.o [73]
@@ -14742,14 +14742,14 @@ _tx_event_flags_performance_timeout_count
                         0x2207'12e4       0x4  Data  Gb  tx_initialize_high_level.o [73]
 _tx_event_flags_set      0x205'cbd1     0x230  Code  Gb  tx_event_flags_set.o [73]
 _tx_initialize_high_level
-                         0x20c'0931       0xc  Code  Gb  tx_initialize_high_level.o [73]
+                         0x20c'082d       0xc  Code  Gb  tx_initialize_high_level.o [73]
 _tx_initialize_kernel_enter
-                         0x20c'081d      0x48  Code  Gb  tx_initialize_kernel_enter.o [73]
+                         0x20c'0719      0x48  Code  Gb  tx_initialize_kernel_enter.o [73]
 _tx_initialize_low_level
-                         0x20c'08b7      0x4c  Code  Gb  tx_initialize_low_level.o [61]
+                         0x20c'07b3      0x4c  Code  Gb  tx_initialize_low_level.o [61]
 _tx_initialize_unused_memory
                         0x2207'1344       0x4  Data  Gb  tx_initialize_high_level.o [73]
-_tx_mutex_cleanup        0x20c'0f5d      0x88  Code  Gb  tx_mutex_cleanup.o [73]
+_tx_mutex_cleanup        0x20c'0e59      0x88  Code  Gb  tx_mutex_cleanup.o [73]
 _tx_mutex_create         0x206'b849      0x6c  Code  Gb  tx_mutex_create.o [73]
 _tx_mutex_created_count
                         0x2207'12ec       0x4  Data  Gb  tx_initialize_high_level.o [73]
@@ -14773,10 +14773,10 @@ _tx_mutex_priority_change
                          0x207'2dd9      0xf4  Code  Gb  tx_mutex_priority_change.o [73]
 _tx_mutex_put            0x206'bfdd     0x230  Code  Gb  tx_mutex_put.o [73]
 _tx_mutex_thread_release
-                         0x20c'0fe5      0x42  Code  Gb  tx_mutex_cleanup.o [73]
+                         0x20c'0ee1      0x42  Code  Gb  tx_mutex_cleanup.o [73]
 _tx_port_wait_thread_ready
-                         0x20c'0a41      0x24  Code  Gb  tx_port_wait_thread_ready.o [61]
-_tx_queue_cleanup        0x20c'1039      0xa8  Code  Gb  tx_queue_cleanup.o [73]
+                         0x20c'093d      0x24  Code  Gb  tx_port_wait_thread_ready.o [61]
+_tx_queue_cleanup        0x20c'0f35      0xa8  Code  Gb  tx_queue_cleanup.o [73]
 _tx_queue_create         0x206'a075      0x84  Code  Gb  tx_queue_create.o [73]
 _tx_queue_created_count
                         0x2207'12b4       0x4  Data  Gb  tx_initialize_high_level.o [73]
@@ -14797,7 +14797,7 @@ _tx_queue_performance_timeout_count
                         0x2207'12cc       0x4  Data  Gb  tx_initialize_high_level.o [73]
 _tx_queue_receive        0x206'a155     0x210  Code  Gb  tx_queue_receive.o [73]
 _tx_queue_send           0x206'9d71     0x1a0  Code  Gb  tx_queue_send.o [73]
-_tx_semaphore_cleanup    0x20c'10e1      0x98  Code  Gb  tx_semaphore_cleanup.o [73]
+_tx_semaphore_cleanup    0x20c'0fdd      0x98  Code  Gb  tx_semaphore_cleanup.o [73]
 _tx_semaphore_create     0x206'a0f9      0x5c  Code  Gb  tx_semaphore_create.o [73]
 _tx_semaphore_created_count
                         0x2207'129c       0x4  Data  Gb  tx_initialize_high_level.o [73]
@@ -14828,7 +14828,7 @@ _tx_thread_highest_priority
                         0x2207'1364       0x4  Data  Gb  tx_thread_initialize.o [73]
 _tx_thread_identify      0x208'1939      0x14  Code  Gb  tx_thread_identify.o [73]
 _tx_thread_info_get      0x208'7009      0x62  Code  Gb  tx_thread_info_get.o [73]
-_tx_thread_initialize    0x20c'09ed      0x20  Code  Gb  tx_thread_initialize.o [73]
+_tx_thread_initialize    0x20c'08e9      0x20  Code  Gb  tx_thread_initialize.o [73]
 _tx_thread_mutex_release
                         0x2207'13ec       0x4  Data  Gb  tx_thread_initialize.o [73]
 _tx_thread_performance__execute_log_index
@@ -14864,8 +14864,8 @@ _tx_thread_priority_list
 _tx_thread_priority_maps
                         0x2207'135c       0x4  Data  Gb  tx_thread_initialize.o [73]
 _tx_thread_resume        0x209'e4a1      0x70  Code  Gb  tx_thread_resume.o [73]
-_tx_thread_schedule      0x20c'093d      0x1e  Code  Gb  tx_thread_schedule.o [61]
-_tx_thread_shell_entry   0x20c'119d      0x84  Code  Gb  tx_thread_shell_entry.o [73]
+_tx_thread_schedule      0x20c'0839      0x1e  Code  Gb  tx_thread_schedule.o [61]
+_tx_thread_shell_entry   0x20c'1099      0x84  Code  Gb  tx_thread_shell_entry.o [73]
 _tx_thread_sleep         0x205'cf31      0x7c  Code  Gb  tx_thread_sleep.o [73]
 _tx_thread_stack_analyze
                          0x20b'4745      0x80  Code  Gb  tx_thread_stack_analyze.o [73]
@@ -14888,8 +14888,8 @@ _tx_thread_system_state
 _tx_thread_system_suspend
                          0x205'd645     0x1ec  Code  Gb  tx_thread_system_suspend.o [73]
 _tx_thread_terminate     0x208'7d45     0x188  Code  Gb  tx_thread_terminate.o [73]
-_tx_thread_time_slice    0x20c'0d0d      0x80  Code  Gb  tx_thread_time_slice.o [73]
-_tx_thread_timeout       0x20c'1221      0x50  Code  Gb  tx_thread_timeout.o [73]
+_tx_thread_time_slice    0x20c'0c09      0x80  Code  Gb  tx_thread_time_slice.o [73]
+_tx_thread_timeout       0x20c'111d      0x50  Code  Gb  tx_thread_timeout.o [73]
 _tx_time_get             0x205'cf1d      0x14  Code  Gb  tx_time_get.o [73]
 _tx_timer_activate       0x209'e7cd      0x3c  Code  Gb  tx_timer_activate.o [73]
 _tx_timer_create         0x208'3439      0x94  Code  Gb  tx_timer_create.o [73]
@@ -14899,15 +14899,15 @@ _tx_timer_created_ptr   0x2207'14d4       0x4  Data  Gb  tx_timer_initialize.o [
 _tx_timer_current_ptr   0x2207'14cc       0x4  Data  Gb  tx_timer_initialize.o [73]
 _tx_timer_deactivate     0x208'b68d      0xd8  Code  Gb  tx_timer_deactivate.o [73]
 _tx_timer_expiration_process
-                         0x20c'0b25     0x1e8  Code  Gb  tx_timer_expiration_process.o [73]
+                         0x20c'0a21     0x1e8  Code  Gb  tx_timer_expiration_process.o [73]
 _tx_timer_expired       0x2207'14d0       0x4  Data  Gb  tx_timer_initialize.o [73]
 _tx_timer_expired_time_slice
                         0x2207'1440       0x4  Data  Gb  tx_timer_initialize.o [73]
 _tx_timer_expired_timer_ptr
                         0x2207'14dc       0x4  Data  Gb  tx_timer_initialize.o [73]
 _tx_timer_info_get       0x209'e6e9      0xe4  Code  Gb  tx_timer_info_get.o [73]
-_tx_timer_initialize     0x20c'0a0d      0x34  Code  Gb  tx_timer_initialize.o [73]
-_tx_timer_interrupt      0x20c'0a65      0xc0  Code  Gb  tx_timer_interrupt.o [61]
+_tx_timer_initialize     0x20c'0909      0x34  Code  Gb  tx_timer_initialize.o [73]
+_tx_timer_interrupt      0x20c'0961      0xc0  Code  Gb  tx_timer_interrupt.o [61]
 _tx_timer_list          0x2207'1444      0x80  Data  Gb  tx_timer_initialize.o [73]
 _tx_timer_list_end      0x2207'14c8       0x4  Data  Gb  tx_timer_initialize.o [73]
 _tx_timer_list_start    0x2207'14c4       0x4  Data  Gb  tx_timer_initialize.o [73]
@@ -14969,25 +14969,25 @@ _txe_thread_resume       0x20a'b6d9      0x20  Code  Gb  txe_thread_resume.o [73
 _txe_thread_suspend      0x20a'b6f9      0x20  Code  Gb  txe_thread_suspend.o [73]
 _txe_thread_terminate    0x208'7909      0x38  Code  Gb  txe_thread_terminate.o [73]
 _ux_device_class_cdc_acm_activate
-                         0x20c'6241      0x1c  Code  Gb  ux_device_class_cdc_acm_activate.o [74]
+                         0x20c'613d      0x1c  Code  Gb  ux_device_class_cdc_acm_activate.o [74]
 _ux_device_class_cdc_acm_bulkin_thread
-                         0x20c'1271      0xd8  Code  Gb  ux_device_class_cdc_acm_bulkin_thread.o [74]
+                         0x20c'116d      0xd8  Code  Gb  ux_device_class_cdc_acm_bulkin_thread.o [74]
 _ux_device_class_cdc_acm_bulkout_thread
-                         0x20c'135d      0x74  Code  Gb  ux_device_class_cdc_acm_bulkout_thread.o [74]
+                         0x20c'1259      0x74  Code  Gb  ux_device_class_cdc_acm_bulkout_thread.o [74]
 _ux_device_class_cdc_acm_control_request
-                         0x20c'13d1      0xe4  Code  Gb  ux_device_class_cdc_acm_control_request.o [74]
+                         0x20c'12cd      0xe4  Code  Gb  ux_device_class_cdc_acm_control_request.o [74]
 _ux_device_class_cdc_acm_deactivate
-                         0x20c'625d      0x4c  Code  Gb  ux_device_class_cdc_acm_deactivate.o [74]
+                         0x20c'6159      0x4c  Code  Gb  ux_device_class_cdc_acm_deactivate.o [74]
 _ux_device_class_cdc_acm_entry
-                         0x20c'640b      0x4e  Code  Gb  ux_device_class_cdc_acm_entry.o [74]
+                         0x20c'6307      0x4e  Code  Gb  ux_device_class_cdc_acm_entry.o [74]
 _ux_device_class_cdc_acm_initialize
-                         0x20c'14d1     0x19c  Code  Gb  ux_device_class_cdc_acm_initialize.o [74]
+                         0x20c'13cd     0x19c  Code  Gb  ux_device_class_cdc_acm_initialize.o [74]
 _ux_device_class_cdc_acm_ioctl
-                         0x20c'62a9     0x15a  Code  Gb  ux_device_class_cdc_acm_ioctl.o [74]
+                         0x20c'61a5     0x15a  Code  Gb  ux_device_class_cdc_acm_ioctl.o [74]
 _ux_device_class_cdc_acm_read
                          0x208'80b9      0xf6  Code  Gb  ux_device_class_cdc_acm_read.o [74]
 _ux_device_class_cdc_acm_uninitialize
-                         0x20c'6459      0x44  Code  Gb  ux_device_class_cdc_acm_unitialize.o [74]
+                         0x20c'6355      0x44  Code  Gb  ux_device_class_cdc_acm_unitialize.o [74]
 _ux_device_class_cdc_acm_write
                          0x208'7fad     0x106  Code  Gb  ux_device_class_cdc_acm_write.o [74]
 _ux_device_stack_alternate_setting_set
@@ -15036,13 +15036,13 @@ _ux_utility_delay_ms     0x208'82dd      0x18  Code  Gb  ux_utility_delay_ms.o [
 _ux_utility_descriptor_parse
                          0x20a'cd95      0x62  Code  Gb  ux_utility_descriptor_parse.o [68]
 _ux_utility_event_flags_create
-                         0x20c'1675      0x1c  Code  Gb  ux_utility_event_flags_create.o [68]
+                         0x20c'1571      0x1c  Code  Gb  ux_utility_event_flags_create.o [68]
 _ux_utility_event_flags_delete
-                         0x20c'16dd       0x8  Code  Gb  ux_utility_event_flags_delete.o [68]
+                         0x20c'15d9       0x8  Code  Gb  ux_utility_event_flags_delete.o [68]
 _ux_utility_event_flags_get
-                         0x20c'1349      0x14  Code  Gb  ux_utility_event_flags_get.o [68]
+                         0x20c'1245      0x14  Code  Gb  ux_utility_event_flags_get.o [68]
 _ux_utility_long_get     0x20b'0d19      0x1e  Code  Gb  ux_utility_long_get.o [68]
-_ux_utility_long_put     0x20c'14b5      0x1a  Code  Gb  ux_utility_long_put.o [68]
+_ux_utility_long_put     0x20c'13b1      0x1a  Code  Gb  ux_utility_long_put.o [68]
 _ux_utility_memory_allocate
                          0x20a'cb99     0x118  Code  Gb  ux_utility_memory_allocate.o [68]
 _ux_utility_memory_allocate_mulc_safe
@@ -15059,7 +15059,7 @@ _ux_utility_memory_set   0x20b'0aed      0x10  Code  Gb  ux_utility_memory_set.o
 _ux_utility_mutex_create
                          0x20b'0b45      0x1e  Code  Gb  ux_utility_mutex_create.o [68]
 _ux_utility_mutex_delete
-                         0x20c'166d       0x8  Code  Gb  ux_utility_mutex_delete.o [68]
+                         0x20c'1569       0x8  Code  Gb  ux_utility_mutex_delete.o [68]
 _ux_utility_mutex_off    0x208'82c1       0x8  Code  Gb  ux_utility_mutex_off.o [68]
 _ux_utility_mutex_on     0x208'81f1      0x1a  Code  Gb  ux_utility_mutex_on.o [68]
 _ux_utility_semaphore_create
@@ -15072,11 +15072,11 @@ _ux_utility_short_get    0x20b'0d37      0x10  Code  Gb  ux_utility_short_get.o 
 _ux_utility_string_length_check
                          0x20b'30a9      0x32  Code  Gb  ux_utility_string_length_check.o [68]
 _ux_utility_thread_create
-                         0x20c'1691      0x3a  Code  Gb  ux_utility_thread_create.o [68]
+                         0x20c'158d      0x3a  Code  Gb  ux_utility_thread_create.o [68]
 _ux_utility_thread_delete
-                         0x20c'16cb      0x12  Code  Gb  ux_utility_thread_delete.o [68]
+                         0x20c'15c7      0x12  Code  Gb  ux_utility_thread_delete.o [68]
 _ux_utility_thread_resume
-                         0x20c'6403       0x8  Code  Gb  ux_utility_thread_resume.o [68]
+                         0x20c'62ff       0x8  Code  Gb  ux_utility_thread_resume.o [68]
 _ux_utility_thread_suspend
                          0x20a'ff09       0x8  Code  Gb  ux_utility_thread_suspend.o [68]
 _uxe_system_initialize   0x20a'c00d      0x14  Code  Gb  ux_system_initialize.o [68]
@@ -15098,11 +15098,11 @@ bsp_clock_freq_var_init
 bsp_clock_init           0x206'03cf      0xd8  Code  Gb  bsp_clocks.o [26]
 bsp_group_irq_call       0x206'07b9      0x20  Code  Lc  bsp_group_irq.o [26]
 bsp_init                 0x206'07b5       0x2  Code  Wk  bsp_common.o [26]
-bsp_init_dtcm            0x20c'0727      0x2a  Code  Lc  system.o [21]
+bsp_init_dtcm            0x20c'0623      0x2a  Code  Lc  system.o [21]
 bsp_init_internal        0x206'07b5       0x2  Code  Gb  bsp_common.o [26]
-bsp_init_itcm            0x20c'0713      0x14  Code  Lc  system.o [21]
+bsp_init_itcm            0x20c'060f      0x14  Code  Lc  system.o [21]
 bsp_init_uninitialized_vars
-                         0x20c'06b9      0x32  Code  Lc  system.o [21]
+                         0x20c'05b5      0x32  Code  Lc  system.o [21]
 bsp_irq_cfg              0x206'0825      0x2c  Code  Gb  bsp_irq.o [26]
 bsp_peripheral_clock_set
                          0x206'04a9      0x2e  Code  Lc  bsp_clocks.o [26]
@@ -15490,7 +15490,7 @@ display_1_theme_1_pixelmap_table
                         0x2200'1064      0x30  Data  Gb  MC80_resources.o [9]
 display_1_theme_table   0x2200'1108       0x4  Data  Gb  MC80_resources.o [9]
 dlc_to_bytes             0x205'9998      0x10  Data  Lc  r_canfd.o [40]
-dmac_int_isr             0x20b'e7b3      0x34  Code  Gb  r_dmac.o [41]
+dmac_int_isr             0x20b'e6af      0x34  Code  Gb  r_dmac.o [41]
 do_dump                  0x206'f29d     0x470  Code  Lc  jansson_dump.o [12]
 do_free                 0x2200'0fe8       0x4  Data  Lc  jansson_memory.o [12]
 do_malloc               0x2200'0fe4       0x4  Data  Lc  jansson_memory.o [12]
@@ -15500,12 +15500,12 @@ dump_string              0x206'f0df     0x14a  Code  Lc  jansson_dump.o [12]
 dump_to_buffer           0x206'f051      0x2c  Code  Lc  jansson_dump.o [12]
 enc_cbl                 0x2206'7c34      0x28  Data  Gb  Manual_Encoder.o [10]
 error_set                0x207'202f      0xc4  Code  Lc  jansson_load.o [12]
-ether_call_callback      0x20b'eaa9      0x4c  Code  Lc  r_ether.o [44]
-ether_eint_isr           0x20b'eaf5      0x56  Code  Gb  r_ether.o [44]
+ether_call_callback      0x20b'e9a5      0x4c  Code  Lc  r_ether.o [44]
+ether_eint_isr           0x20b'e9f1      0x56  Code  Gb  r_ether.o [44]
 f_unsent_record         0x2208'0c74       0x1  Data  Gb  FreeMaster_thread.o [8]
 fat_fs_media            0x2200'51e8    0xdba8  Data  Gb  FS_init.o [7]
-fcu_fiferr_isr           0x20b'f3ab      0x5e  Code  Gb  r_flash_hp.o [46]
-fcu_frdyi_isr            0x20b'f409      0x96  Code  Gb  r_flash_hp.o [46]
+fcu_fiferr_isr           0x20b'f2a7      0x5e  Code  Gb  r_flash_hp.o [46]
+fcu_frdyi_isr            0x20b'f305      0x96  Code  Gb  r_flash_hp.o [46]
 file_log_str            0x2206'7988      0x80  Data  Gb  Logger.o [16]
 file_logger_flags       0x2206'7950      0x38  Data  Gb  Logger.o [16]
 filter_cpu_usage        0x2206'6750      0x14  Data  Gb  IDLE_task.o [72]
@@ -15514,11 +15514,11 @@ flash_bgo_status        0x2203'2090       0x4  Data  Lc  Flash_driver.o [4]
 flash_hp_access_window_set
                         0x2200'0539      0x4a  Code  Lc  r_flash_hp.o [46]
 flash_hp_arc_cmd_execute
-                         0x20b'f1b7      0x56  Code  Lc  r_flash_hp.o [46]
-flash_hp_arc_read        0x20b'f111      0xa6  Code  Lc  r_flash_hp.o [46]
+                         0x20b'f0b3      0x56  Code  Lc  r_flash_hp.o [46]
+flash_hp_arc_read        0x20b'f00d      0xa6  Code  Lc  r_flash_hp.o [46]
 flash_hp_bank_swap      0x2200'02db      0x50  Code  Lc  r_flash_hp.o [46]
 flash_hp_banksel_bankswp_addr_get
-                         0x20b'efdd      0x1a  Code  Lc  r_flash_hp.o [46]
+                         0x20b'eed9      0x1a  Code  Lc  r_flash_hp.o [46]
 flash_hp_cf_erase       0x2200'036f      0x68  Code  Lc  r_flash_hp.o [46]
 flash_hp_cf_write       0x2200'0297      0x44  Code  Lc  r_flash_hp.o [46]
 flash_hp_check_errors   0x2200'024d      0x4a  Code  Lc  r_flash_hp.o [46]
@@ -15527,17 +15527,17 @@ flash_hp_configuration_area_data_setup
 flash_hp_configuration_area_write
                         0x2200'05eb      0x58  Code  Lc  r_flash_hp.o [46]
 flash_hp_counter_to_fcntselr_convert
-                         0x20b'f0f9      0x18  Code  Lc  r_flash_hp.o [46]
+                         0x20b'eff5      0x18  Code  Lc  r_flash_hp.o [46]
 flash_hp_df_blank_check
-                         0x20b'f057      0xa2  Code  Lc  r_flash_hp.o [46]
-flash_hp_df_erase        0x20b'f2ef      0x6e  Code  Lc  r_flash_hp.o [46]
-flash_hp_df_write        0x20b'eff7      0x60  Code  Lc  r_flash_hp.o [46]
+                         0x20b'ef53      0xa2  Code  Lc  r_flash_hp.o [46]
+flash_hp_df_erase        0x20b'f1eb      0x6e  Code  Lc  r_flash_hp.o [46]
+flash_hp_df_write        0x20b'eef3      0x60  Code  Lc  r_flash_hp.o [46]
 flash_hp_enter_pe_cf_mode
                         0x2200'0643      0x56  Code  Lc  r_flash_hp.o [46]
 flash_hp_enter_pe_df_mode
-                         0x20b'f4d1      0x4e  Code  Lc  r_flash_hp.o [46]
+                         0x20b'f3cd      0x4e  Code  Lc  r_flash_hp.o [46]
 flash_hp_erase_block    0x2200'032b      0x44  Code  Lc  r_flash_hp.o [46]
-flash_hp_init            0x20b'f20d      0xe2  Code  Lc  r_flash_hp.o [46]
+flash_hp_init            0x20b'f109      0xe2  Code  Lc  r_flash_hp.o [46]
 flash_hp_pe_mode_exit   0x2200'03d7      0x5a  Code  Lc  r_flash_hp.o [46]
 flash_hp_reset          0x2200'0431      0x54  Code  Lc  r_flash_hp.o [46]
 flash_hp_set_startup_area_boot
@@ -15545,7 +15545,7 @@ flash_hp_set_startup_area_boot
 flash_hp_status_clear   0x2200'04cb      0x46  Code  Lc  r_flash_hp.o [46]
 flash_hp_stop           0x2200'0485      0x46  Code  Lc  r_flash_hp.o [46]
 flash_hp_user_lockable_area_write
-                         0x20b'f35d      0x4e  Code  Lc  r_flash_hp.o [46]
+                         0x20b'f259      0x4e  Code  Lc  r_flash_hp.o [46]
 flash_hp_write_data     0x2200'01b1      0x9c  Code  Lc  r_flash_hp.o [46]
 flush_bits               0x206'fe47      0x2a  Code  Lc  sixpack.o [5]
 fm_pipe                 0x2204'24d0       0x4  Data  Gb  FreeMaster_thread.o [8]
@@ -15579,7 +15579,7 @@ fmstr_tsaBuffSize       0x2204'25cc       0x4  Data  Lc  freemaster_tsa.o [8]
 fmstr_tsaTableIndex     0x2204'25d4       0x4  Data  Lc  freemaster_tsa.o [8]
 font_SansPro_Regular_ttf_18_aa
                          0x200'73dc     0x474  Data  Lc  gx_system_font_8bpp.o [71]
-free                     0x20c'649d       0x4  Code  Gb  heaptramp0.o [79]
+free                     0x20c'6399       0x4  Code  Gb  heaptramp0.o [79]
 freemaster_stack        0x2208'49e8     0x800  Data  Lc  FreeMaster_thread.o [8]
 freemaster_thread       0x2204'24e4      0xe8  Data  Lc  FreeMaster_thread.o [8]
 frexp                    0x205'f975            Code  Gb  frexp.o [80]
@@ -15730,10 +15730,10 @@ g_flash_driver_state    0x2208'0c6d       0x1  Data  Lc  Flash_driver.o [4]
 g_flash_on_flash_hp      0x205'9a64      0x4c  Data  Gb  r_flash_hp.o [46]
 g_freemaster_interface_type
                         0x2204'24e0       0x4  Data  Gb  FreeMaster_thread.o [8]
-g_fsp_version            0x20c'18bc       0x4  Data  Lc  bsp_common.o [26]
+g_fsp_version            0x20c'17b8       0x4  Data  Lc  bsp_common.o [26]
 g_fsp_version_build_string
-                         0x20c'18c8      0x44  Data  Lc  bsp_common.o [26]
-g_fsp_version_string     0x20c'18c0       0x8  Data  Lc  bsp_common.o [26]
+                         0x20c'17c4      0x44  Data  Lc  bsp_common.o [26]
+g_fsp_version_string     0x20c'17bc       0x8  Data  Lc  bsp_common.o [26]
 g_fx_spi_nor_media      0x2201'2d90    0xdba8  Data  Gb  LevelX_config.o [2]
 g_gpt_registers          0x205'9980      0x18  Data  Lc  PWM_timer_driver.o [4]
 g_hcd_mbx_hdl           0x2206'f0d0      0x54  Data  Lc  r_usb_cstd_rtos.o [31]
@@ -15881,7 +15881,7 @@ g_saved_drv2_en_state   0x2208'0c7e       0x1  Data  Lc  Monitor_Motor.o [24]
 g_sdmmc                  0x200'0f20       0xc  Data  Gb  common_data.o [54]
 g_sdmmc_cfg             0x2200'0740      0x24  Data  Gb  common_data.o [54]
 g_sdmmc_ctrl            0x2203'1dd4     0x248  Data  Gb  common_data.o [54]
-g_sdmmc_dmac_callback    0x20c'2b51       0xa  Code  Gb  common_data.o [54]
+g_sdmmc_dmac_callback    0x20c'2a4d       0xa  Code  Gb  common_data.o [54]
 g_sdmmc_on_sdhi          0x205'9ab8      0x34  Data  Gb  r_sdhi.o [51]
 g_sdmmc_transfer         0x200'0f14       0xc  Data  Gb  common_data.o [54]
 g_sdmmc_transfer_cfg     0x200'0f0c       0x8  Data  Gb  common_data.o [54]
@@ -16437,15 +16437,15 @@ log_state               0x2206'c870      0x10  Data  Lc  Monitor_log_viewer.o [2
 log_str                 0x2204'24d8       0x4  Data  Gb  FreeMaster_thread.o [8]
 logf                     0x205'cb11            Code  Gb  logf.o [80]
 loop_check               0x206'f235      0x36  Code  Lc  jansson_dump.o [12]
-main                     0x20c'07f9       0xa  Code  Gb  main.o [54]
+main                     0x20c'06f5       0xa  Code  Gb  main.o [54]
 match                    0x206'ffd3     0x166  Code  Gb  sixpack.o [5]
 maxdistance             0x2207'1008       0x4  Data  Gb  sixpack.o [5]
 maxsize                 0x2207'100c       0x4  Data  Gb  sixpack.o [5]
 med3                     0x207'68c7      0x50  Code  Lc  qsort.o [79]
 memchr                   0x205'f8e5            Code  Gb  memchr.o [81]
 memcmp                   0x208'3fed            Code  Gb  memcmp.o [81]
-memcpy_64                0x20c'06ed      0x14  Code  Lc  system.o [21]
-memset_64                0x20c'0701      0x12  Code  Lc  system.o [21]
+memcpy_64                0x20c'05e9      0x14  Code  Lc  system.o [21]
+memset_64                0x20c'05fd      0x12  Code  Lc  system.o [21]
 module_inited           0x2208'0c81       0x1  Data  Lc  Monitor_USB_drv.o [22]
 mon_usb_vcom_driver      0x205'71ac      0x20  Data  Gb  Monitor_USB_drv.o [22]
 mon_usbfs_vcom1_drv_driver
@@ -16517,7 +16517,7 @@ pows                     0x207'126c      0x18  Data  Lc  strto32.o [80]
 prev_token               0x207'1713      0x22  Code  Lc  jansson_pack_unpack.o [12]
 previous_encoder_value  0x2207'0fa4       0x4  Data  Lc  Screen_diagnostic_main.o [20]
 printf                   0x20a'90a1      0x28  Code  Gb  printf.o [79]
-putchar                  0x20c'64b7      0x20  Code  Gb  putchar.o [79]
+putchar                  0x20c'63b3      0x20  Code  Gb  putchar.o [79]
 pwm_indx_to_comp        0x2206'e444     0x320  Data  Lc  PWM_timer_driver.o [4]
 qsort                    0x207'6c55      0x18  Code  Gb  qsort.o [79]
 r_agt_common_preamble    0x20a'10cd      0x26  Code  Lc  r_agt.o [39]
@@ -16535,21 +16535,21 @@ r_canfd_mode_transition
 r_canfd_rx_fifo_handler
                          0x206'65f9      0x7c  Code  Lc  r_canfd.o [40]
 r_dmac_config_transfer_info
-                         0x20b'e63d     0x176  Code  Lc  r_dmac.o [41]
-r_dmac_prv_disable       0x20b'e5e1      0x2a  Code  Lc  r_dmac.o [41]
-r_dmac_prv_enable        0x20b'e5d7       0xa  Code  Lc  r_dmac.o [41]
+                         0x20b'e539     0x176  Code  Lc  r_dmac.o [41]
+r_dmac_prv_disable       0x20b'e4dd      0x2a  Code  Lc  r_dmac.o [41]
+r_dmac_prv_enable        0x20b'e4d3       0xa  Code  Lc  r_dmac.o [41]
 r_dtc_block_repeat_initialize
-                         0x20b'e9e5      0x3c  Code  Lc  r_dtc.o [42]
-r_dtc_disable_transfer   0x20b'ea35      0x12  Code  Lc  r_dtc.o [42]
-r_dtc_prv_enable         0x20b'e95f      0x16  Code  Lc  r_dtc.o [42]
-r_dtc_set_info           0x20b'e9c3      0x22  Code  Lc  r_dtc.o [42]
-r_dtc_state_initialize   0x20b'e975      0x4e  Code  Lc  r_dtc.o [42]
+                         0x20b'e8e1      0x3c  Code  Lc  r_dtc.o [42]
+r_dtc_disable_transfer   0x20b'e931      0x12  Code  Lc  r_dtc.o [42]
+r_dtc_prv_enable         0x20b'e85b      0x16  Code  Lc  r_dtc.o [42]
+r_dtc_set_info           0x20b'e8bf      0x22  Code  Lc  r_dtc.o [42]
+r_dtc_state_initialize   0x20b'e871      0x4e  Code  Lc  r_dtc.o [42]
 r_dtc_state_initialize::g_dtc_state_initialized
                         0x2208'0c88       0x1  Data  Lc  r_dtc.o [42]
 r_dtc_wait_for_transfer_complete
-                         0x20b'ea21      0x14  Code  Lc  r_dtc.o [42]
+                         0x20b'e91d      0x14  Code  Lc  r_dtc.o [42]
 r_flash_hp_call_callback
-                         0x20b'f49f      0x32  Code  Lc  r_flash_hp.o [46]
+                         0x20b'f39b      0x32  Code  Lc  r_flash_hp.o [46]
 r_ioport_pfs_write       0x209'fb8b      0x66  Code  Lc  r_ioport.o [47]
 r_ioport_pins_config     0x209'fb4d      0x3e  Code  Lc  r_ioport.o [47]
 r_rtc_call_callback      0x206'be33      0x32  Code  Lc  r_rtc.o [50]
@@ -16562,40 +16562,40 @@ r_rtc_set_clock_source   0x206'bd1f      0x9c  Code  Lc  r_rtc.o [50]
 r_rtc_software_reset     0x206'bd07      0x18  Code  Lc  r_rtc.o [50]
 r_rtc_start_bit_update   0x206'bced      0x1a  Code  Lc  r_rtc.o [50]
 r_sdhi_access_irq_process
-                         0x20b'fadf      0xda  Code  Lc  r_sdhi.o [51]
-r_sdhi_bus_cfg           0x20b'fd35      0x6c  Code  Lc  r_sdhi.o [51]
-r_sdhi_bus_width_set     0x20c'0081      0x4c  Code  Lc  r_sdhi.o [51]
-r_sdhi_call_callback     0x20c'02cb      0x4e  Code  Lc  r_sdhi.o [51]
-r_sdhi_card_identify     0x20b'fcef      0x46  Code  Lc  r_sdhi.o [51]
-r_sdhi_clock_optimize    0x20b'fe85      0x34  Code  Lc  r_sdhi.o [51]
-r_sdhi_command_send      0x20b'fc03      0x26  Code  Lc  r_sdhi.o [51]
+                         0x20b'f9db      0xda  Code  Lc  r_sdhi.o [51]
+r_sdhi_bus_cfg           0x20b'fc31      0x6c  Code  Lc  r_sdhi.o [51]
+r_sdhi_bus_width_set     0x20b'ff7d      0x4c  Code  Lc  r_sdhi.o [51]
+r_sdhi_call_callback     0x20c'01c7      0x4e  Code  Lc  r_sdhi.o [51]
+r_sdhi_card_identify     0x20b'fbeb      0x46  Code  Lc  r_sdhi.o [51]
+r_sdhi_clock_optimize    0x20b'fd81      0x34  Code  Lc  r_sdhi.o [51]
+r_sdhi_command_send      0x20b'faff      0x26  Code  Lc  r_sdhi.o [51]
 r_sdhi_command_send_no_wait
-                         0x20b'fbb9      0x4a  Code  Lc  r_sdhi.o [51]
+                         0x20b'fab5      0x4a  Code  Lc  r_sdhi.o [51]
 r_sdhi_common_error_check
-                         0x20b'fa89      0x22  Code  Lc  r_sdhi.o [51]
-r_sdhi_csd_save          0x20b'ff2f      0xc2  Code  Lc  r_sdhi.o [51]
+                         0x20b'f985      0x22  Code  Lc  r_sdhi.o [51]
+r_sdhi_csd_save          0x20b'fe2b      0xc2  Code  Lc  r_sdhi.o [51]
 r_sdhi_erase_error_check
-                         0x20b'fa69      0x20  Code  Lc  r_sdhi.o [51]
-r_sdhi_hw_cfg            0x20b'fc91      0x5e  Code  Lc  r_sdhi.o [51]
-r_sdhi_irq_disable       0x20b'fabf      0x20  Code  Lc  r_sdhi.o [51]
-r_sdhi_irq_enable        0x20b'faab      0x14  Code  Lc  r_sdhi.o [51]
+                         0x20b'f965      0x20  Code  Lc  r_sdhi.o [51]
+r_sdhi_hw_cfg            0x20b'fb8d      0x5e  Code  Lc  r_sdhi.o [51]
+r_sdhi_irq_disable       0x20b'f9bb      0x20  Code  Lc  r_sdhi.o [51]
+r_sdhi_irq_enable        0x20b'f9a7      0x14  Code  Lc  r_sdhi.o [51]
 r_sdhi_max_clock_rate_set
-                         0x20b'fc29      0x68  Code  Lc  r_sdhi.o [51]
-r_sdhi_rca_get           0x20c'002b      0x36  Code  Lc  r_sdhi.o [51]
-r_sdhi_read_and_block    0x20b'fff1      0x3a  Code  Lc  r_sdhi.o [51]
+                         0x20b'fb25      0x68  Code  Lc  r_sdhi.o [51]
+r_sdhi_rca_get           0x20b'ff27      0x36  Code  Lc  r_sdhi.o [51]
+r_sdhi_read_and_block    0x20b'feed      0x3a  Code  Lc  r_sdhi.o [51]
 r_sdhi_read_write_common
-                         0x20b'fda1      0x2a  Code  Lc  r_sdhi.o [51]
-r_sdhi_sd_card_check     0x20b'fdcb      0x72  Code  Lc  r_sdhi.o [51]
-r_sdhi_sd_high_speed     0x20b'fef5      0x3a  Code  Lc  r_sdhi.o [51]
+                         0x20b'fc9d      0x2a  Code  Lc  r_sdhi.o [51]
+r_sdhi_sd_card_check     0x20b'fcc7      0x72  Code  Lc  r_sdhi.o [51]
+r_sdhi_sd_high_speed     0x20b'fdf1      0x3a  Code  Lc  r_sdhi.o [51]
 r_sdhi_transfer_callback
-                         0x20c'00cd      0x84  Code  Gb  r_sdhi.o [51]
-r_sdhi_transfer_end      0x20c'0297      0x34  Code  Lc  r_sdhi.o [51]
-r_sdhi_transfer_read     0x20c'0151      0x8e  Code  Lc  r_sdhi.o [51]
-r_sdhi_transfer_write    0x20c'01df      0xb8  Code  Lc  r_sdhi.o [51]
-r_sdhi_wait_for_device   0x20b'fe57      0x2e  Code  Lc  r_sdhi.o [51]
-r_sdhi_wait_for_event    0x20b'feb9      0x3c  Code  Lc  r_sdhi.o [51]
+                         0x20b'ffc9      0x84  Code  Gb  r_sdhi.o [51]
+r_sdhi_transfer_end      0x20c'0193      0x34  Code  Lc  r_sdhi.o [51]
+r_sdhi_transfer_read     0x20c'004d      0x8e  Code  Lc  r_sdhi.o [51]
+r_sdhi_transfer_write    0x20c'00db      0xb8  Code  Lc  r_sdhi.o [51]
+r_sdhi_wait_for_device   0x20b'fd53      0x2e  Code  Lc  r_sdhi.o [51]
+r_sdhi_wait_for_event    0x20b'fdb5      0x3c  Code  Lc  r_sdhi.o [51]
 r_sdhi_write_protect_get
-                         0x20b'fe3d      0x1a  Code  Lc  r_sdhi.o [51]
+                         0x20b'fd39      0x1a  Code  Lc  r_sdhi.o [51]
 r_spi_b_bit_width_config
                          0x206'90bf      0x16  Code  Lc  r_spi_b.o [52]
 r_spi_b_call_callback    0x206'9285      0x3c  Code  Lc  r_spi_b.o [52]
@@ -16621,9 +16621,9 @@ recv                     0x207'f9af      0x1a  Code  Gb  nxd_bsd.o [1]
 recvfrom                 0x207'f9c9      0x1a  Code  Gb  nxd_bsd.o [1]
 ret_func                0x2207'0fb0       0x4  Data  Lc  Screen_diagnostic_template.o [20]
 rm_block_media_sdmmc_call_callback
-                         0x20c'04bd       0xc  Code  Lc  rm_block_media_sdmmc.o [55]
+                         0x20c'03b9       0xc  Code  Lc  rm_block_media_sdmmc.o [55]
 rm_block_media_sdmmc_callback
-                         0x20c'04c9      0xbc  Code  Gb  rm_block_media_sdmmc.o [55]
+                         0x20c'03c5      0xbc  Code  Gb  rm_block_media_sdmmc.o [55]
 rm_filex_block_media_driver_request_handler
                          0x208'8957     0x11e  Code  Lc  rm_filex_block_media.o [56]
 rm_filex_block_media_memory_callback
@@ -16663,7 +16663,7 @@ scalbnf                  0x207'74cd            Code  Gb  ldexpf.o [80]
 scalbnl                  0x205'f54d            Code  Gb  ldexp.o [80]
 scale                    0x205'f3ad      0x46  Code  Lc  xprintffull_nomb.o [79]
 scanner_init             0x207'1621      0x4a  Code  Lc  jansson_pack_unpack.o [12]
-sdhimmc_accs_isr         0x20c'0319      0x48  Code  Gb  r_sdhi.o [51]
+sdhimmc_accs_isr         0x20c'0215      0x48  Code  Gb  r_sdhi.o [51]
 sec_hand                0x2208'0c20       0x4  Data  Lc  xfail_s.o [79]
 select                   0x208'0095     0x418  Code  Gb  nxd_bsd.o [1]
 selector_2               0x200'b2c0      0x18  Data  Lc  MC80_Params.o [18]
@@ -16730,7 +16730,7 @@ swap                     0x207'67b9      0x56  Code  Lc  qsort.o [79]
 sx_buf                  0x2207'1004       0x4  Data  Lc  sixpack.o [5]
 tcp_listen_socket       0x2203'22d0       0x4  Data  Lc  freemaster_netx_tcp.o [8]
 toupper                  0x20a'c1db       0xc  Code  Wk  toupper.o [79]
-tx_application_define    0x20c'07f1       0x8  Code  Gb  main.o [54]
+tx_application_define    0x20c'06ed       0x8  Code  Gb  main.o [54]
 type_names               0x200'82c8      0x20  Data  Lc  jansson_pack_unpack.o [12]
 udp_broadcast_socket    0x2203'22d4       0x4  Data  Lc  freemaster_netx_tcp.o [8]
 unpack                   0x207'1b6d     0x35a  Code  Lc  jansson_pack_unpack.o [12]
@@ -17129,7 +17129,7 @@ wvar_inst                0x200'b380      0x18  Data  Gb  MC80_Params.o [18]
 [81] = rt7M_tl.a
 [82] = shb_l.a
 
-  433'321 bytes of readonly  code memory
+  433'061 bytes of readonly  code memory
     1'378 bytes of readwrite code memory
   379'125 bytes of readonly  data memory
   545'974 bytes of readwrite data memory

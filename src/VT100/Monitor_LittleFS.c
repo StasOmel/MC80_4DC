@@ -1,7 +1,6 @@
 #include "App.h"
 #include "Performance_Stats.h"
 #include "Test_Patterns.h"
-#include "Test_Patterns.h"
 
 #define MAX_PATH_LENGTH              256
 #define MAX_DIRS_IN_STACK            32
@@ -785,7 +784,7 @@ static void _Do_write_test(void)
         lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
         Get_hw_timestump(&end_ts);
         operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
-        stats.error_count++;
+        Performance_stats_update_error(&stats);
         goto next_file;
       }
       bytes_written += written;
@@ -967,7 +966,7 @@ static void _Do_read_test(void)
         lfs_file_close(&g_littlefs_context.lfs, &file);
         Get_hw_timestump(&end_ts);
         operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
-        stats.error_count++;
+        Performance_stats_update_error(&stats);
         goto next_file;
       }
 
@@ -1038,7 +1037,7 @@ static void _Do_read_test(void)
     {
       MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), close_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
     }
     else
     {
@@ -1075,85 +1074,16 @@ static void _Do_read_test(void)
       }
       MPRINTF("\n\r");
 
-      stats.success_count++;
-      stats.total_bytes += bytes_read;
-
-      // Update time statistics
-      if (operation_time < stats.min_time)
-      {
-        stats.min_time = operation_time;
-      }
-      if (operation_time > stats.max_time)
-      {
-        stats.max_time = operation_time;
-      }
-      stats.total_time += operation_time;
-      stats.total_open_time += open_time;
-      if (open_time < stats.min_open_time)
-      {
-        stats.min_open_time = open_time;
-      }
-      if (open_time > stats.max_open_time)
-      {
-        stats.max_open_time = open_time;
-      }
-      stats.total_close_time += close_time;
-      if (close_time < stats.min_close_time)
-      {
-        stats.min_close_time = close_time;
-      }
-      if (close_time > stats.max_close_time)
-      {
-        stats.max_close_time = close_time;
-      }
-      stats.total_io_time += io_time;
-
-      // Update speed statistics
-      if (speed_kbps < stats.min_speed_kbps)
-      {
-        stats.min_speed_kbps = speed_kbps;
-      }
-      if (speed_kbps > stats.max_speed_kbps)
-      {
-        stats.max_speed_kbps = speed_kbps;
-      }
+      // Update all statistics using common function
+      Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, bytes_read, speed_kbps);
     }
 
   next_file:
     continue;
   }
 
-  // Calculate averages
-  if (stats.success_count > 0)
-  {
-    stats.avg_time = stats.total_time / stats.success_count;
-    if (stats.total_io_time > 0)
-    {
-      stats.avg_speed_kbps = (uint32_t)((float)stats.total_bytes * 1000000.0f / ((float)stats.total_io_time * 1024.0f));
-    }
-    if (stats.min_speed_kbps == UINT32_MAX)
-    {
-      stats.min_speed_kbps = 0;
-    }
-    if (stats.min_open_time == UINT32_MAX)
-    {
-      stats.min_open_time = 0;
-    }
-    if (stats.min_close_time == UINT32_MAX)
-    {
-      stats.min_close_time = 0;
-    }
-  }
-  else
-  {
-    stats.min_time       = 0;
-    stats.avg_time       = 0;
-    stats.min_speed_kbps = 0;
-    stats.min_open_time  = 0;
-    stats.max_open_time  = 0;
-    stats.min_close_time = 0;
-    stats.max_close_time = 0;
-  }
+  // Calculate averages using common function
+  Performance_stats_finalize(&stats);
 
   _Print_stats("Read Test", &stats);
 
@@ -1198,36 +1128,19 @@ static void _Do_delete_test(void)
     if (result < 0)
     {
       MPRINTF("FAILED: %s (%6u us)\n\r", _Littlefs_error_to_string(result), operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
     }
     else
     {
       MPRINTF("deleted: %6u us\n\r", operation_time);
-      stats.success_count++;
 
-      // Update statistics
-      if (operation_time < stats.min_time)
-      {
-        stats.min_time = operation_time;
-      }
-      if (operation_time > stats.max_time)
-      {
-        stats.max_time = operation_time;
-      }
-      stats.total_time += operation_time;
+      // Update statistics with common function
+      Performance_stats_update_delete_success(&stats, operation_time);
     }
   }
 
-  // Calculate average and print statistics
-  if (stats.success_count > 0)
-  {
-    stats.avg_time = stats.total_time / stats.success_count;
-  }
-  else
-  {
-    stats.min_time = 0;
-    stats.avg_time = 0;
-  }
+  // Calculate averages using common function
+  Performance_stats_finalize(&stats);
 
   _Print_stats("Delete Test", &stats);
 }
