@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Simple LittleFS Delete Log Parser and Plotter
-Parse LittleFS delete test log and generate performance graphs
+Simple FS Delete Log Parser and Plotter
+Parse LittleFS and FileX delete test logs and generate performance graphs
 """
 
 import re
@@ -11,14 +11,22 @@ import numpy as np
 import os
 
 # Default log file path
-DEFAULT_LOG_FILE = 'LittleFS_delete.log'
+DEFAULT_LOG_FILE = 'FileX_delete.log'
 
 def parse_log_file(filename):
     """Parse delete log file and return lists of data"""
-    # Regex pattern to match delete log lines
-    # Example: Deleting /test_001.bin... deleted:   1667 us, speed:  5998 KB/s
-    pattern = re.compile(
+    # Regex patterns to match both LittleFS and FileX delete log lines
+    # LittleFS: Deleting /test_001.bin... deleted:   1667 us, speed:  5998 KB/s
+    # FileX: File test_001.bin: deleted:  13761 us, speed:   726 KB/s
+
+    littlefs_pattern = re.compile(
         r'Deleting\s+/test_(\d+)\.bin\.\.\.\s+'
+        r'deleted:\s*(\d+)\s+us,\s+'
+        r'speed:\s*(\d+)\s+KB/s'
+    )
+
+    filex_pattern = re.compile(
+        r'File\s+test_(\d+)\.bin:\s+'
         r'deleted:\s*(\d+)\s+us,\s+'
         r'speed:\s*(\d+)\s+KB/s'
     )
@@ -31,10 +39,16 @@ def parse_log_file(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
-                if not line or not line.startswith('Deleting /test_'):
+                if not line:
                     continue
 
-                match = pattern.search(line)
+                # Try both patterns
+                match = None
+                if line.startswith('Deleting /test_'):
+                    match = littlefs_pattern.search(line)
+                elif line.startswith('File test_') and 'deleted:' in line:
+                    match = filex_pattern.search(line)
+
                 if match:
                     try:
                         file_num = int(match.group(1))
@@ -196,6 +210,7 @@ def main():
 
     print("FS Delete Log Parser")
     print("====================")
+    print("Supports both LittleFS and FileX delete logs")
 
     # Check if log file exists
     if not os.path.exists(log_file):

@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ELF Linker V9.70.1.475/W64 for ARM                  29/Jul/2025  13:09:21
+# IAR ELF Linker V9.70.1.475/W64 for ARM                  29/Jul/2025  14:07:57
 # Copyright 2007-2025 IAR Systems AB.
 #
 #    Output file                  =
@@ -15835,9 +15835,9 @@ g_rm_levelx_nor_OSPI_block_erase
 g_rm_levelx_nor_OSPI_block_erased_verify
                          0x20a'14ad       0x4  Code  Lc  LevelX_config.o [2]
 g_rm_levelx_nor_OSPI_close
-                         0x20a'150f       0xc  Code  Gb  LevelX_config.o [2]
+                         0x20a'1511       0xc  Code  Gb  LevelX_config.o [2]
 g_rm_levelx_nor_OSPI_initialize
-                         0x20a'14b1      0x5e  Code  Gb  LevelX_config.o [2]
+                         0x20a'14b1      0x60  Code  Gb  LevelX_config.o [2]
 g_rm_levelx_nor_OSPI_read
                          0x20a'144f      0x1e  Code  Lc  LevelX_config.o [2]
 g_rm_levelx_nor_OSPI_system_error

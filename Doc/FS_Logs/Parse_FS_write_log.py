@@ -11,14 +11,25 @@ import numpy as np
 import os
 
 # Default log file path
-DEFAULT_LOG_FILE = 'LittleFS_write.log'
+DEFAULT_LOG_FILE = 'FileX_write.log'
 
 def parse_log_file(filename):
     """Parse write log file and return lists of data"""
-    # Regex pattern to match write log lines
-    # Example: Writing /test_001.bin... opened:  2689 us, closed: 244957 us, I/O:  90733 us, total: 343288 us, speed:   110 KB/s, CRC32: 0xC61C2AA0
-    pattern = re.compile(
+    # Regex patterns to match both LittleFS and FileX write log lines
+    # LittleFS: Writing /test_001.bin... opened:  2689 us, closed: 244957 us, I/O:  90733 us, total: 343288 us, speed:   110 KB/s, CRC32: 0xC61C2AA0
+    # FileX: File test_001.bin: opened:    30 us, closed:   909 us, I/O:  29644 us, total:  38531 us, speed:   337 KB/s, CRC32: 0xC61C2AA0
+
+    littlefs_pattern = re.compile(
         r'Writing\s+/test_(\d+)\.bin\.\.\.\s+'
+        r'opened:\s*(\d+)\s+us,\s+'
+        r'closed:\s*(\d+)\s+us,\s+'
+        r'I/O:\s*(\d+)\s+us,\s+'
+        r'total:\s*(\d+)\s+us,\s+'
+        r'speed:\s*(\d+)\s+KB/s'
+    )
+
+    filex_pattern = re.compile(
+        r'File\s+test_(\d+)\.bin:\s+'
         r'opened:\s*(\d+)\s+us,\s+'
         r'closed:\s*(\d+)\s+us,\s+'
         r'I/O:\s*(\d+)\s+us,\s+'
@@ -37,10 +48,16 @@ def parse_log_file(filename):
         with open(filename, 'r', encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
-                if not line or not line.startswith('Writing /test_'):
+                if not line:
                     continue
 
-                match = pattern.search(line)
+                # Try both patterns
+                match = None
+                if line.startswith('Writing /test_'):
+                    match = littlefs_pattern.search(line)
+                elif line.startswith('File test_'):
+                    match = filex_pattern.search(line)
+
                 if match:
                     try:
                         file_num = int(match.group(1))
@@ -217,6 +234,7 @@ def main():
 
     print("FS Write Log Parser")
     print("===================")
+    print("Supports both LittleFS and FileX write logs")
 
     # Check if log file exists
     if not os.path.exists(log_file):

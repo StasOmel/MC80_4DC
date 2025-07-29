@@ -24,7 +24,7 @@
 // Choose one of the following protocols for OSPI communication:
 // - MC80_OSPI_PROTOCOL_1S_1S_1S: Standard SPI mode (most compatible, slower performance)
 // - MC80_OSPI_PROTOCOL_8D_8D_8D: Octal DTR mode (highest performance, requires stable setup)
-#define LEVELX_OSPI_PROTOCOL    MC80_OSPI_PROTOCOL_1S_1S_1S
+#define LEVELX_OSPI_PROTOCOL    MC80_OSPI_PROTOCOL_8D_8D_8D
 
 
 // Forward declarations for callback functions
