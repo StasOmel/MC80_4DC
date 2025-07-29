@@ -804,7 +804,7 @@ static void _Do_write_test(void)
     {
       MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), close_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
     }
     else if (bytes_written == g_test_file_size)
     {
@@ -826,93 +826,24 @@ static void _Do_write_test(void)
       }
       MPRINTF("\n\r");
 
-      stats.success_count++;
-      stats.total_bytes += g_test_file_size;
-
-      // Update time statistics
-      if (operation_time < stats.min_time)
-      {
-        stats.min_time = operation_time;
-      }
-      if (operation_time > stats.max_time)
-      {
-        stats.max_time = operation_time;
-      }
-      stats.total_time += operation_time;
-      stats.total_open_time += open_time;
-      if (open_time < stats.min_open_time)
-      {
-        stats.min_open_time = open_time;
-      }
-      if (open_time > stats.max_open_time)
-      {
-        stats.max_open_time = open_time;
-      }
-      stats.total_close_time += close_time;
-      if (close_time < stats.min_close_time)
-      {
-        stats.min_close_time = close_time;
-      }
-      if (close_time > stats.max_close_time)
-      {
-        stats.max_close_time = close_time;
-      }
-      stats.total_io_time += io_time;
-
-      // Update speed statistics
-      if (speed_kbps < stats.min_speed_kbps)
-      {
-        stats.min_speed_kbps = speed_kbps;
-      }
-      if (speed_kbps > stats.max_speed_kbps)
-      {
-        stats.max_speed_kbps = speed_kbps;
-      }
+      // Update all statistics using common function
+      Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, g_test_file_size, speed_kbps);
     }
     else
     {
       MPRINTF("FAILED (partial write: %u/%u bytes, close: %5u us, total: %6u us)\n\r",
               bytes_written, g_test_file_size, close_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
     }
 
   next_file:
     continue;
   }
 
-  // Calculate averages
-  if (stats.success_count > 0)
-  {
-    stats.avg_time = stats.total_time / stats.success_count;
-    if (stats.total_io_time > 0)
-    {
-      stats.avg_speed_kbps = (uint32_t)((float)stats.total_bytes * 1000000.0f / ((float)stats.total_io_time * 1024.0f));
-    }
-    if (stats.min_speed_kbps == UINT32_MAX)
-    {
-      stats.min_speed_kbps = 0;
-    }
-    if (stats.min_open_time == UINT32_MAX)
-    {
-      stats.min_open_time = 0;
-    }
-    if (stats.min_close_time == UINT32_MAX)
-    {
-      stats.min_close_time = 0;
-    }
-  }
-  else
-  {
-    stats.min_time       = 0;
-    stats.avg_time       = 0;
-    stats.min_speed_kbps = 0;
-    stats.min_open_time  = 0;
-    stats.max_open_time  = 0;
-    stats.min_close_time = 0;
-    stats.max_close_time = 0;
-  }
+  // Finalize statistics calculations
+  Performance_stats_finalize(&stats);
 
-  _Print_stats("Write Test", &stats);
+  Performance_stats_print("Write Test", &stats, g_enable_data_verification);
 
   App_free(buffer);
 }
