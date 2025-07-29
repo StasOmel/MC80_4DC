@@ -15,3 +15,7 @@
 *.ninja_deps
 *.ninja_log
 *.MC80_4DC_Proj_build_cache
+build_ide.ninja
+.ninja_log
+.ninja_deps
+.ninja_lock
