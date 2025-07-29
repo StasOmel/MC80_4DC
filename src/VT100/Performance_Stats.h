@@ -66,12 +66,12 @@ void Performance_stats_init_delete(T_performance_stats *stats);
   Return: none
 -----------------------------------------------------------------------------------------------------*/
 void Performance_stats_update_success(T_performance_stats *stats,
-                                       uint32_t operation_time,
-                                       uint32_t open_time,
-                                       uint32_t close_time,
-                                       uint32_t io_time,
-                                       uint32_t bytes_processed,
-                                       uint32_t speed_kbps);
+                                      uint32_t             operation_time,
+                                      uint32_t             open_time,
+                                      uint32_t             close_time,
+                                      uint32_t             io_time,
+                                      uint32_t             bytes_processed,
+                                      uint32_t             speed_kbps);
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Update timing statistics for delete operation
@@ -149,4 +149,4 @@ void Performance_stats_finalize(T_performance_stats *stats);
 -----------------------------------------------------------------------------------------------------*/
 void Performance_stats_print(const char *operation_name, T_performance_stats *stats, bool data_verification_enabled);
 
-#endif // PERFORMANCE_STATS_H
+#endif  // PERFORMANCE_STATS_H

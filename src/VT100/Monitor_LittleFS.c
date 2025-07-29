@@ -3,8 +3,8 @@
 #include "Test_Patterns.h"
 #include "FS_Test_Config.h"
 
-#define MAX_PATH_LENGTH              256
-#define MAX_DIRS_IN_STACK            32
+#define MAX_PATH_LENGTH   256
+#define MAX_DIRS_IN_STACK 32
 
 // Structure for directory stack (non-recursive tree traversal)
 typedef struct
@@ -176,7 +176,7 @@ static void _Print_littlefs_info(void)
 {
   GET_MCBL;
   struct lfs_fsinfo fsinfo;
-  int result;
+  int               result;
 
   MPRINTF("\n=== LittleFS Media Information ===\n\r");
 
@@ -191,7 +191,7 @@ static void _Print_littlefs_info(void)
   result = lfs_fs_stat(&g_littlefs_context.lfs, &fsinfo);
   if (result == 0)
   {
-    uint32_t total_size = fsinfo.block_count * fsinfo.block_size;
+    uint32_t total_size    = fsinfo.block_count * fsinfo.block_size;
 
     // Get actual used size
     lfs_size_t used_blocks = lfs_fs_size(&g_littlefs_context.lfs);
@@ -428,7 +428,7 @@ void Do_LittleFS_list_files(uint8_t keycode)
     uint32_t   free_size   = total_size - used_size;
 
     MPRINTF("\nFilesystem statistics:\n\r");
-    MPRINTF("  Total space: %u KB (%u blocks x %u bytes)\n\r",  total_size / 1024, fsinfo.block_count, fsinfo.block_size);
+    MPRINTF("  Total space: %u KB (%u blocks x %u bytes)\n\r", total_size / 1024, fsinfo.block_count, fsinfo.block_size);
     MPRINTF("  Used space:  %u KB (%u blocks)\n\r", used_size / 1024, (uint32_t)used_blocks);
     MPRINTF("  Free space:  %u KB\n\r", free_size / 1024);
   }
@@ -622,18 +622,18 @@ static bool _Check_filesystem_integrity(void)
 static void _Do_write_test(void)
 {
   GET_MCBL;
-  uint8_t          *buffer = NULL;
+  uint8_t            *buffer = NULL;
   T_performance_stats stats;
-  char              filename[FS_MAX_FILENAME_LENGTH];
-  lfs_file_t        file;
-  int               result;
-  uint32_t          open_time, close_time, io_time;
-  uint32_t          bytes_written;
-  uint32_t          blocks_per_file;
-  uint32_t          operation_time;
-  uint32_t          speed_kbps;
-  uint32_t          data_size;  // Data size without CRC
-  uint32_t          crc32_value;
+  char                filename[FS_MAX_FILENAME_LENGTH];
+  lfs_file_t          file;
+  int                 result;
+  uint32_t            open_time, close_time, io_time;
+  uint32_t            bytes_written;
+  uint32_t            blocks_per_file;
+  uint32_t            operation_time;
+  uint32_t            speed_kbps;
+  uint32_t            data_size;  // Data size without CRC
+  uint32_t            crc32_value;
 
   MPRINTF("=== Write Test ===\n\r");
 
@@ -654,13 +654,13 @@ static void _Do_write_test(void)
   MPRINTF(", Verification: %s\n\r", g_fs_test_config.data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size              = g_fs_test_config.file_size >= FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
+  data_size = g_fs_test_config.file_size >= FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
 
   // Initialize statistics
   Performance_stats_init(&stats);
 
   // Allocate memory for buffer
-  buffer                 = (uint8_t *)App_malloc(g_fs_test_config.block_size);
+  buffer = (uint8_t *)App_malloc(g_fs_test_config.block_size);
   if (buffer == NULL)
   {
     MPRINTF("Memory allocation failed\n\r");
@@ -832,21 +832,21 @@ static void _Do_write_test(void)
 static void _Do_read_test(void)
 {
   GET_MCBL;
-  uint8_t          *buffer = NULL;
+  uint8_t            *buffer = NULL;
   T_performance_stats stats;
-  char              filename[FS_MAX_FILENAME_LENGTH];
-  lfs_file_t        file;
-  int               result;
-  uint32_t          open_time, close_time, io_time;
-  uint32_t          bytes_read;
-  uint32_t          blocks_per_file;
-  uint32_t          operation_time;
-  uint32_t          speed_kbps;
-  uint32_t          data_size;  // Data size without CRC
-  uint32_t          file_crc32, calculated_crc32;
-  bool              crc_valid     = true;
-  bool              pattern_valid = true;
-  bool              size_valid    = true;
+  char                filename[FS_MAX_FILENAME_LENGTH];
+  lfs_file_t          file;
+  int                 result;
+  uint32_t            open_time, close_time, io_time;
+  uint32_t            bytes_read;
+  uint32_t            blocks_per_file;
+  uint32_t            operation_time;
+  uint32_t            speed_kbps;
+  uint32_t            data_size;  // Data size without CRC
+  uint32_t            file_crc32, calculated_crc32;
+  bool                crc_valid     = true;
+  bool                pattern_valid = true;
+  bool                size_valid    = true;
 
   MPRINTF("=== Read Test ===\n\r");
 
@@ -866,13 +866,13 @@ static void _Do_read_test(void)
   MPRINTF(", Verification: %s\n\r", g_fs_test_config.data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size              = g_fs_test_config.file_size >= FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
+  data_size = g_fs_test_config.file_size >= FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
 
   // Initialize statistics
   Performance_stats_init(&stats);
 
   // Allocate memory for buffer
-  buffer                 = (uint8_t *)App_malloc(g_fs_test_config.block_size);
+  buffer = (uint8_t *)App_malloc(g_fs_test_config.block_size);
   if (buffer == NULL)
   {
     MPRINTF("Memory allocation failed\n\r");
@@ -1073,10 +1073,10 @@ static void _Do_delete_test(void)
 {
   GET_MCBL;
   T_performance_stats stats;
-  char              filename[FS_MAX_FILENAME_LENGTH];
-  int               result;
-  uint32_t          operation_time;
-  uint32_t          speed_kbps;
+  char                filename[FS_MAX_FILENAME_LENGTH];
+  int                 result;
+  uint32_t            operation_time;
+  uint32_t            speed_kbps;
 
   MPRINTF("=== Delete Test ===\n\r");
   MPRINTF("Deleting %u files\n\r", g_fs_test_config.files_count);

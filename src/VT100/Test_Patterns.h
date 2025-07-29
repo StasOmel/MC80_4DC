@@ -2,10 +2,10 @@
 #define TEST_PATTERNS_H
 
 // Test data patterns
-#define DATA_PATTERN_CONSTANT    0     // Fill with constant value
-#define DATA_PATTERN_COUNTER     1     // Fill with 32-bit counter
-#define DATA_PATTERN_RANDOM      2     // Fill with pseudo-random data
-#define DEFAULT_FILL_CONSTANT    0xAA  // Default constant for pattern fill
+#define DATA_PATTERN_CONSTANT 0     // Fill with constant value
+#define DATA_PATTERN_COUNTER  1     // Fill with 32-bit counter
+#define DATA_PATTERN_RANDOM   2     // Fill with pseudo-random data
+#define DEFAULT_FILL_CONSTANT 0xAA  // Default constant for pattern fill
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Fill buffer with specified test pattern
@@ -42,4 +42,4 @@ bool Test_patterns_verify_buffer(const uint8_t *buffer, uint32_t size, uint32_t 
 -----------------------------------------------------------------------------------------------------*/
 const char *Test_patterns_get_name(uint32_t pattern);
 
-#endif // TEST_PATTERNS_H
+#endif  // TEST_PATTERNS_H

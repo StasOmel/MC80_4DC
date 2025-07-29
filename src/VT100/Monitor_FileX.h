@@ -7,4 +7,4 @@ void Do_FileX_init(uint8_t keycode);
 void Do_FileX_list_files(uint8_t keycode);
 void Do_FileX_performance_test(uint8_t keycode);
 
-#endif // MONITOR_FILEX_H
+#endif  // MONITOR_FILEX_H

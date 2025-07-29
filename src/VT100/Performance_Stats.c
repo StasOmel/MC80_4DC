@@ -76,12 +76,12 @@ void Performance_stats_init_delete(T_performance_stats *stats)
   Return: none
 -----------------------------------------------------------------------------------------------------*/
 void Performance_stats_update_success(T_performance_stats *stats,
-                                       uint32_t operation_time,
-                                       uint32_t open_time,
-                                       uint32_t close_time,
-                                       uint32_t io_time,
-                                       uint32_t bytes_processed,
-                                       uint32_t speed_kbps)
+                                      uint32_t             operation_time,
+                                      uint32_t             open_time,
+                                      uint32_t             close_time,
+                                      uint32_t             io_time,
+                                      uint32_t             bytes_processed,
+                                      uint32_t             speed_kbps)
 {
   stats->total_bytes += bytes_processed;
   stats->success_count++;
@@ -235,11 +235,11 @@ void Performance_stats_finalize(T_performance_stats *stats)
   }
   else
   {
-    stats->min_time = 0;
-    stats->avg_time = 0;
+    stats->min_time       = 0;
+    stats->avg_time       = 0;
     stats->min_speed_kbps = 0;
-    stats->min_open_time = 0;
-    stats->max_open_time = 0;
+    stats->min_open_time  = 0;
+    stats->max_open_time  = 0;
     stats->min_close_time = 0;
     stats->max_close_time = 0;
   }

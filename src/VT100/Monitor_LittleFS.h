@@ -10,4 +10,4 @@ void Do_LittleFS_comprehensive_test(uint8_t keycode);
 
 extern const T_VT100_Menu MENU_LittleFS;
 
-#endif // MONITOR_LITTLEFS_H
+#endif  // MONITOR_LITTLEFS_H
