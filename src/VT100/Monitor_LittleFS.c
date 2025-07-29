@@ -770,8 +770,7 @@ static void _Do_write_test(void)
     }
     else if (bytes_written == g_fs_test_config.file_size)
     {
-      // Calculate speed in KB/s based on I/O time (avoid division by zero)
-      // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
+      // Calculate speed for statistics
       if (io_time > 0)
       {
         speed_kbps = (uint32_t)((float)g_fs_test_config.file_size * 1000000.0f / ((float)io_time * 1024.0f));
@@ -781,12 +780,7 @@ static void _Do_write_test(void)
         speed_kbps = 0;
       }
 
-      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
-      if (g_fs_test_config.data_verification)
-      {
-        MPRINTF(", CRC: 0x%08X", crc32_value);
-      }
-      MPRINTF("\n\r");
+      Performance_stats_print_write_success(close_time, io_time, operation_time, g_fs_test_config.file_size, crc32_value, g_fs_test_config.data_verification);
 
       // Update all statistics using common function
       Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, g_fs_test_config.file_size, speed_kbps);
@@ -995,8 +989,7 @@ static void _Do_read_test(void)
 
     if (result < 0)
     {
-      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
-              _Littlefs_error_to_string(result), close_time, operation_time);
+      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",  _Littlefs_error_to_string(result), close_time, operation_time);
       Performance_stats_update_error(&stats);
     }
     else
@@ -1019,20 +1012,8 @@ static void _Do_read_test(void)
         speed_kbps = 0;
       }
 
-      MPRINTF("closed: %5u us, size: %5u bytes, I/O: %6u us, total: %6u us, speed: %5u KB/s",
-              close_time, bytes_read, io_time, operation_time, speed_kbps);
-
-      if (g_fs_test_config.data_verification)
-      {
-        MPRINTF(", CRC: %s", crc_valid ? "OK" : "ERROR");
-        MPRINTF(", Pattern: %s", pattern_valid ? "OK" : "ERROR");
-        MPRINTF(", Size: %s", size_valid ? "OK" : "ERROR");
-        if (crc_valid && g_fs_test_config.file_size >= FS_CRC32_SIZE)
-        {
-          MPRINTF(" (0x%08X)", file_crc32);
-        }
-      }
-      MPRINTF("\n\r");
+      Performance_stats_print_read_success(close_time, io_time, operation_time, bytes_read, g_fs_test_config.file_size,
+                                          file_crc32, crc_valid, pattern_valid, size_valid, g_fs_test_config.data_verification, true);
 
       // Update all statistics using common function
       Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, bytes_read, speed_kbps);

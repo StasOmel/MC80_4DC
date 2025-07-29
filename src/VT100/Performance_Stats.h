@@ -149,4 +149,41 @@ void Performance_stats_finalize(T_performance_stats *stats);
 -----------------------------------------------------------------------------------------------------*/
 void Performance_stats_print(const char *operation_name, T_performance_stats *stats, bool data_verification_enabled);
 
+/*-----------------------------------------------------------------------------------------------------
+  Description: Print write operation success result with speed and CRC32 info
+
+  Parameters: close_time - file close time in microseconds
+              io_time - I/O operation time in microseconds
+              operation_time - total operation time in microseconds
+              file_size - size of file in bytes
+              crc32_value - CRC32 value of written data
+              data_verification_enabled - whether data verification was enabled
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_print_write_success(uint32_t close_time, uint32_t io_time, uint32_t operation_time,
+                                           uint32_t file_size, uint32_t crc32_value, bool data_verification_enabled);
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Print read operation success result with speed and CRC32 info
+
+  Parameters: close_time - file close time in microseconds
+              io_time - I/O operation time in microseconds
+              operation_time - total operation time in microseconds
+              bytes_read - number of bytes read
+              file_size - expected file size in bytes
+              crc32_value - CRC32 value from file
+              crc_valid - whether CRC32 verification passed
+              pattern_valid - whether pattern verification passed (LittleFS only)
+              size_valid - whether size verification passed (LittleFS only)
+              data_verification_enabled - whether data verification was enabled
+              is_littlefs - true for LittleFS, false for FileX
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_print_read_success(uint32_t close_time, uint32_t io_time, uint32_t operation_time,
+                                          uint32_t bytes_read, uint32_t file_size, uint32_t crc32_value,
+                                          bool crc_valid, bool pattern_valid, bool size_valid,
+                                          bool data_verification_enabled, bool is_littlefs);
+
 #endif  // PERFORMANCE_STATS_H

@@ -1,4 +1,5 @@
 #include "Performance_Stats.h"
+#include "FS_Test_Config.h"
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Initialize performance statistics structure
@@ -309,4 +310,116 @@ void Performance_stats_print(const char *operation_name, T_performance_stats *st
       MPRINTF("  Total errors  : %u\n\r", total_integrity_errors);
     }
   }
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Print write operation success result with speed and CRC32 info
+
+  Parameters: close_time - file close time in microseconds
+              io_time - I/O operation time in microseconds
+              operation_time - total operation time in microseconds
+              file_size - size of file in bytes
+              crc32_value - CRC32 value of written data
+              data_verification_enabled - whether data verification was enabled
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_print_write_success(uint32_t close_time, uint32_t io_time, uint32_t operation_time,
+                                           uint32_t file_size, uint32_t crc32_value, bool data_verification_enabled)
+{
+  GET_MCBL;
+  uint32_t speed_kbps;
+
+  // Calculate speed in KB/s based on I/O time
+  if (io_time > 0)
+  {
+    speed_kbps = (uint32_t)((float)file_size * 1000000.0f / ((float)io_time * 1024.0f));
+  }
+  else
+  {
+    speed_kbps = 0;
+  }
+
+  MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
+
+  // Show CRC32 if verification enabled
+  if (data_verification_enabled && file_size >= FS_CRC32_SIZE)
+  {
+    MPRINTF(", CRC32: 0x%08X", crc32_value);
+  }
+  MPRINTF("\n\r");
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Print read operation success result with speed and CRC32 info
+
+  Parameters: close_time - file close time in microseconds
+              io_time - I/O operation time in microseconds
+              operation_time - total operation time in microseconds
+              bytes_read - number of bytes read
+              file_size - expected file size in bytes
+              crc32_value - CRC32 value from file
+              crc_valid - whether CRC32 verification passed
+              pattern_valid - whether pattern verification passed (LittleFS only)
+              size_valid - whether size verification passed (LittleFS only)
+              data_verification_enabled - whether data verification was enabled
+              is_littlefs - true for LittleFS, false for FileX
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_print_read_success(uint32_t close_time, uint32_t io_time, uint32_t operation_time,
+                                          uint32_t bytes_read, uint32_t file_size, uint32_t crc32_value,
+                                          bool crc_valid, bool pattern_valid, bool size_valid,
+                                          bool data_verification_enabled, bool is_littlefs)
+{
+  GET_MCBL;
+  uint32_t speed_kbps;
+
+  // Calculate speed in KB/s based on I/O time
+  if (io_time > 0)
+  {
+    speed_kbps = (uint32_t)((float)bytes_read * 1000000.0f / ((float)io_time * 1024.0f));
+  }
+  else
+  {
+    speed_kbps = 0;
+  }
+
+  if (is_littlefs)
+  {
+    MPRINTF("closed: %5u us, size: %5u bytes, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, bytes_read, io_time, operation_time, speed_kbps);
+  }
+  else
+  {
+    MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
+  }
+
+  // Show verification results if enabled
+  if (data_verification_enabled && file_size >= FS_CRC32_SIZE)
+  {
+    if (is_littlefs)
+    {
+      // LittleFS format: CRC, Pattern, Size
+      MPRINTF(", CRC: %s", crc_valid ? "OK" : "ERROR");
+      MPRINTF(", Pattern: %s", pattern_valid ? "OK" : "ERROR");
+      MPRINTF(", Size: %s", size_valid ? "OK" : "ERROR");
+      if (crc_valid)
+      {
+        MPRINTF(" (0x%08X)", crc32_value);
+      }
+    }
+    else
+    {
+      // FileX format: CRC32 only
+      if (crc_valid)
+      {
+        MPRINTF(", CRC32: OK (0x%08X)", crc32_value);
+      }
+      else
+      {
+        MPRINTF(", CRC32: FAILED");
+      }
+    }
+  }
+  MPRINTF("\n\r");
 }

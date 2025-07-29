@@ -481,8 +481,7 @@ static void _Do_write_test(void)
     {
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
-              _Get_filex_error_description(status), open_time, operation_time);
+      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r", _Get_filex_error_description(status), open_time, operation_time);
       Performance_stats_update_error(&stats);
       continue;
     }
@@ -523,8 +522,7 @@ static void _Do_write_test(void)
       {
         Get_hw_timestump(&file_end_ts);
         operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-        MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r",
-                total_written, _Get_filex_error_description(status), io_time, operation_time);
+        MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r", total_written, _Get_filex_error_description(status), io_time, operation_time);
         write_error = true;
         Performance_stats_update_error(&stats);
       }
@@ -549,8 +547,7 @@ static void _Do_write_test(void)
         {
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-          MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r",
-                  _Get_filex_error_description(status), io_time, operation_time);
+          MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r", _Get_filex_error_description(status), io_time, operation_time);
           write_error = true;
           Performance_stats_update_error(&stats);
         }
@@ -569,8 +566,7 @@ static void _Do_write_test(void)
 
       if (status != FX_SUCCESS)
       {
-        MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
-                _Get_filex_error_description(status), close_time, operation_time);
+        MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_filex_error_description(status), close_time, operation_time);
         Performance_stats_update_error(&stats);
       }
       else
@@ -585,16 +581,8 @@ static void _Do_write_test(void)
           speed_kbps = 0;
         }
 
-        MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s",
-                close_time, io_time, operation_time, speed_kbps);
-
-        // Show CRC32 if verification enabled
-        if (g_fs_test_config.data_verification && g_fs_test_config.file_size >= FS_CRC32_SIZE)
-        {
-          uint32_t final_crc = ~crc;
-          MPRINTF(", CRC32: 0x%08lX", final_crc);
-        }
-        MPRINTF("\n\r");
+        uint32_t final_crc = ~crc;
+        Performance_stats_print_write_success(close_time, io_time, operation_time, g_fs_test_config.file_size, final_crc, g_fs_test_config.data_verification);
 
         // Update all statistics using common function
         Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, total_written, speed_kbps);
@@ -795,22 +783,9 @@ static void _Do_read_test(void)
         speed_kbps = 0;
       }
 
-      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
-
-      // Show CRC32 status if verification enabled
-      if (g_fs_test_config.data_verification && g_fs_test_config.file_size >= FS_CRC32_SIZE)
-      {
-        if (crc_valid)
-        {
-          uint32_t calculated_crc = ~crc;
-          MPRINTF(", CRC32: OK (0x%08lX)", calculated_crc);
-        }
-        else
-        {
-          MPRINTF(", CRC32: FAILED");
-        }
-      }
-      MPRINTF("\n\r");
+      uint32_t calculated_crc = ~crc;
+      Performance_stats_print_read_success(close_time, io_time, operation_time, total_read, g_fs_test_config.file_size,
+                                           calculated_crc, crc_valid, false, true, g_fs_test_config.data_verification, false);
 
       // Update all statistics using common function
       Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, total_read, speed_kbps);
