@@ -4,10 +4,10 @@
 #include "Test_Patterns.h"
 #include "FS_Test_Config.h"
 
-#define MAX_PATH_LENGTH                256
-#define MAX_DIR_STACK_DEPTH            32
-#define FILEX_MEMORY_BUFFER_SIZE       (32 * 1024)  // 32KB
-#define FILEX_TEST_BUFFER_SIZE         (16 * 1024)  // 16KB for test operations
+#define MAX_PATH_LENGTH          256
+#define MAX_DIR_STACK_DEPTH      32
+#define FILEX_MEMORY_BUFFER_SIZE (32 * 1024)  // 32KB
+#define FILEX_TEST_BUFFER_SIZE   (16 * 1024)  // 16KB for test operations
 
 // Directory navigation stack
 typedef struct
@@ -429,11 +429,11 @@ static void _List_directory_tree(const char *root_path, uint8_t max_depth)
 static void _Do_write_test(void)
 {
   GET_MCBL;
-  T_performance_stats   stats;
-  T_sys_timestump start_ts, end_ts;
-  FX_FILE         file;
-  CHAR            filename[FS_MAX_FILENAME_LENGTH];
-  UINT            status;
+  T_performance_stats stats;
+  T_sys_timestump     start_ts, end_ts;
+  FX_FILE             file;
+  CHAR                filename[FS_MAX_FILENAME_LENGTH];
+  UINT                status;
 
   MPRINTF("\n=== FileX Write Test ===\n\r");
   _Print_test_config();
@@ -466,8 +466,8 @@ static void _Do_write_test(void)
 
     T_sys_timestump file_start_ts, file_end_ts;
     T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
-    uint32_t open_time = 0, close_time = 0, io_time = 0, operation_time = 0;
-    uint32_t speed_kbps = 0;
+    uint32_t        open_time = 0, close_time = 0, io_time = 0, operation_time = 0;
+    uint32_t        speed_kbps = 0;
 
     Get_hw_timestump(&file_start_ts);
 
@@ -503,12 +503,12 @@ static void _Do_write_test(void)
     MPRINTF("opened: %5u us, ", open_time);
 
     // Initialize CRC calculation
-    uint32_t crc = 0xFFFFFFFF;
+    uint32_t crc                   = 0xFFFFFFFF;
 
     // Write file data with I/O timing
-    uint32_t bytes_to_write = g_fs_test_config.file_size > FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : 0;
-    uint32_t total_written  = 0;
-    bool     write_error    = false;
+    uint32_t        bytes_to_write = g_fs_test_config.file_size > FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : 0;
+    uint32_t        total_written  = 0;
+    bool            write_error    = false;
     T_sys_timestump io_start_ts, io_end_ts;
 
     while (total_written < bytes_to_write && !write_error)
@@ -642,12 +642,12 @@ static void _Do_write_test(void)
 static void _Do_read_test(void)
 {
   GET_MCBL;
-  T_performance_stats   stats;
-  T_sys_timestump start_ts, end_ts;
-  FX_FILE         file;
-  CHAR            filename[FS_MAX_FILENAME_LENGTH];
-  UINT            status;
-  ULONG           actual_read;
+  T_performance_stats stats;
+  T_sys_timestump     start_ts, end_ts;
+  FX_FILE             file;
+  CHAR                filename[FS_MAX_FILENAME_LENGTH];
+  UINT                status;
+  ULONG               actual_read;
 
   MPRINTF("\n=== FileX Read Test ===\n\r");
   _Print_test_config();
@@ -680,8 +680,8 @@ static void _Do_read_test(void)
 
     T_sys_timestump file_start_ts, file_end_ts;
     T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
-    uint32_t open_time = 0, close_time = 0, io_time = 0, operation_time = 0;
-    uint32_t speed_kbps = 0;
+    uint32_t        open_time = 0, close_time = 0, io_time = 0, operation_time = 0;
+    uint32_t        speed_kbps = 0;
 
     Get_hw_timestump(&file_start_ts);
 
@@ -706,14 +706,14 @@ static void _Do_read_test(void)
     MPRINTF("opened: %5u us, ", open_time);
 
     // Initialize CRC calculation
-    uint32_t crc = 0xFFFFFFFF;
-    bool     crc_valid = true;
+    uint32_t crc                  = 0xFFFFFFFF;
+    bool     crc_valid            = true;
 
     // Read file data with I/O timing
-    uint32_t bytes_to_read = g_fs_test_config.file_size > FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
-    uint32_t total_read    = 0;
-    bool     read_error    = false;
-    bool     verify_error  = false;
+    uint32_t        bytes_to_read = g_fs_test_config.file_size > FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
+    uint32_t        total_read    = 0;
+    bool            read_error    = false;
+    bool            verify_error  = false;
     T_sys_timestump io_start_ts, io_end_ts;
 
     while (total_read < bytes_to_read && !read_error)
@@ -732,8 +732,7 @@ static void _Do_read_test(void)
         {
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-          MPRINTF("FAILED (verify at offset %lu): Data verification failed (I/O: %6u us, total: %6u us)\n\r",
-                  total_read, io_time, operation_time);
+          MPRINTF("FAILED (verify at offset %lu): Data verification failed (I/O: %6u us, total: %6u us)\n\r", total_read, io_time, operation_time);
           verify_error = true;
           Performance_stats_increment_pattern_error(&stats);
           break;
@@ -751,8 +750,7 @@ static void _Do_read_test(void)
       {
         Get_hw_timestump(&file_end_ts);
         operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-        MPRINTF("FAILED (read at offset %lu): %s (read %lu, expected %lu, I/O: %6u us, total: %6u us)\n\r",
-                total_read, _Get_filex_error_description(status), actual_read, chunk_size, io_time, operation_time);
+        MPRINTF("FAILED (read at offset %lu): %s (read %lu, expected %lu, I/O: %6u us, total: %6u us)\n\r", total_read, _Get_filex_error_description(status), actual_read, chunk_size, io_time, operation_time);
         read_error = true;
         Performance_stats_update_error(&stats);
         break;
@@ -795,8 +793,7 @@ static void _Do_read_test(void)
 
     if (status != FX_SUCCESS)
     {
-      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
-              _Get_filex_error_description(status), close_time, operation_time);
+      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_filex_error_description(status), close_time, operation_time);
       Performance_stats_update_error(&stats);
     }
     else if (!read_error && !verify_error)
@@ -811,8 +808,7 @@ static void _Do_read_test(void)
         speed_kbps = 0;
       }
 
-      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s",
-              close_time, io_time, operation_time, speed_kbps);
+      MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
 
       // Show CRC32 status if verification enabled
       if (g_fs_test_config.data_verification && g_fs_test_config.file_size >= FS_CRC32_SIZE)
@@ -856,10 +852,10 @@ static void _Do_read_test(void)
 static void _Do_delete_test(void)
 {
   GET_MCBL;
-  T_performance_stats   stats;
-  T_sys_timestump start_ts, end_ts;
-  CHAR            filename[FS_MAX_FILENAME_LENGTH];
-  UINT            status;
+  T_performance_stats stats;
+  T_sys_timestump     start_ts, end_ts;
+  CHAR                filename[FS_MAX_FILENAME_LENGTH];
+  UINT                status;
 
   MPRINTF("\n=== FileX Delete Test ===\n\r");
 
@@ -883,7 +879,8 @@ static void _Do_delete_test(void)
     snprintf(filename, sizeof(filename), "%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
-    uint32_t operation_time = 0;
+    uint32_t        operation_time = 0;
+    uint32_t        speed_kbps;
 
     Get_hw_timestump(&file_start_ts);
 
@@ -895,8 +892,19 @@ static void _Do_delete_test(void)
 
     if (status == FX_SUCCESS)
     {
-      MPRINTF("deleted: %6u us\n\r", operation_time);
-      Performance_stats_update_delete_success(&stats, operation_time);
+      // Calculate speed in KB/s based on operation time (avoid division by zero)
+      // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
+      if (operation_time > 0)
+      {
+        speed_kbps = (uint32_t)((float)g_fs_test_config.file_size * 1000000.0f / ((float)operation_time * 1024.0f));
+      }
+      else
+      {
+        speed_kbps = 0;
+      }
+
+      MPRINTF("deleted: %6u us, speed: %5u KB/s\n\r", operation_time, speed_kbps);
+      Performance_stats_update_delete_success(&stats, operation_time, g_fs_test_config.file_size);
     }
     else
     {

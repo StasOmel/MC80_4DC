@@ -112,17 +112,35 @@ void Performance_stats_update_success(T_performance_stats *stats,
 
   Parameters: stats - pointer to statistics structure
               operation_time - total operation time
+              file_size - size of deleted file in bytes
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-void Performance_stats_update_delete_success(T_performance_stats *stats, uint32_t operation_time)
+void Performance_stats_update_delete_success(T_performance_stats *stats, uint32_t operation_time, uint32_t file_size)
 {
   stats->success_count++;
+  stats->total_bytes += file_size;
 
   // Update timing statistics
   if (operation_time < stats->min_time) stats->min_time = operation_time;
   if (operation_time > stats->max_time) stats->max_time = operation_time;
   stats->total_time += operation_time;
+
+  // Calculate speed in KB/s based on operation time (avoid division by zero)
+  // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
+  uint32_t speed_kbps;
+  if (operation_time > 0)
+  {
+    speed_kbps = (uint32_t)((float)file_size * 1000000.0f / ((float)operation_time * 1024.0f));
+  }
+  else
+  {
+    speed_kbps = 0;
+  }
+
+  // Update speed statistics
+  if (speed_kbps < stats->min_speed_kbps) stats->min_speed_kbps = speed_kbps;
+  if (speed_kbps > stats->max_speed_kbps) stats->max_speed_kbps = speed_kbps;
 }
 
 /*-----------------------------------------------------------------------------------------------------

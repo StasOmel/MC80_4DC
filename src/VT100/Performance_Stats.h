@@ -78,10 +78,11 @@ void Performance_stats_update_success(T_performance_stats *stats,
 
   Parameters: stats - pointer to statistics structure
               operation_time - total operation time
+              file_size - size of deleted file in bytes
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-void Performance_stats_update_delete_success(T_performance_stats *stats, uint32_t operation_time);
+void Performance_stats_update_delete_success(T_performance_stats *stats, uint32_t operation_time, uint32_t file_size);
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Increment error counter

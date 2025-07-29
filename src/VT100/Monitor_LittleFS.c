@@ -247,7 +247,6 @@ void Do_LittleFS_init(uint8_t keycode)
   MPRINTF("\n\r");
 
   // Initialize LittleFS configuration
-  LITTLEFS_DEBUG_PRINTF("Starting LittleFS initialization\n\r");
   int result = Littlefs_initialize();
   if (result != 0)
   {
@@ -256,7 +255,6 @@ void Do_LittleFS_init(uint8_t keycode)
   }
 
   // Try to mount the filesystem
-  LITTLEFS_DEBUG_PRINTF("Attempting to mount filesystem\n\r");
   result = Littlefs_mount();
   if (result != 0)
   {
@@ -264,7 +262,6 @@ void Do_LittleFS_init(uint8_t keycode)
     MPRINTF("Trying to format...\n\r");
 
     // Format the filesystem if mount fails
-    LITTLEFS_DEBUG_PRINTF("Formatting filesystem due to mount failure\n\r");
     result = Littlefs_format();
     if (result != 0)
     {
@@ -273,7 +270,6 @@ void Do_LittleFS_init(uint8_t keycode)
     }
 
     // Try to mount again after format
-    LITTLEFS_DEBUG_PRINTF("Attempting to mount filesystem after format\n\r");
     result = Littlefs_mount();
     if (result != 0)
     {
@@ -432,8 +428,7 @@ void Do_LittleFS_list_files(uint8_t keycode)
     uint32_t   free_size   = total_size - used_size;
 
     MPRINTF("\nFilesystem statistics:\n\r");
-    MPRINTF("  Total space: %u KB (%u blocks x %u bytes)\n\r",
-            total_size / 1024, fsinfo.block_count, fsinfo.block_size);
+    MPRINTF("  Total space: %u KB (%u blocks x %u bytes)\n\r",  total_size / 1024, fsinfo.block_count, fsinfo.block_size);
     MPRINTF("  Used space:  %u KB (%u blocks)\n\r", used_size / 1024, (uint32_t)used_blocks);
     MPRINTF("  Free space:  %u KB\n\r", free_size / 1024);
   }
@@ -685,7 +680,6 @@ static void _Do_write_test(void)
     Get_hw_timestump(&start_ts);
 
     // Open file with timing
-    LITTLEFS_DEBUG_PRINTF("Opening file: %s\n\r", filename);
     Get_hw_timestump(&open_start_ts);
     result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_WRONLY | LFS_O_CREAT | LFS_O_TRUNC);
     Get_hw_timestump(&open_end_ts);
@@ -729,7 +723,6 @@ static void _Do_write_test(void)
         crc = CRC32_IEEE802_3(crc, buffer, bytes_to_write);
       }
 
-      LITTLEFS_DEBUG_PRINTF("Writing block %u: %u bytes to %s\n\r", block, bytes_to_write, filename);
       Get_hw_timestump(&io_start_ts);
       lfs_ssize_t written = lfs_file_write(&g_littlefs_context.lfs, &file, buffer, bytes_to_write);
       Get_hw_timestump(&io_end_ts);
@@ -774,7 +767,6 @@ static void _Do_write_test(void)
     }
 
     // Close file with timing
-    LITTLEFS_DEBUG_PRINTF("Closing file: %s\n\r", filename);
     Get_hw_timestump(&close_start_ts);
     result = lfs_file_close(&g_littlefs_context.lfs, &file);
     Get_hw_timestump(&close_end_ts);
@@ -903,7 +895,6 @@ static void _Do_read_test(void)
     size_valid    = true;
 
     // Open file with timing
-    LITTLEFS_DEBUG_PRINTF("Opening file for read: %s\n\r", filename);
     Get_hw_timestump(&open_start_ts);
     result = lfs_file_open(&g_littlefs_context.lfs, &file, filename, LFS_O_RDONLY);
     Get_hw_timestump(&open_end_ts);
@@ -938,7 +929,6 @@ static void _Do_read_test(void)
         bytes_to_read = data_size - bytes_read;
       }
 
-      LITTLEFS_DEBUG_PRINTF("Reading block %u: %u bytes from %s\n\r", block, bytes_to_read, filename);
       Get_hw_timestump(&io_start_ts);
       lfs_ssize_t read_result = lfs_file_read(&g_littlefs_context.lfs, &file, buffer, bytes_to_read);
       Get_hw_timestump(&io_end_ts);
@@ -1008,7 +998,6 @@ static void _Do_read_test(void)
     }
 
     // Close file with timing
-    LITTLEFS_DEBUG_PRINTF("Closing file after read: %s\n\r", filename);
     Get_hw_timestump(&close_start_ts);
     result = lfs_file_close(&g_littlefs_context.lfs, &file);
     Get_hw_timestump(&close_end_ts);
@@ -1087,6 +1076,7 @@ static void _Do_delete_test(void)
   char              filename[FS_MAX_FILENAME_LENGTH];
   int               result;
   uint32_t          operation_time;
+  uint32_t          speed_kbps;
 
   MPRINTF("=== Delete Test ===\n\r");
   MPRINTF("Deleting %u files\n\r", g_fs_test_config.files_count);
@@ -1101,7 +1091,6 @@ static void _Do_delete_test(void)
     MPRINTF("Deleting %s... ", filename);
 
     // Delete file
-    LITTLEFS_DEBUG_PRINTF("Deleting file: %s\n\r", filename);
     T_sys_timestump start_ts, end_ts;
     Get_hw_timestump(&start_ts);
     result = lfs_remove(&g_littlefs_context.lfs, filename);
@@ -1115,10 +1104,21 @@ static void _Do_delete_test(void)
     }
     else
     {
-      MPRINTF("deleted: %6u us\n\r", operation_time);
+      // Calculate speed in KB/s based on operation time (avoid division by zero)
+      // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
+      if (operation_time > 0)
+      {
+        speed_kbps = (uint32_t)((float)g_fs_test_config.file_size * 1000000.0f / ((float)operation_time * 1024.0f));
+      }
+      else
+      {
+        speed_kbps = 0;
+      }
+
+      MPRINTF("deleted: %6u us, speed: %5u KB/s\n\r", operation_time, speed_kbps);
 
       // Update statistics with common function
-      Performance_stats_update_delete_success(&stats, operation_time);
+      Performance_stats_update_delete_success(&stats, operation_time, g_fs_test_config.file_size);
     }
   }
 
@@ -1154,7 +1154,6 @@ static void _Do_format_test(void)
 
   // Format filesystem
   MPRINTF("Formatting... ");
-  LITTLEFS_DEBUG_PRINTF("Starting filesystem format operation\n\r");
   T_sys_timestump start_ts, end_ts;
   Get_hw_timestump(&start_ts);
   result = Littlefs_format();
