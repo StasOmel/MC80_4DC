@@ -15173,6 +15173,12 @@
             <group>
                 <name>VT100</name>
                 <file>
+                    <name>$PROJ_DIR$\src\VT100\FS_Test_Config.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\VT100\FS_Test_Config.h</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\src\VT100\Monitor_access_control.c</name>
                 </file>
                 <file>

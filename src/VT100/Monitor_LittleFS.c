@@ -6,14 +6,6 @@
 #define MAX_PATH_LENGTH              256
 #define MAX_DIRS_IN_STACK            32
 
-// Performance test parameters (configurable)
-static uint32_t g_test_files_count         = FS_TEST_FILES_COUNT_DEFAULT;
-static uint32_t g_test_file_size           = FS_TEST_FILE_SIZE_DEFAULT;
-static uint32_t g_test_block_size          = FS_TEST_BLOCK_SIZE_DEFAULT;
-static uint32_t g_data_pattern             = DATA_PATTERN_CONSTANT;
-static uint32_t g_fill_constant            = DEFAULT_FILL_CONSTANT;
-static bool     g_enable_data_verification = true;
-
 // Structure for directory stack (non-recursive tree traversal)
 typedef struct
 {
@@ -124,7 +116,7 @@ static void _Print_tree_indent(uint8_t depth)
 -----------------------------------------------------------------------------------------------------*/
 static void _Print_stats(const char *operation_name, T_performance_stats *stats)
 {
-  Performance_stats_print(operation_name, stats, g_enable_data_verification);
+  Performance_stats_print(operation_name, stats, g_fs_test_config.data_verification);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -658,32 +650,32 @@ static void _Do_write_test(void)
   }
 
   MPRINTF("Writing %u files, %u bytes each, %u byte blocks\n\r",
-          g_test_files_count, g_test_file_size, g_test_block_size);
-  MPRINTF("Data pattern: %s", Test_patterns_get_name(g_data_pattern));
-  if (g_data_pattern == DATA_PATTERN_CONSTANT)
+          g_fs_test_config.files_count, g_fs_test_config.file_size, g_fs_test_config.block_size);
+  MPRINTF("Data pattern: %s", Test_patterns_get_name(g_fs_test_config.data_pattern));
+  if (g_fs_test_config.data_pattern == DATA_PATTERN_CONSTANT)
   {
-    MPRINTF(" (0x%02X)", g_fill_constant);
+    MPRINTF(" (0x%02X)", g_fs_test_config.fill_constant);
   }
-  MPRINTF(", Verification: %s\n\r", g_enable_data_verification ? "ON" : "OFF");
+  MPRINTF(", Verification: %s\n\r", g_fs_test_config.data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size              = g_test_file_size >= FS_CRC32_SIZE ? g_test_file_size - FS_CRC32_SIZE : g_test_file_size;
+  data_size              = g_fs_test_config.file_size >= FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
 
   // Initialize statistics
   Performance_stats_init(&stats);
 
   // Allocate memory for buffer
-  buffer                 = (uint8_t *)App_malloc(g_test_block_size);
+  buffer                 = (uint8_t *)App_malloc(g_fs_test_config.block_size);
   if (buffer == NULL)
   {
     MPRINTF("Memory allocation failed\n\r");
     return;
   }
 
-  blocks_per_file = (data_size + g_test_block_size - 1) / g_test_block_size;
+  blocks_per_file = (data_size + g_fs_test_config.block_size - 1) / g_fs_test_config.block_size;
 
   // Write files
-  for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
+  for (uint32_t file_idx = 0; file_idx < g_fs_test_config.files_count; file_idx++)
   {
     snprintf(filename, FS_MAX_FILENAME_LENGTH, "/%s%03u.bin", FS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Writing %s... ", filename);
@@ -722,17 +714,17 @@ static void _Do_write_test(void)
     bytes_written = 0;
     for (uint32_t block = 0; block < blocks_per_file; block++)
     {
-      uint32_t bytes_to_write = g_test_block_size;
+      uint32_t bytes_to_write = g_fs_test_config.block_size;
       if (bytes_written + bytes_to_write > data_size)
       {
         bytes_to_write = data_size - bytes_written;
       }
 
       // Fill buffer with pattern
-      Test_patterns_fill_buffer(buffer, bytes_to_write, g_data_pattern, g_fill_constant, bytes_written);
+      Test_patterns_fill_buffer(buffer, bytes_to_write, g_fs_test_config.data_pattern, g_fs_test_config.fill_constant, bytes_written);
 
       // Update CRC with this block
-      if (g_enable_data_verification)
+      if (g_fs_test_config.data_verification)
       {
         crc = CRC32_IEEE802_3(crc, buffer, bytes_to_write);
       }
@@ -761,7 +753,7 @@ static void _Do_write_test(void)
     }
 
     // Write CRC32 at the end of file
-    if (g_enable_data_verification && g_test_file_size >= FS_CRC32_SIZE)
+    if (g_fs_test_config.data_verification && g_fs_test_config.file_size >= FS_CRC32_SIZE)
     {
       crc32_value = ~crc;
       Get_hw_timestump(&io_start_ts);
@@ -796,13 +788,13 @@ static void _Do_write_test(void)
               _Littlefs_error_to_string(result), close_time, operation_time);
       Performance_stats_update_error(&stats);
     }
-    else if (bytes_written == g_test_file_size)
+    else if (bytes_written == g_fs_test_config.file_size)
     {
       // Calculate speed in KB/s based on I/O time (avoid division by zero)
       // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
       if (io_time > 0)
       {
-        speed_kbps = (uint32_t)((float)g_test_file_size * 1000000.0f / ((float)io_time * 1024.0f));
+        speed_kbps = (uint32_t)((float)g_fs_test_config.file_size * 1000000.0f / ((float)io_time * 1024.0f));
       }
       else
       {
@@ -810,19 +802,19 @@ static void _Do_write_test(void)
       }
 
       MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
-      if (g_enable_data_verification)
+      if (g_fs_test_config.data_verification)
       {
         MPRINTF(", CRC: 0x%08X", crc32_value);
       }
       MPRINTF("\n\r");
 
       // Update all statistics using common function
-      Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, g_test_file_size, speed_kbps);
+      Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, g_fs_test_config.file_size, speed_kbps);
     }
     else
     {
       MPRINTF("FAILED (partial write: %u/%u bytes, close: %5u us, total: %6u us)\n\r",
-              bytes_written, g_test_file_size, close_time, operation_time);
+              bytes_written, g_fs_test_config.file_size, close_time, operation_time);
       Performance_stats_update_error(&stats);
     }
 
@@ -833,7 +825,7 @@ static void _Do_write_test(void)
   // Finalize statistics calculations
   Performance_stats_finalize(&stats);
 
-  Performance_stats_print("Write Test", &stats, g_enable_data_verification);
+  Performance_stats_print("Write Test", &stats, g_fs_test_config.data_verification);
 
   App_free(buffer);
 }
@@ -873,32 +865,32 @@ static void _Do_read_test(void)
     return;
   }
 
-  MPRINTF("Reading %u files, %u byte blocks\n\r", g_test_files_count, g_test_block_size);
-  MPRINTF("Data pattern: %s", Test_patterns_get_name(g_data_pattern));
-  if (g_data_pattern == DATA_PATTERN_CONSTANT)
+  MPRINTF("Reading %u files, %u byte blocks\n\r", g_fs_test_config.files_count, g_fs_test_config.block_size);
+  MPRINTF("Data pattern: %s", Test_patterns_get_name(g_fs_test_config.data_pattern));
+  if (g_fs_test_config.data_pattern == DATA_PATTERN_CONSTANT)
   {
-    MPRINTF(" (0x%02X)", g_fill_constant);
+    MPRINTF(" (0x%02X)", g_fs_test_config.fill_constant);
   }
-  MPRINTF(", Verification: %s\n\r", g_enable_data_verification ? "ON" : "OFF");
+  MPRINTF(", Verification: %s\n\r", g_fs_test_config.data_verification ? "ON" : "OFF");
 
   // Calculate data size (file size minus CRC32)
-  data_size              = g_test_file_size >= FS_CRC32_SIZE ? g_test_file_size - FS_CRC32_SIZE : g_test_file_size;
+  data_size              = g_fs_test_config.file_size >= FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
 
   // Initialize statistics
   Performance_stats_init(&stats);
 
   // Allocate memory for buffer
-  buffer                 = (uint8_t *)App_malloc(g_test_block_size);
+  buffer                 = (uint8_t *)App_malloc(g_fs_test_config.block_size);
   if (buffer == NULL)
   {
     MPRINTF("Memory allocation failed\n\r");
     return;
   }
 
-  blocks_per_file = (data_size + g_test_block_size - 1) / g_test_block_size;
+  blocks_per_file = (data_size + g_fs_test_config.block_size - 1) / g_fs_test_config.block_size;
 
   // Read files
-  for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
+  for (uint32_t file_idx = 0; file_idx < g_fs_test_config.files_count; file_idx++)
   {
     snprintf(filename, FS_MAX_FILENAME_LENGTH, "/%s%03u.bin", FS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Reading %s... ", filename);
@@ -940,7 +932,7 @@ static void _Do_read_test(void)
     bytes_read = 0;
     for (uint32_t block = 0; block < blocks_per_file; block++)
     {
-      uint32_t bytes_to_read = g_test_block_size;
+      uint32_t bytes_to_read = g_fs_test_config.block_size;
       if (bytes_read + bytes_to_read > data_size)
       {
         bytes_to_read = data_size - bytes_read;
@@ -968,9 +960,9 @@ static void _Do_read_test(void)
       }
 
       // Verify data pattern if enabled
-      if (g_enable_data_verification && pattern_valid)
+      if (g_fs_test_config.data_verification && pattern_valid)
       {
-        if (!Test_patterns_verify_buffer(buffer, read_result, g_data_pattern, g_fill_constant, bytes_read))
+        if (!Test_patterns_verify_buffer(buffer, read_result, g_fs_test_config.data_pattern, g_fs_test_config.fill_constant, bytes_read))
         {
           pattern_valid = false;
           Performance_stats_increment_pattern_error(&stats);
@@ -978,7 +970,7 @@ static void _Do_read_test(void)
       }
 
       // Update CRC with this block
-      if (g_enable_data_verification)
+      if (g_fs_test_config.data_verification)
       {
         crc = CRC32_IEEE802_3(crc, buffer, read_result);
       }
@@ -992,7 +984,7 @@ static void _Do_read_test(void)
     }
 
     // Read and verify CRC32 if enabled
-    if (g_enable_data_verification && g_test_file_size >= FS_CRC32_SIZE)
+    if (g_fs_test_config.data_verification && g_fs_test_config.file_size >= FS_CRC32_SIZE)
     {
       Get_hw_timestump(&io_start_ts);
       lfs_ssize_t crc_read = lfs_file_read(&g_littlefs_context.lfs, &file, &file_crc32, FS_CRC32_SIZE);
@@ -1033,7 +1025,7 @@ static void _Do_read_test(void)
     else
     {
       // Check file size
-      if (bytes_read != g_test_file_size)
+      if (bytes_read != g_fs_test_config.file_size)
       {
         size_valid = false;
         Performance_stats_increment_size_error(&stats);
@@ -1053,12 +1045,12 @@ static void _Do_read_test(void)
       MPRINTF("closed: %5u us, size: %5u bytes, I/O: %6u us, total: %6u us, speed: %5u KB/s",
               close_time, bytes_read, io_time, operation_time, speed_kbps);
 
-      if (g_enable_data_verification)
+      if (g_fs_test_config.data_verification)
       {
         MPRINTF(", CRC: %s", crc_valid ? "OK" : "ERROR");
         MPRINTF(", Pattern: %s", pattern_valid ? "OK" : "ERROR");
         MPRINTF(", Size: %s", size_valid ? "OK" : "ERROR");
-        if (crc_valid && g_test_file_size >= FS_CRC32_SIZE)
+        if (crc_valid && g_fs_test_config.file_size >= FS_CRC32_SIZE)
         {
           MPRINTF(" (0x%08X)", file_crc32);
         }
@@ -1097,13 +1089,13 @@ static void _Do_delete_test(void)
   uint32_t          operation_time;
 
   MPRINTF("=== Delete Test ===\n\r");
-  MPRINTF("Deleting %u files\n\r", g_test_files_count);
+  MPRINTF("Deleting %u files\n\r", g_fs_test_config.files_count);
 
   // Initialize statistics
   Performance_stats_init_delete(&stats);
 
   // Delete files
-  for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
+  for (uint32_t file_idx = 0; file_idx < g_fs_test_config.files_count; file_idx++)
   {
     snprintf(filename, FS_MAX_FILENAME_LENGTH, "/%s%03u.bin", FS_TEST_FILE_PREFIX, file_idx + 1);
     MPRINTF("Deleting %s... ", filename);
@@ -1205,7 +1197,7 @@ static void _Do_full_test(void)
 
   MPRINTF("=== Full Test (Write + Read + Delete) ===\n\r");
   MPRINTF("Configuration: %u files × %u bytes, %u byte blocks\n\r",
-          g_test_files_count, g_test_file_size, g_test_block_size);
+          g_fs_test_config.files_count, g_fs_test_config.file_size, g_fs_test_config.block_size);
 
   T_sys_timestump total_start_ts, total_end_ts;
   Get_hw_timestump(&total_start_ts);
@@ -1235,7 +1227,7 @@ static void _Do_full_test(void)
   MPRINTF("\n=== Full Test Summary ===\n\r");
   MPRINTF("Total test duration: %u us\n\r", total_test_time);
   MPRINTF("Average time per file (all operations): %.1f us\n\r",
-          (float)total_test_time / g_test_files_count);
+          (float)total_test_time / g_fs_test_config.files_count);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -1250,6 +1242,9 @@ void Do_LittleFS_performance_test(uint8_t keycode)
   GET_MCBL;
   uint8_t choice;
   bool    exit_menu = false;
+
+  // Initialize filesystem test configuration
+  Fs_test_config_init();
 
   while (!exit_menu)
   {
@@ -1269,16 +1264,16 @@ void Do_LittleFS_performance_test(uint8_t keycode)
     _Print_littlefs_info();
 
     MPRINTF("\n=== Test Configuration ===\n\r");
-    MPRINTF("Files count      : %u\n\r", g_test_files_count);
-    MPRINTF("File size        : %u bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
-    MPRINTF("Block size       : %u bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
-    MPRINTF("Data pattern     : %s", Test_patterns_get_name(g_data_pattern));
-    if (g_data_pattern == DATA_PATTERN_CONSTANT)
+    MPRINTF("Files count      : %u\n\r", g_fs_test_config.files_count);
+    MPRINTF("File size        : %u bytes (%.1f KB)\n\r", g_fs_test_config.file_size, (float)g_fs_test_config.file_size / 1024.0f);
+    MPRINTF("Block size       : %u bytes (%.1f KB)\n\r", g_fs_test_config.block_size, (float)g_fs_test_config.block_size / 1024.0f);
+    MPRINTF("Data pattern     : %s", Test_patterns_get_name(g_fs_test_config.data_pattern));
+    if (g_fs_test_config.data_pattern == DATA_PATTERN_CONSTANT)
     {
-      MPRINTF(" (0x%02X)", g_fill_constant);
+      MPRINTF(" (0x%02X)", g_fs_test_config.fill_constant);
     }
     MPRINTF("\n\r");
-    MPRINTF("Data verification: %s\n\r", g_enable_data_verification ? "Enabled" : "Disabled");
+    MPRINTF("Data verification: %s\n\r", g_fs_test_config.data_verification ? "Enabled" : "Disabled");
 
     MPRINTF("\n\rTest operations:\n\r");
     MPRINTF("<1> - Write files test\n\r");
@@ -1360,12 +1355,12 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           break;
 
         case '6':
-          MPRINTF("\n\rEnter new files count (1-10000) [current: %u]: ", g_test_files_count);
+          MPRINTF("\n\rEnter new files count (1-10000) [current: %u]: ", g_fs_test_config.files_count);
           uint32_t new_files_count;
-          if (VT100_input_uint32(&new_files_count, 1, 10000, g_test_files_count))
+          if (VT100_input_uint32(&new_files_count, 1, 10000, g_fs_test_config.files_count))
           {
-            g_test_files_count = new_files_count;
-            MPRINTF("Files count changed to %u\n\r", g_test_files_count);
+            g_fs_test_config.files_count = new_files_count;
+            MPRINTF("Files count changed to %u\n\r", g_fs_test_config.files_count);
           }
           else
           {
@@ -1376,12 +1371,12 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           break;
 
         case '7':
-          MPRINTF("\n\rEnter new file size in KB (1-1024) [current: %.1f]: ", (float)g_test_file_size / 1024.0f);
+          MPRINTF("\n\rEnter new file size in KB (1-1024) [current: %.1f]: ", (float)g_fs_test_config.file_size / 1024.0f);
           uint32_t new_file_size_kb;
-          if (VT100_input_uint32(&new_file_size_kb, 1, 1024, g_test_file_size / 1024))
+          if (VT100_input_uint32(&new_file_size_kb, 1, 1024, g_fs_test_config.file_size / 1024))
           {
-            g_test_file_size = new_file_size_kb * 1024;
-            MPRINTF("File size changed to %u bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
+            g_fs_test_config.file_size = new_file_size_kb * 1024;
+            MPRINTF("File size changed to %u bytes (%.1f KB)\n\r", g_fs_test_config.file_size, (float)g_fs_test_config.file_size / 1024.0f);
           }
           else
           {
@@ -1392,12 +1387,12 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           break;
 
         case '8':
-          MPRINTF("\n\rEnter new block size in KB (1-128) [current: %.1f]: ", (float)g_test_block_size / 1024.0f);
+          MPRINTF("\n\rEnter new block size in KB (1-128) [current: %.1f]: ", (float)g_fs_test_config.block_size / 1024.0f);
           uint32_t new_block_size_kb;
-          if (VT100_input_uint32(&new_block_size_kb, 1, 128, g_test_block_size / 1024))
+          if (VT100_input_uint32(&new_block_size_kb, 1, 128, g_fs_test_config.block_size / 1024))
           {
-            g_test_block_size = new_block_size_kb * 1024;
-            MPRINTF("Block size changed to %u bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
+            g_fs_test_config.block_size = new_block_size_kb * 1024;
+            MPRINTF("Block size changed to %u bytes (%.1f KB)\n\r", g_fs_test_config.block_size, (float)g_fs_test_config.block_size / 1024.0f);
           }
           else
           {
@@ -1408,12 +1403,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           break;
 
         case '9':
-          g_test_files_count         = FS_TEST_FILES_COUNT_DEFAULT;
-          g_test_file_size           = FS_TEST_FILE_SIZE_DEFAULT;
-          g_test_block_size          = FS_TEST_BLOCK_SIZE_DEFAULT;
-          g_data_pattern             = DATA_PATTERN_CONSTANT;
-          g_fill_constant            = DEFAULT_FILL_CONSTANT;
-          g_enable_data_verification = true;
+          Fs_test_config_reset_to_defaults();
           MPRINTF("\n\rParameters reset to defaults\n\r");
           MPRINTF("Press any key to continue...\n\r");
           WAIT_CHAR(&choice, ms_to_ticks(100000));
@@ -1425,7 +1415,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           MPRINTF("<1> - Constant pattern\n\r");
           MPRINTF("<2> - Counter pattern\n\r");
           MPRINTF("<3> - Random pattern\n\r");
-          MPRINTF("Current: %s\n\r", Test_patterns_get_name(g_data_pattern));
+          MPRINTF("Current: %s\n\r", Test_patterns_get_name(g_fs_test_config.data_pattern));
           MPRINTF("Enter choice (1-3): ");
           uint8_t pattern_choice;
           if (WAIT_CHAR(&pattern_choice, ms_to_ticks(100000)) == RES_OK)
@@ -1433,16 +1423,16 @@ void Do_LittleFS_performance_test(uint8_t keycode)
             switch (pattern_choice)
             {
               case '1':
-                g_data_pattern = DATA_PATTERN_CONSTANT;
-                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_data_pattern));
+                g_fs_test_config.data_pattern = DATA_PATTERN_CONSTANT;
+                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_fs_test_config.data_pattern));
                 break;
               case '2':
-                g_data_pattern = DATA_PATTERN_COUNTER;
-                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_data_pattern));
+                g_fs_test_config.data_pattern = DATA_PATTERN_COUNTER;
+                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_fs_test_config.data_pattern));
                 break;
               case '3':
-                g_data_pattern = DATA_PATTERN_RANDOM;
-                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_data_pattern));
+                g_fs_test_config.data_pattern = DATA_PATTERN_RANDOM;
+                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_fs_test_config.data_pattern));
                 break;
               default:
                 MPRINTF("\n\rInvalid choice, keeping current pattern\n\r");
@@ -1459,20 +1449,20 @@ void Do_LittleFS_performance_test(uint8_t keycode)
 
         case 'B':
         case 'b':
-          g_enable_data_verification = !g_enable_data_verification;
-          MPRINTF("\n\rData verification %s\n\r", g_enable_data_verification ? "ENABLED" : "DISABLED");
+          g_fs_test_config.data_verification = !g_fs_test_config.data_verification;
+          MPRINTF("\n\rData verification %s\n\r", g_fs_test_config.data_verification ? "ENABLED" : "DISABLED");
           MPRINTF("Press any key to continue...\n\r");
           WAIT_CHAR(&choice, ms_to_ticks(100000));
           break;
 
         case 'C':
         case 'c':
-          MPRINTF("\n\rEnter new constant pattern value (0-255) [current: 0x%02X]: ", g_fill_constant);
+          MPRINTF("\n\rEnter new constant pattern value (0-255) [current: 0x%02X]: ", g_fs_test_config.fill_constant);
           uint32_t new_constant;
-          if (VT100_input_uint32(&new_constant, 0, 255, g_fill_constant))
+          if (VT100_input_uint32(&new_constant, 0, 255, g_fs_test_config.fill_constant))
           {
-            g_fill_constant = (uint8_t)new_constant;
-            MPRINTF("Constant pattern value changed to 0x%02X\n\r", g_fill_constant);
+            g_fs_test_config.fill_constant = (uint8_t)new_constant;
+            MPRINTF("Constant pattern value changed to 0x%02X\n\r", g_fs_test_config.fill_constant);
           }
           else
           {
