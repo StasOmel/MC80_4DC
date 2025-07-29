@@ -1,0 +1,294 @@
+#include "Performance_Stats.h"
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Initialize performance statistics structure
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_init(T_performance_stats *stats)
+{
+  stats->min_time         = UINT32_MAX;
+  stats->max_time         = 0;
+  stats->avg_time         = 0;
+  stats->total_time       = 0;
+  stats->success_count    = 0;
+  stats->error_count      = 0;
+  stats->total_bytes      = 0;
+  stats->min_speed_kbps   = UINT32_MAX;
+  stats->max_speed_kbps   = 0;
+  stats->avg_speed_kbps   = 0;
+  stats->total_open_time  = 0;
+  stats->min_open_time    = UINT32_MAX;
+  stats->max_open_time    = 0;
+  stats->total_close_time = 0;
+  stats->min_close_time   = UINT32_MAX;
+  stats->max_close_time   = 0;
+  stats->total_io_time    = 0;
+  stats->crc_errors       = 0;
+  stats->pattern_errors   = 0;
+  stats->size_errors      = 0;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Initialize performance statistics for delete operations
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_init_delete(T_performance_stats *stats)
+{
+  stats->min_time         = UINT32_MAX;
+  stats->max_time         = 0;
+  stats->avg_time         = 0;
+  stats->total_time       = 0;
+  stats->success_count    = 0;
+  stats->error_count      = 0;
+  stats->total_bytes      = 0;  // Not applicable for delete
+  stats->min_speed_kbps   = 0;  // Not applicable for delete
+  stats->max_speed_kbps   = 0;  // Not applicable for delete
+  stats->avg_speed_kbps   = 0;  // Not applicable for delete
+  stats->total_open_time  = 0;  // Not applicable for delete
+  stats->min_open_time    = 0;  // Not applicable for delete
+  stats->max_open_time    = 0;  // Not applicable for delete
+  stats->total_close_time = 0;  // Not applicable for delete
+  stats->min_close_time   = 0;  // Not applicable for delete
+  stats->max_close_time   = 0;  // Not applicable for delete
+  stats->total_io_time    = 0;  // Not applicable for delete
+  stats->crc_errors       = 0;  // Not applicable for delete
+  stats->pattern_errors   = 0;  // Not applicable for delete
+  stats->size_errors      = 0;  // Not applicable for delete
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Update timing statistics for successful operation
+
+  Parameters: stats - pointer to statistics structure
+              operation_time - total operation time
+              open_time - file open time
+              close_time - file close time
+              io_time - pure I/O time
+              bytes_processed - number of bytes processed
+              speed_kbps - operation speed in KB/s
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_update_success(T_performance_stats *stats,
+                                       uint32_t operation_time,
+                                       uint32_t open_time,
+                                       uint32_t close_time,
+                                       uint32_t io_time,
+                                       uint32_t bytes_processed,
+                                       uint32_t speed_kbps)
+{
+  stats->total_bytes += bytes_processed;
+  stats->success_count++;
+
+  // Update timing statistics
+  if (operation_time < stats->min_time) stats->min_time = operation_time;
+  if (operation_time > stats->max_time) stats->max_time = operation_time;
+  stats->total_time += operation_time;
+
+  // Update open/close timing statistics
+  stats->total_open_time += open_time;
+  if (open_time < stats->min_open_time) stats->min_open_time = open_time;
+  if (open_time > stats->max_open_time) stats->max_open_time = open_time;
+
+  stats->total_close_time += close_time;
+  if (close_time < stats->min_close_time) stats->min_close_time = close_time;
+  if (close_time > stats->max_close_time) stats->max_close_time = close_time;
+
+  stats->total_io_time += io_time;
+
+  // Update speed statistics
+  if (speed_kbps < stats->min_speed_kbps) stats->min_speed_kbps = speed_kbps;
+  if (speed_kbps > stats->max_speed_kbps) stats->max_speed_kbps = speed_kbps;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Update timing statistics for delete operation
+
+  Parameters: stats - pointer to statistics structure
+              operation_time - total operation time
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_update_delete_success(T_performance_stats *stats, uint32_t operation_time)
+{
+  stats->success_count++;
+
+  // Update timing statistics
+  if (operation_time < stats->min_time) stats->min_time = operation_time;
+  if (operation_time > stats->max_time) stats->max_time = operation_time;
+  stats->total_time += operation_time;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Increment error counter
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_increment_error(T_performance_stats *stats)
+{
+  stats->error_count++;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Update error counter (alias for increment_error)
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_update_error(T_performance_stats *stats)
+{
+  stats->error_count++;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Increment CRC error counter
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_increment_crc_error(T_performance_stats *stats)
+{
+  stats->crc_errors++;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Increment pattern error counter
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_increment_pattern_error(T_performance_stats *stats)
+{
+  stats->pattern_errors++;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Increment size error counter
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_increment_size_error(T_performance_stats *stats)
+{
+  stats->size_errors++;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Calculate final averages and clean up statistics
+
+  Parameters: stats - pointer to statistics structure
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_finalize(T_performance_stats *stats)
+{
+  // Calculate averages
+  if (stats->success_count > 0)
+  {
+    stats->avg_time = stats->total_time / stats->success_count;
+    if (stats->total_io_time > 0)
+    {
+      stats->avg_speed_kbps = (uint32_t)((float)stats->total_bytes * 1000000.0f / ((float)stats->total_io_time * 1024.0f));
+    }
+    if (stats->min_speed_kbps == UINT32_MAX)
+    {
+      stats->min_speed_kbps = 0;
+    }
+    if (stats->min_open_time == UINT32_MAX)
+    {
+      stats->min_open_time = 0;
+    }
+    if (stats->min_close_time == UINT32_MAX)
+    {
+      stats->min_close_time = 0;
+    }
+  }
+  else
+  {
+    stats->min_time = 0;
+    stats->avg_time = 0;
+    stats->min_speed_kbps = 0;
+    stats->min_open_time = 0;
+    stats->max_open_time = 0;
+    stats->min_close_time = 0;
+    stats->max_close_time = 0;
+  }
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Print operation statistics (unified format for all filesystem tests)
+
+  Parameters: operation_name - name of operation
+              stats - statistics to print
+              data_verification_enabled - whether data verification was enabled
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Performance_stats_print(const char *operation_name, T_performance_stats *stats, bool data_verification_enabled)
+{
+  GET_MCBL;
+
+  MPRINTF("\n=== %s Statistics ===\n\r", operation_name);
+  MPRINTF("Successful operations: %u\n\r", stats->success_count);
+  MPRINTF("Failed operations:     %u\n\r", stats->error_count);
+
+  if (stats->success_count > 0)
+  {
+    MPRINTF("Data processed: %u KB (%u bytes)\n\r", stats->total_bytes / 1024, stats->total_bytes);
+
+    MPRINTF("\nTiming breakdown:\n\r");
+
+    // File open timing statistics
+    if (stats->total_open_time > 0)
+    {
+      float avg_open_time          = (float)stats->total_open_time / stats->success_count;
+      float open_time_diff_percent = 0.0f;
+      if (stats->min_open_time > 0)
+      {
+        open_time_diff_percent = ((float)(stats->max_open_time - stats->min_open_time) * 100.0f) / stats->min_open_time;
+      }
+      MPRINTF("  Open time     - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_open_time, stats->min_open_time, stats->max_open_time, open_time_diff_percent);
+    }
+
+    // File close timing statistics
+    if (stats->total_close_time > 0)
+    {
+      float avg_close_time          = (float)stats->total_close_time / stats->success_count;
+      float close_time_diff_percent = 0.0f;
+      if (stats->min_close_time > 0)
+      {
+        close_time_diff_percent = ((float)(stats->max_close_time - stats->min_close_time) * 100.0f) / stats->min_close_time;
+      }
+      MPRINTF("  Close time    - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_close_time, stats->min_close_time, stats->max_close_time, close_time_diff_percent);
+    }
+
+    // Speed statistics
+    MPRINTF("\nSpeed statistics:\n\r");
+    MPRINTF("  Max speed:    %5u KB/s\n\r", stats->max_speed_kbps);
+    MPRINTF("  Avg speed:    %5u KB/s\n\r", stats->avg_speed_kbps);
+    MPRINTF("  Min speed:    %5u KB/s\n\r", stats->min_speed_kbps);
+
+    // Print data integrity statistics if enabled
+    if (data_verification_enabled)
+    {
+      MPRINTF("\nData integrity:\n\r");
+      MPRINTF("  CRC errors    : %u\n\r", stats->crc_errors);
+      MPRINTF("  Pattern errors: %u\n\r", stats->pattern_errors);
+      MPRINTF("  Size errors   : %u\n\r", stats->size_errors);
+      uint32_t total_integrity_errors = stats->crc_errors + stats->pattern_errors + stats->size_errors;
+      MPRINTF("  Total errors  : %u\n\r", total_integrity_errors);
+    }
+  }
+}

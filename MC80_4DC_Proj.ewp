@@ -14340,6 +14340,18 @@
                 <file>
                     <name>$PROJ_DIR$\src\VT100\Monitor_VT100_manager.h</name>
                 </file>
+                <file>
+                    <name>$PROJ_DIR$\src\VT100\Performance_Stats.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\VT100\Performance_Stats.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\VT100\Test_Patterns.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\VT100\Test_Patterns.h</name>
+                </file>
             </group>
             <file>
                 <name>$PROJ_DIR$\src\App.h</name>

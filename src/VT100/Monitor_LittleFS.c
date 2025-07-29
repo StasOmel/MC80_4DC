@@ -1,4 +1,7 @@
 #include "App.h"
+#include "Performance_Stats.h"
+#include "Test_Patterns.h"
+#include "Test_Patterns.h"
 
 #define MAX_PATH_LENGTH              256
 #define MAX_DIRS_IN_STACK            32
@@ -10,12 +13,8 @@
 #define LFS_TEST_FILE_PREFIX         "test_"  // File name prefix
 #define LFS_MAX_FILENAME_LENGTH      64       // Maximum filename length
 
-// Data integrity and pattern definitions
+// Data integrity definitions
 #define CRC32_SIZE                   4     // CRC32 size in bytes
-#define DATA_PATTERN_CONSTANT        0     // Fill with constant value
-#define DATA_PATTERN_COUNTER         1     // Fill with 32-bit counter
-#define DATA_PATTERN_RANDOM          2     // Fill with pseudo-random data
-#define DEFAULT_FILL_CONSTANT        0xAA  // Default constant for pattern fill
 
 // Performance test parameters (configurable)
 static uint32_t g_test_files_count         = LFS_TEST_FILES_COUNT_DEFAULT;
@@ -31,31 +30,6 @@ typedef struct
   char    path[MAX_PATH_LENGTH];
   uint8_t depth;
 } T_dir_stack_item;
-
-// Structure for operation statistics
-typedef struct
-{
-  uint32_t min_time;          // Minimum time
-  uint32_t max_time;          // Maximum time
-  uint32_t avg_time;          // Average time
-  uint32_t total_time;        // Total time of all operations
-  uint32_t success_count;     // Number of successful operations
-  uint32_t error_count;       // Number of failed operations
-  uint32_t total_bytes;       // Total bytes processed
-  uint32_t min_speed_kbps;    // Minimum speed in KB/s
-  uint32_t max_speed_kbps;    // Maximum speed in KB/s
-  uint32_t avg_speed_kbps;    // Average speed in KB/s
-  uint32_t total_open_time;   // Total time for file open operations
-  uint32_t min_open_time;     // Minimum open time
-  uint32_t max_open_time;     // Maximum open time
-  uint32_t total_close_time;  // Total time for file close operations
-  uint32_t min_close_time;    // Minimum close time
-  uint32_t max_close_time;    // Maximum close time
-  uint32_t total_io_time;     // Total time for pure I/O operations (read/write only)
-  uint32_t crc_errors;        // Number of CRC verification errors
-  uint32_t pattern_errors;    // Number of data pattern errors
-  uint32_t size_errors;       // Number of file size errors
-} T_operation_stats;
 
 static T_dir_stack_item g_dir_stack[MAX_DIRS_IN_STACK];
 static uint8_t          g_stack_top;
@@ -158,61 +132,9 @@ static void _Print_tree_indent(uint8_t depth)
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-static void _Print_stats(const char *operation_name, T_operation_stats *stats)
+static void _Print_stats(const char *operation_name, T_performance_stats *stats)
 {
-  GET_MCBL;
-
-  MPRINTF("\n=== %s Statistics ===\n\r", operation_name);
-  MPRINTF("Successful operations: %u\n\r", stats->success_count);
-  MPRINTF("Failed operations:     %u\n\r", stats->error_count);
-
-  if (stats->success_count > 0)
-  {
-    MPRINTF("Data processed: %u KB (%u bytes)\n\r", stats->total_bytes / 1024, stats->total_bytes);
-
-    MPRINTF("\nTiming breakdown:\n\r");
-
-    // File open timing statistics
-    if (stats->total_open_time > 0)
-    {
-      float avg_open_time          = (float)stats->total_open_time / stats->success_count;
-      float open_time_diff_percent = 0.0f;
-      if (stats->min_open_time > 0)
-      {
-        open_time_diff_percent = ((float)(stats->max_open_time - stats->min_open_time) * 100.0f) / stats->min_open_time;
-      }
-      MPRINTF("  Open time     - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_open_time, stats->min_open_time, stats->max_open_time, open_time_diff_percent);
-    }
-
-    // File close timing statistics
-    if (stats->total_close_time > 0)
-    {
-      float avg_close_time          = (float)stats->total_close_time / stats->success_count;
-      float close_time_diff_percent = 0.0f;
-      if (stats->min_close_time > 0)
-      {
-        close_time_diff_percent = ((float)(stats->max_close_time - stats->min_close_time) * 100.0f) / stats->min_close_time;
-      }
-      MPRINTF("  Close time    - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_close_time, stats->min_close_time, stats->max_close_time, close_time_diff_percent);
-    }
-
-    // Speed statistics
-    MPRINTF("\nSpeed statistics:\n\r");
-    MPRINTF("  Max speed:    %5u KB/s\n\r", stats->max_speed_kbps);
-    MPRINTF("  Avg speed:    %5u KB/s\n\r", stats->avg_speed_kbps);
-    MPRINTF("  Min speed:    %5u KB/s\n\r", stats->min_speed_kbps);
-
-    // Print data integrity statistics if enabled
-    if (g_enable_data_verification)
-    {
-      MPRINTF("\nData integrity:\n\r");
-      MPRINTF("  CRC errors    : %u\n\r", stats->crc_errors);
-      MPRINTF("  Pattern errors: %u\n\r", stats->pattern_errors);
-      MPRINTF("  Size errors   : %u\n\r", stats->size_errors);
-      uint32_t total_integrity_errors = stats->crc_errors + stats->pattern_errors + stats->size_errors;
-      MPRINTF("  Total errors  : %u\n\r", total_integrity_errors);
-    }
-  }
+  Performance_stats_print(operation_name, stats, g_enable_data_verification);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -312,115 +234,6 @@ static void _Print_littlefs_info(void)
   else
   {
     MPRINTF("Error getting filesystem information: %s\n\r", _Littlefs_error_to_string(result));
-  }
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Fill buffer with selected data pattern
-
-  Parameters: buffer - buffer to fill
-              size - size of buffer
-              pattern - pattern type
-              start_offset - starting offset for patterns
-
-  Return: none
------------------------------------------------------------------------------------------------------*/
-static void _Fill_buffer_with_pattern(uint8_t *buffer, uint32_t size, uint32_t pattern, uint32_t start_offset)
-{
-  switch (pattern)
-  {
-    case DATA_PATTERN_CONSTANT:
-      memset(buffer, g_fill_constant, size);
-      break;
-
-    case DATA_PATTERN_COUNTER:
-    {
-      uint32_t *word_ptr   = (uint32_t *)buffer;
-      uint32_t  counter    = start_offset / 4;
-      uint32_t  word_count = size / 4;
-
-      // Fill with 32-bit counter values
-      for (uint32_t i = 0; i < word_count; i++)
-      {
-        word_ptr[i] = counter + i;
-      }
-
-      // Fill remaining bytes
-      uint32_t remaining_bytes = size % 4;
-      if (remaining_bytes > 0)
-      {
-        uint32_t last_value = counter + word_count;
-        uint8_t *byte_ptr   = &buffer[word_count * 4];
-        for (uint32_t i = 0; i < remaining_bytes; i++)
-        {
-          byte_ptr[i] = (uint8_t)((last_value >> (i * 8)) & 0xFF);
-        }
-      }
-    }
-    break;
-
-    case DATA_PATTERN_RANDOM:
-    {
-      uint32_t seed = 0x12345678 + start_offset;
-      for (uint32_t i = 0; i < size; i++)
-      {
-        seed      = seed * 1103515245 + 12345;  // Simple LCG
-        buffer[i] = (uint8_t)(seed >> 16);
-      }
-    }
-    break;
-
-    default:
-      memset(buffer, 0x00, size);
-      break;
-  }
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Verify buffer data pattern
-
-  Parameters: buffer - buffer to verify
-              size - size of buffer
-              pattern - expected pattern type
-              start_offset - starting offset for patterns
-
-  Return: true if pattern matches, false otherwise
------------------------------------------------------------------------------------------------------*/
-static bool _Verify_buffer_pattern(const uint8_t *buffer, uint32_t size, uint32_t pattern, uint32_t start_offset)
-{
-  uint8_t *expected_buffer = (uint8_t *)App_malloc(size);
-  if (expected_buffer == NULL)
-  {
-    return false;  // Cannot verify without memory
-  }
-
-  _Fill_buffer_with_pattern(expected_buffer, size, pattern, start_offset);
-
-  bool result = (memcmp(buffer, expected_buffer, size) == 0);
-
-  App_free(expected_buffer);
-  return result;
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Get pattern name string
-
-  Parameters: pattern - pattern type
-
-  Return: pointer to pattern name string
------------------------------------------------------------------------------------------------------*/
-static const char *_Get_pattern_name(uint32_t pattern)
-{
-  switch (pattern)
-  {
-    case DATA_PATTERN_CONSTANT:
-      return "Constant";
-    case DATA_PATTERN_COUNTER:
-      return "Counter";
-    case DATA_PATTERN_RANDOM:
-      return "Random";
-    default:
-      return "Unknown";
   }
 }
 
@@ -833,7 +646,7 @@ static void _Do_write_test(void)
 {
   GET_MCBL;
   uint8_t          *buffer = NULL;
-  T_operation_stats stats;
+  T_performance_stats stats;
   char              filename[LFS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
@@ -856,7 +669,7 @@ static void _Do_write_test(void)
 
   MPRINTF("Writing %u files, %u bytes each, %u byte blocks\n\r",
           g_test_files_count, g_test_file_size, g_test_block_size);
-  MPRINTF("Data pattern: %s", _Get_pattern_name(g_data_pattern));
+  MPRINTF("Data pattern: %s", Test_patterns_get_name(g_data_pattern));
   if (g_data_pattern == DATA_PATTERN_CONSTANT)
   {
     MPRINTF(" (0x%02X)", g_fill_constant);
@@ -867,25 +680,7 @@ static void _Do_write_test(void)
   data_size              = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
 
   // Initialize statistics
-  stats.min_time         = UINT32_MAX;
-  stats.max_time         = 0;
-  stats.total_time       = 0;
-  stats.success_count    = 0;
-  stats.error_count      = 0;
-  stats.total_bytes      = 0;
-  stats.min_speed_kbps   = UINT32_MAX;
-  stats.max_speed_kbps   = 0;
-  stats.avg_speed_kbps   = 0;
-  stats.total_open_time  = 0;
-  stats.min_open_time    = UINT32_MAX;
-  stats.max_open_time    = 0;
-  stats.total_close_time = 0;
-  stats.min_close_time   = UINT32_MAX;
-  stats.max_close_time   = 0;
-  stats.total_io_time    = 0;
-  stats.crc_errors       = 0;
-  stats.pattern_errors   = 0;
-  stats.size_errors      = 0;
+  Performance_stats_init(&stats);
 
   // Allocate memory for buffer
   buffer                 = (uint8_t *)App_malloc(g_test_block_size);
@@ -920,7 +715,7 @@ static void _Do_write_test(void)
       operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
       MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
       continue;
     }
 
@@ -944,7 +739,7 @@ static void _Do_write_test(void)
       }
 
       // Fill buffer with pattern
-      _Fill_buffer_with_pattern(buffer, bytes_to_write, g_data_pattern, bytes_written);
+      Test_patterns_fill_buffer(buffer, bytes_to_write, g_data_pattern, g_fill_constant, bytes_written);
 
       // Update CRC with this block
       if (g_enable_data_verification)
@@ -964,7 +759,7 @@ static void _Do_write_test(void)
         lfs_remove(&g_littlefs_context.lfs, filename);  // Remove corrupted file
         Get_hw_timestump(&end_ts);
         operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
-        stats.error_count++;
+        Performance_stats_update_error(&stats);
         goto next_file;
       }
       bytes_written += written;
@@ -1133,7 +928,7 @@ static void _Do_read_test(void)
 {
   GET_MCBL;
   uint8_t          *buffer = NULL;
-  T_operation_stats stats;
+  T_performance_stats stats;
   char              filename[LFS_MAX_FILENAME_LENGTH];
   lfs_file_t        file;
   int               result;
@@ -1158,7 +953,7 @@ static void _Do_read_test(void)
   }
 
   MPRINTF("Reading %u files, %u byte blocks\n\r", g_test_files_count, g_test_block_size);
-  MPRINTF("Data pattern: %s", _Get_pattern_name(g_data_pattern));
+  MPRINTF("Data pattern: %s", Test_patterns_get_name(g_data_pattern));
   if (g_data_pattern == DATA_PATTERN_CONSTANT)
   {
     MPRINTF(" (0x%02X)", g_fill_constant);
@@ -1169,25 +964,7 @@ static void _Do_read_test(void)
   data_size              = g_test_file_size >= CRC32_SIZE ? g_test_file_size - CRC32_SIZE : g_test_file_size;
 
   // Initialize statistics
-  stats.min_time         = UINT32_MAX;
-  stats.max_time         = 0;
-  stats.total_time       = 0;
-  stats.success_count    = 0;
-  stats.error_count      = 0;
-  stats.total_bytes      = 0;
-  stats.min_speed_kbps   = UINT32_MAX;
-  stats.max_speed_kbps   = 0;
-  stats.avg_speed_kbps   = 0;
-  stats.total_open_time  = 0;
-  stats.min_open_time    = UINT32_MAX;
-  stats.max_open_time    = 0;
-  stats.total_close_time = 0;
-  stats.min_close_time   = UINT32_MAX;
-  stats.max_close_time   = 0;
-  stats.total_io_time    = 0;
-  stats.crc_errors       = 0;
-  stats.pattern_errors   = 0;
-  stats.size_errors      = 0;
+  Performance_stats_init(&stats);
 
   // Allocate memory for buffer
   buffer                 = (uint8_t *)App_malloc(g_test_block_size);
@@ -1272,7 +1049,7 @@ static void _Do_read_test(void)
       // Verify data pattern if enabled
       if (g_enable_data_verification && pattern_valid)
       {
-        if (!_Verify_buffer_pattern(buffer, read_result, g_data_pattern, bytes_read))
+        if (!Test_patterns_verify_buffer(buffer, read_result, g_data_pattern, g_fill_constant, bytes_read))
         {
           pattern_valid = false;
           stats.pattern_errors++;
@@ -1462,7 +1239,7 @@ static void _Do_read_test(void)
 static void _Do_delete_test(void)
 {
   GET_MCBL;
-  T_operation_stats stats;
+  T_performance_stats stats;
   char              filename[LFS_MAX_FILENAME_LENGTH];
   int               result;
   uint32_t          operation_time;
@@ -1471,25 +1248,7 @@ static void _Do_delete_test(void)
   MPRINTF("Deleting %u files\n\r", g_test_files_count);
 
   // Initialize statistics
-  stats.min_time         = UINT32_MAX;
-  stats.max_time         = 0;
-  stats.total_time       = 0;
-  stats.success_count    = 0;
-  stats.error_count      = 0;
-  stats.total_bytes      = 0;  // Not applicable for delete
-  stats.min_speed_kbps   = 0;  // Not applicable for delete
-  stats.max_speed_kbps   = 0;  // Not applicable for delete
-  stats.avg_speed_kbps   = 0;  // Not applicable for delete
-  stats.total_open_time  = 0;  // Not applicable for delete
-  stats.min_open_time    = 0;  // Not applicable for delete
-  stats.max_open_time    = 0;  // Not applicable for delete
-  stats.total_close_time = 0;  // Not applicable for delete
-  stats.min_close_time   = 0;  // Not applicable for delete
-  stats.max_close_time   = 0;  // Not applicable for delete
-  stats.total_io_time    = 0;  // Not applicable for delete
-  stats.crc_errors       = 0;  // Not applicable for delete
-  stats.pattern_errors   = 0;  // Not applicable for delete
-  stats.size_errors      = 0;  // Not applicable for delete
+  Performance_stats_init_delete(&stats);
 
   // Delete files
   for (uint32_t file_idx = 0; file_idx < g_test_files_count; file_idx++)
@@ -1678,7 +1437,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
     MPRINTF("Files count      : %u\n\r", g_test_files_count);
     MPRINTF("File size        : %u bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
     MPRINTF("Block size       : %u bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
-    MPRINTF("Data pattern     : %s", _Get_pattern_name(g_data_pattern));
+    MPRINTF("Data pattern     : %s", Test_patterns_get_name(g_data_pattern));
     if (g_data_pattern == DATA_PATTERN_CONSTANT)
     {
       MPRINTF(" (0x%02X)", g_fill_constant);
@@ -1831,7 +1590,7 @@ void Do_LittleFS_performance_test(uint8_t keycode)
           MPRINTF("<1> - Constant pattern\n\r");
           MPRINTF("<2> - Counter pattern\n\r");
           MPRINTF("<3> - Random pattern\n\r");
-          MPRINTF("Current: %s\n\r", _Get_pattern_name(g_data_pattern));
+          MPRINTF("Current: %s\n\r", Test_patterns_get_name(g_data_pattern));
           MPRINTF("Enter choice (1-3): ");
           uint8_t pattern_choice;
           if (WAIT_CHAR(&pattern_choice, ms_to_ticks(100000)) == RES_OK)
@@ -1840,15 +1599,15 @@ void Do_LittleFS_performance_test(uint8_t keycode)
             {
               case '1':
                 g_data_pattern = DATA_PATTERN_CONSTANT;
-                MPRINTF("\n\rPattern changed to: %s\n\r", _Get_pattern_name(g_data_pattern));
+                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_data_pattern));
                 break;
               case '2':
                 g_data_pattern = DATA_PATTERN_COUNTER;
-                MPRINTF("\n\rPattern changed to: %s\n\r", _Get_pattern_name(g_data_pattern));
+                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_data_pattern));
                 break;
               case '3':
                 g_data_pattern = DATA_PATTERN_RANDOM;
-                MPRINTF("\n\rPattern changed to: %s\n\r", _Get_pattern_name(g_data_pattern));
+                MPRINTF("\n\rPattern changed to: %s\n\r", Test_patterns_get_name(g_data_pattern));
                 break;
               default:
                 MPRINTF("\n\rInvalid choice, keeping current pattern\n\r");

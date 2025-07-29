@@ -1,5 +1,7 @@
 #include "App.h"
 #include "LevelX_config.h"
+#include "Performance_Stats.h"
+#include "Test_Patterns.h"
 
 #define FILEX_TEST_FILES_COUNT_DEFAULT 10
 #define FILEX_TEST_FILE_SIZE_DEFAULT   (10 * 1024)  // 10KB
@@ -12,14 +14,6 @@
 #define FILEX_MEMORY_BUFFER_SIZE       (32 * 1024)  // 32KB
 #define FILEX_TEST_BUFFER_SIZE         (16 * 1024)  // 16KB for test operations
 #define CRC32_SIZE                     4             // CRC32 size in bytes
-
-// Test data patterns
-enum
-{
-  DATA_PATTERN_CONSTANT    = 0,
-  DATA_PATTERN_COUNTER     = 1,  // Fill with 32-bit counter (like LittleFS)
-  DATA_PATTERN_RANDOM      = 2
-};
 
 // Test configuration variables
 static uint32_t g_test_files_count = FILEX_TEST_FILES_COUNT_DEFAULT;
@@ -38,31 +32,6 @@ typedef struct
 
 static T_dir_entry g_dir_stack[MAX_DIR_STACK_DEPTH];
 static uint32_t    g_stack_top = 0;
-
-// Test statistics structure (matches LittleFS format)
-typedef struct
-{
-  uint32_t min_time;          // Minimum time
-  uint32_t max_time;          // Maximum time
-  uint32_t avg_time;          // Average time
-  uint32_t total_time;        // Total time of all operations
-  uint32_t success_count;     // Number of successful operations
-  uint32_t error_count;       // Number of failed operations
-  uint32_t total_bytes;       // Total bytes processed
-  uint32_t min_speed_kbps;    // Minimum speed in KB/s
-  uint32_t max_speed_kbps;    // Maximum speed in KB/s
-  uint32_t avg_speed_kbps;    // Average speed in KB/s
-  uint32_t total_open_time;   // Total time for file open operations
-  uint32_t min_open_time;     // Minimum open time
-  uint32_t max_open_time;     // Maximum open time
-  uint32_t total_close_time;  // Total time for file close operations
-  uint32_t min_close_time;    // Minimum close time
-  uint32_t max_close_time;    // Maximum close time
-  uint32_t total_io_time;     // Total time for pure I/O operations (read/write only)
-  uint32_t crc_errors;        // Number of CRC verification errors
-  uint32_t pattern_errors;    // Number of data pattern errors
-  uint32_t size_errors;       // Number of file size errors
-} T_filex_stats;
 
 // FileX media instance
 extern FX_MEDIA g_fx_spi_nor_media;
@@ -106,14 +75,11 @@ static void        _Do_format_test(void);
 static void        _Do_full_test(void);
 static void        _Print_filex_info(void);
 static void        _Print_test_config(void);
-static void        _Print_statistics(T_filex_stats *stats, const char *operation_name);
-static void        _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset);
-static bool        _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset);
+static void        _Print_statistics(T_performance_stats *stats, const char *operation_name);
 static bool        _Push_dir_to_stack(const char *path, uint8_t depth);
 static bool        _Pop_dir_from_stack(char *path, uint8_t *depth);
 static void        _Print_tree_indent(uint8_t depth);
 static void        _List_directory_tree(const char *root_path, uint8_t max_depth);
-static const char *_Get_pattern_name(uint32_t pattern);
 static const char *_Get_filex_error_description(UINT status);
 static bool        _Allocate_test_buffer(void);
 static void        _Free_test_buffer(void);
@@ -157,28 +123,6 @@ static bool _Pop_dir_from_stack(char *path, uint8_t *depth)
   strcpy(path, g_dir_stack[g_stack_top].path);
   *depth = g_dir_stack[g_stack_top].depth;
   return true;
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Get pattern name string
-
-  Parameters: pattern - pattern type
-
-  Return: pointer to pattern name string
------------------------------------------------------------------------------------------------------*/
-static const char *_Get_pattern_name(uint32_t pattern)
-{
-  switch (pattern)
-  {
-    case DATA_PATTERN_CONSTANT:
-      return "Constant";
-    case DATA_PATTERN_COUNTER:
-      return "Counter";
-    case DATA_PATTERN_RANDOM:
-      return "Random";
-    default:
-      return "Unknown";
-  }
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -306,91 +250,6 @@ static void _Print_tree_indent(uint8_t depth)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Fill test buffer with specified pattern
-
-  Parameters: buffer - buffer to fill, size - buffer size, file_index - file index for pattern, start_offset - starting offset for patterns
-
-  Return: none
------------------------------------------------------------------------------------------------------*/
-static void _Fill_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset)
-{
-  switch (g_data_pattern)
-  {
-    case DATA_PATTERN_CONSTANT:
-      memset(buffer, g_fill_constant, size);
-      break;
-
-    case DATA_PATTERN_COUNTER:
-    {
-      uint32_t *word_ptr   = (uint32_t *)buffer;
-      uint32_t  counter    = start_offset / 4;
-      uint32_t  word_count = size / 4;
-
-      // Fill with 32-bit counter values
-      for (uint32_t i = 0; i < word_count; i++)
-      {
-        word_ptr[i] = counter + i;
-      }
-
-      // Fill remaining bytes
-      uint32_t remaining_bytes = size % 4;
-      if (remaining_bytes > 0)
-      {
-        uint32_t last_value = counter + word_count;
-        uint8_t *byte_ptr   = &buffer[word_count * 4];
-        for (uint32_t i = 0; i < remaining_bytes; i++)
-        {
-          byte_ptr[i] = (uint8_t)((last_value >> (i * 8)) & 0xFF);
-        }
-      }
-    }
-    break;
-
-    case DATA_PATTERN_RANDOM:
-    {
-      uint32_t seed = 0x12345678 + start_offset;
-      for (uint32_t i = 0; i < size; i++)
-      {
-        seed      = seed * 1103515245 + 12345;  // Simple LCG
-        buffer[i] = (uint8_t)(seed >> 16);
-      }
-    }
-    break;
-
-    default:
-      memset(buffer, 0x00, size);
-      break;
-  }
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Verify test buffer data matches expected pattern
-
-  Parameters: buffer - buffer to verify, size - buffer size, file_index - file index for pattern, start_offset - starting offset for patterns
-
-  Return: true if data matches, false otherwise
------------------------------------------------------------------------------------------------------*/
-static bool _Verify_test_buffer(uint8_t *buffer, uint32_t size, uint32_t file_index, uint32_t start_offset)
-{
-  if (!g_verify_data)
-  {
-    return true;  // Skip verification if disabled
-  }
-
-  uint8_t *expected_buffer = App_malloc(size);
-  if (expected_buffer == NULL)
-  {
-    return false;  // Memory allocation failed
-  }
-
-  _Fill_test_buffer(expected_buffer, size, file_index, start_offset);
-  bool result = (memcmp(buffer, expected_buffer, size) == 0);
-  App_free(expected_buffer);
-
-  return result;
-}
-
-/*-----------------------------------------------------------------------------------------------------
   Description: Print FileX media information
 
   Parameters: none
@@ -470,7 +329,7 @@ static void _Print_test_config(void)
   MPRINTF("Files count      : %lu\n\r", g_test_files_count);
   MPRINTF("File size        : %lu bytes (%.1f KB)\n\r", g_test_file_size, (float)g_test_file_size / 1024.0f);
   MPRINTF("Block size       : %lu bytes (%.1f KB)\n\r", g_test_block_size, (float)g_test_block_size / 1024.0f);
-  MPRINTF("Data pattern     : %s", _Get_pattern_name(g_data_pattern));
+  MPRINTF("Data pattern     : %s", Test_patterns_get_name(g_data_pattern));
   if (g_data_pattern == DATA_PATTERN_CONSTANT)
   {
     MPRINTF(" (0x%02X)", (uint8_t)g_fill_constant);
@@ -486,61 +345,9 @@ static void _Print_test_config(void)
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-static void _Print_statistics(T_filex_stats *stats, const char *operation_name)
+static void _Print_statistics(T_performance_stats *stats, const char *operation_name)
 {
-  GET_MCBL;
-
-  MPRINTF("\n=== %s Statistics ===\n\r", operation_name);
-  MPRINTF("Successful operations: %u\n\r", stats->success_count);
-  MPRINTF("Failed operations:     %u\n\r", stats->error_count);
-
-  if (stats->success_count > 0)
-  {
-    MPRINTF("Data processed: %u KB (%u bytes)\n\r", stats->total_bytes / 1024, stats->total_bytes);
-
-    MPRINTF("\nTiming breakdown:\n\r");
-
-    // File open timing statistics
-    if (stats->total_open_time > 0)
-    {
-      float avg_open_time          = (float)stats->total_open_time / stats->success_count;
-      float open_time_diff_percent = 0.0f;
-      if (stats->min_open_time > 0)
-      {
-        open_time_diff_percent = ((float)(stats->max_open_time - stats->min_open_time) * 100.0f) / stats->min_open_time;
-      }
-      MPRINTF("  Open time     - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_open_time, stats->min_open_time, stats->max_open_time, open_time_diff_percent);
-    }
-
-    // File close timing statistics
-    if (stats->total_close_time > 0)
-    {
-      float avg_close_time          = (float)stats->total_close_time / stats->success_count;
-      float close_time_diff_percent = 0.0f;
-      if (stats->min_close_time > 0)
-      {
-        close_time_diff_percent = ((float)(stats->max_close_time - stats->min_close_time) * 100.0f) / stats->min_close_time;
-      }
-      MPRINTF("  Close time    - Avg: %6.1f us, Min: %6u us, Max: %6u us, Diff: %5.1f%%\n\r", avg_close_time, stats->min_close_time, stats->max_close_time, close_time_diff_percent);
-    }
-
-    // Speed statistics
-    MPRINTF("\nSpeed statistics:\n\r");
-    MPRINTF("  Max speed:    %5u KB/s\n\r", stats->max_speed_kbps);
-    MPRINTF("  Avg speed:    %5u KB/s\n\r", stats->avg_speed_kbps);
-    MPRINTF("  Min speed:    %5u KB/s\n\r", stats->min_speed_kbps);
-
-    // Print data integrity statistics if enabled
-    if (g_verify_data)
-    {
-      MPRINTF("\nData integrity:\n\r");
-      MPRINTF("  CRC errors    : %u\n\r", stats->crc_errors);
-      MPRINTF("  Pattern errors: %u\n\r", stats->pattern_errors);
-      MPRINTF("  Size errors   : %u\n\r", stats->size_errors);
-      uint32_t total_integrity_errors = stats->crc_errors + stats->pattern_errors + stats->size_errors;
-      MPRINTF("  Total errors  : %u\n\r", total_integrity_errors);
-    }
-  }
+  Performance_stats_print(operation_name, stats, g_verify_data);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -636,7 +443,7 @@ static void _List_directory_tree(const char *root_path, uint8_t max_depth)
 static void _Do_write_test(void)
 {
   GET_MCBL;
-  T_filex_stats   stats;
+  T_performance_stats   stats;
   T_sys_timestump start_ts, end_ts;
   FX_FILE         file;
   CHAR            filename[MAX_FILENAME_LENGTH];
@@ -646,26 +453,7 @@ static void _Do_write_test(void)
   _Print_test_config();
 
   // Initialize statistics (matches LittleFS format)
-  stats.min_time         = UINT32_MAX;
-  stats.max_time         = 0;
-  stats.avg_time         = 0;
-  stats.total_time       = 0;
-  stats.success_count    = 0;
-  stats.error_count      = 0;
-  stats.total_bytes      = 0;
-  stats.min_speed_kbps   = UINT32_MAX;
-  stats.max_speed_kbps   = 0;
-  stats.avg_speed_kbps   = 0;
-  stats.total_open_time  = 0;
-  stats.min_open_time    = UINT32_MAX;
-  stats.max_open_time    = 0;
-  stats.total_close_time = 0;
-  stats.min_close_time   = UINT32_MAX;
-  stats.max_close_time   = 0;
-  stats.total_io_time    = 0;
-  stats.crc_errors       = 0;
-  stats.pattern_errors   = 0;
-  stats.size_errors      = 0;
+  Performance_stats_init(&stats);
 
   // Allocate test buffer
   if (!_Allocate_test_buffer())
@@ -706,7 +494,7 @@ static void _Do_write_test(void)
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
       MPRINTF("FAILED (create): %s (total: %6u us)\n\r", _Get_filex_error_description(status), operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
       continue;
     }
 
@@ -722,7 +510,7 @@ static void _Do_write_test(void)
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
       MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
               _Get_filex_error_description(status), open_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
       continue;
     }
 
@@ -741,7 +529,7 @@ static void _Do_write_test(void)
     {
       uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
 
-      _Fill_test_buffer(g_test_buffer, chunk_size, i, total_written);
+      Test_patterns_fill_buffer(g_test_buffer, chunk_size, g_data_pattern, g_fill_constant, total_written);
 
       // Update CRC with this chunk
       if (g_verify_data && g_test_file_size >= CRC32_SIZE)
@@ -765,7 +553,7 @@ static void _Do_write_test(void)
         MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r",
                 total_written, _Get_filex_error_description(status), io_time, operation_time);
         write_error = true;
-        stats.error_count++;
+        Performance_stats_update_error(&stats);
       }
     }
 
@@ -791,7 +579,7 @@ static void _Do_write_test(void)
           MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r",
                   _Get_filex_error_description(status), io_time, operation_time);
           write_error = true;
-          stats.error_count++;
+          Performance_stats_update_error(&stats);
         }
       }
     }
@@ -810,7 +598,7 @@ static void _Do_write_test(void)
       {
         MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
                 _Get_filex_error_description(status), close_time, operation_time);
-        stats.error_count++;
+        Performance_stats_update_error(&stats);
       }
       else
       {
@@ -835,29 +623,8 @@ static void _Do_write_test(void)
         }
         MPRINTF("\n\r");
 
-        stats.total_bytes += total_written;
-        stats.success_count++;
-
-        // Update timing statistics
-        uint32_t file_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-        if (file_time < stats.min_time) stats.min_time = file_time;
-        if (file_time > stats.max_time) stats.max_time = file_time;
-        stats.total_time += file_time;
-
-        // Update open/close timing statistics
-        stats.total_open_time += open_time;
-        if (open_time < stats.min_open_time) stats.min_open_time = open_time;
-        if (open_time > stats.max_open_time) stats.max_open_time = open_time;
-
-        stats.total_close_time += close_time;
-        if (close_time < stats.min_close_time) stats.min_close_time = close_time;
-        if (close_time > stats.max_close_time) stats.max_close_time = close_time;
-
-        stats.total_io_time += io_time;
-
-        // Update speed statistics
-        if (speed_kbps < stats.min_speed_kbps) stats.min_speed_kbps = speed_kbps;
-        if (speed_kbps > stats.max_speed_kbps) stats.max_speed_kbps = speed_kbps;
+        // Update all statistics using common function
+        Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, total_written, speed_kbps);
       }
     }
     else
@@ -869,37 +636,8 @@ static void _Do_write_test(void)
 
   Get_hw_timestump(&end_ts);
 
-  // Calculate averages
-  if (stats.success_count > 0)
-  {
-    stats.avg_time = stats.total_time / stats.success_count;
-    if (stats.total_io_time > 0)
-    {
-      stats.avg_speed_kbps = (uint32_t)((float)stats.total_bytes * 1000000.0f / ((float)stats.total_io_time * 1024.0f));
-    }
-    if (stats.min_speed_kbps == UINT32_MAX)
-    {
-      stats.min_speed_kbps = 0;
-    }
-    if (stats.min_open_time == UINT32_MAX)
-    {
-      stats.min_open_time = 0;
-    }
-    if (stats.min_close_time == UINT32_MAX)
-    {
-      stats.min_close_time = 0;
-    }
-  }
-  else
-  {
-    stats.min_time = 0;
-    stats.avg_time = 0;
-    stats.min_speed_kbps = 0;
-    stats.min_open_time = 0;
-    stats.max_open_time = 0;
-    stats.min_close_time = 0;
-    stats.max_close_time = 0;
-  }
+  // Finalize statistics calculations
+  Performance_stats_finalize(&stats);
 
   // Return to root directory
   fx_directory_default_set(&g_fx_spi_nor_media, "/");
@@ -918,7 +656,7 @@ static void _Do_write_test(void)
 static void _Do_read_test(void)
 {
   GET_MCBL;
-  T_filex_stats   stats;
+  T_performance_stats   stats;
   T_sys_timestump start_ts, end_ts;
   FX_FILE         file;
   CHAR            filename[MAX_FILENAME_LENGTH];
@@ -929,26 +667,7 @@ static void _Do_read_test(void)
   _Print_test_config();
 
   // Initialize statistics (matches LittleFS format)
-  stats.min_time         = UINT32_MAX;
-  stats.max_time         = 0;
-  stats.avg_time         = 0;
-  stats.total_time       = 0;
-  stats.success_count    = 0;
-  stats.error_count      = 0;
-  stats.total_bytes      = 0;
-  stats.min_speed_kbps   = UINT32_MAX;
-  stats.max_speed_kbps   = 0;
-  stats.avg_speed_kbps   = 0;
-  stats.total_open_time  = 0;
-  stats.min_open_time    = UINT32_MAX;
-  stats.max_open_time    = 0;
-  stats.total_close_time = 0;
-  stats.min_close_time   = UINT32_MAX;
-  stats.max_close_time   = 0;
-  stats.total_io_time    = 0;
-  stats.crc_errors       = 0;
-  stats.pattern_errors   = 0;
-  stats.size_errors      = 0;
+  Performance_stats_init(&stats);
 
   // Allocate test buffer
   if (!_Allocate_test_buffer())
@@ -966,7 +685,6 @@ static void _Do_read_test(void)
   }
 
   Get_hw_timestump(&start_ts);
-  stats.min_time = UINT32_MAX;
 
   MPRINTF("Reading %lu files of %lu bytes each...\n\r", g_test_files_count, g_test_file_size);
 
@@ -995,7 +713,7 @@ static void _Do_read_test(void)
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
       MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
               _Get_filex_error_description(status), open_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
       continue;
     }
 
@@ -1024,14 +742,14 @@ static void _Do_read_test(void)
       if (status == FX_SUCCESS && actual_read == chunk_size)
       {
         // Verify data if enabled (use offset before incrementing total_read)
-        if (g_verify_data && !_Verify_test_buffer(g_test_buffer, actual_read, i, total_read))
+        if (g_verify_data && !Test_patterns_verify_buffer(g_test_buffer, actual_read, g_data_pattern, g_fill_constant, total_read))
         {
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
           MPRINTF("FAILED (verify at offset %lu): Data verification failed (I/O: %6u us, total: %6u us)\n\r",
                   total_read, io_time, operation_time);
           verify_error = true;
-          stats.pattern_errors++;
+          Performance_stats_increment_pattern_error(&stats);
           break;
         }
 
@@ -1050,7 +768,7 @@ static void _Do_read_test(void)
         MPRINTF("FAILED (read at offset %lu): %s (read %lu, expected %lu, I/O: %6u us, total: %6u us)\n\r",
                 total_read, _Get_filex_error_description(status), actual_read, chunk_size, io_time, operation_time);
         read_error = true;
-        stats.error_count++;
+        Performance_stats_update_error(&stats);
         break;
       }
     }
@@ -1070,14 +788,14 @@ static void _Do_read_test(void)
         if (file_crc32 != calculated_crc32)
         {
           crc_valid = false;
-          stats.crc_errors++;
+          Performance_stats_increment_crc_error(&stats);
         }
         total_read += actual_read;
       }
       else
       {
         crc_valid = false;
-        stats.crc_errors++;
+        Performance_stats_increment_crc_error(&stats);
       }
     }
 
@@ -1093,7 +811,7 @@ static void _Do_read_test(void)
     {
       MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r",
               _Get_filex_error_description(status), close_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
     }
     else if (!read_error && !verify_error)
     {
@@ -1125,65 +843,15 @@ static void _Do_read_test(void)
       }
       MPRINTF("\n\r");
 
-      stats.total_bytes += total_read;
-      stats.success_count++;
-
-      // Update timing statistics
-      uint32_t file_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-      if (file_time < stats.min_time) stats.min_time = file_time;
-      if (file_time > stats.max_time) stats.max_time = file_time;
-      stats.total_time += file_time;
-
-      // Update open/close timing statistics
-      stats.total_open_time += open_time;
-      if (open_time < stats.min_open_time) stats.min_open_time = open_time;
-      if (open_time > stats.max_open_time) stats.max_open_time = open_time;
-
-      stats.total_close_time += close_time;
-      if (close_time < stats.min_close_time) stats.min_close_time = close_time;
-      if (close_time > stats.max_close_time) stats.max_close_time = close_time;
-
-      stats.total_io_time += io_time;
-
-      // Update speed statistics
-      if (speed_kbps < stats.min_speed_kbps) stats.min_speed_kbps = speed_kbps;
-      if (speed_kbps > stats.max_speed_kbps) stats.max_speed_kbps = speed_kbps;
+      // Update all statistics using common function
+      Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, total_read, speed_kbps);
     }
   }
 
   Get_hw_timestump(&end_ts);
 
-  // Calculate averages
-  if (stats.success_count > 0)
-  {
-    stats.avg_time = stats.total_time / stats.success_count;
-    if (stats.total_io_time > 0)
-    {
-      stats.avg_speed_kbps = (uint32_t)((float)stats.total_bytes * 1000000.0f / ((float)stats.total_io_time * 1024.0f));
-    }
-    if (stats.min_speed_kbps == UINT32_MAX)
-    {
-      stats.min_speed_kbps = 0;
-    }
-    if (stats.min_open_time == UINT32_MAX)
-    {
-      stats.min_open_time = 0;
-    }
-    if (stats.min_close_time == UINT32_MAX)
-    {
-      stats.min_close_time = 0;
-    }
-  }
-  else
-  {
-    stats.min_time = 0;
-    stats.avg_time = 0;
-    stats.min_speed_kbps = 0;
-    stats.min_open_time = 0;
-    stats.max_open_time = 0;
-    stats.min_close_time = 0;
-    stats.max_close_time = 0;
-  }
+  // Finalize statistics calculations
+  Performance_stats_finalize(&stats);
 
   // Return to root directory
   fx_directory_default_set(&g_fx_spi_nor_media, "/");
@@ -1202,34 +870,15 @@ static void _Do_read_test(void)
 static void _Do_delete_test(void)
 {
   GET_MCBL;
-  T_filex_stats   stats;
+  T_performance_stats   stats;
   T_sys_timestump start_ts, end_ts;
   CHAR            filename[MAX_FILENAME_LENGTH];
   UINT            status;
 
   MPRINTF("\n=== FileX Delete Test ===\n\r");
 
-  // Initialize statistics (matches LittleFS format)
-  stats.min_time         = UINT32_MAX;
-  stats.max_time         = 0;
-  stats.avg_time         = 0;
-  stats.total_time       = 0;
-  stats.success_count    = 0;
-  stats.error_count      = 0;
-  stats.total_bytes      = 0;  // Not applicable for delete
-  stats.min_speed_kbps   = 0;  // Not applicable for delete
-  stats.max_speed_kbps   = 0;  // Not applicable for delete
-  stats.avg_speed_kbps   = 0;  // Not applicable for delete
-  stats.total_open_time  = 0;  // Not applicable for delete
-  stats.min_open_time    = 0;  // Not applicable for delete
-  stats.max_open_time    = 0;  // Not applicable for delete
-  stats.total_close_time = 0;  // Not applicable for delete
-  stats.min_close_time   = 0;  // Not applicable for delete
-  stats.max_close_time   = 0;  // Not applicable for delete
-  stats.total_io_time    = 0;  // Not applicable for delete
-  stats.crc_errors       = 0;  // Not applicable for delete
-  stats.pattern_errors   = 0;  // Not applicable for delete
-  stats.size_errors      = 0;  // Not applicable for delete
+  // Initialize statistics for delete operations (limited fields used)
+  Performance_stats_init_delete(&stats);
 
   // Change to root directory
   status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
@@ -1240,7 +889,6 @@ static void _Do_delete_test(void)
   }
 
   Get_hw_timestump(&start_ts);
-  stats.min_time = UINT32_MAX;
 
   MPRINTF("Deleting %lu test files...\n\r", g_test_files_count);
 
@@ -1262,32 +910,19 @@ static void _Do_delete_test(void)
     if (status == FX_SUCCESS)
     {
       MPRINTF("deleted: %6u us\n\r", operation_time);
-      stats.success_count++;
-
-      // Update timing statistics
-      if (operation_time < stats.min_time) stats.min_time = operation_time;
-      if (operation_time > stats.max_time) stats.max_time = operation_time;
-      stats.total_time += operation_time;
+      Performance_stats_update_delete_success(&stats, operation_time);
     }
     else
     {
       MPRINTF("FAILED: %s (%6u us)\n\r", _Get_filex_error_description(status), operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
     }
   }
 
   Get_hw_timestump(&end_ts);
 
-  // Calculate averages
-  if (stats.success_count > 0)
-  {
-    stats.avg_time = stats.total_time / stats.success_count;
-  }
-  else
-  {
-    stats.min_time = 0;
-    stats.avg_time = 0;
-  }
+  // Finalize statistics calculations
+  Performance_stats_finalize(&stats);
 
   MPRINTF("\n\r");
   _Print_statistics(&stats, "Delete Test");
