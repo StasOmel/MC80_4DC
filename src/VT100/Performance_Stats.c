@@ -47,20 +47,20 @@ void Performance_stats_init_delete(T_performance_stats *stats)
   stats->total_time       = 0;
   stats->success_count    = 0;
   stats->error_count      = 0;
-  stats->total_bytes      = 0;  // Not applicable for delete
-  stats->min_speed_kbps   = 0;  // Not applicable for delete
-  stats->max_speed_kbps   = 0;  // Not applicable for delete
-  stats->avg_speed_kbps   = 0;  // Not applicable for delete
-  stats->total_open_time  = 0;  // Not applicable for delete
-  stats->min_open_time    = 0;  // Not applicable for delete
-  stats->max_open_time    = 0;  // Not applicable for delete
-  stats->total_close_time = 0;  // Not applicable for delete
-  stats->min_close_time   = 0;  // Not applicable for delete
-  stats->max_close_time   = 0;  // Not applicable for delete
-  stats->total_io_time    = 0;  // Not applicable for delete
-  stats->crc_errors       = 0;  // Not applicable for delete
-  stats->pattern_errors   = 0;  // Not applicable for delete
-  stats->size_errors      = 0;  // Not applicable for delete
+  stats->total_bytes      = 0;           // Used for delete operations to track file sizes
+  stats->min_speed_kbps   = UINT32_MAX;  // Initialize to max value for proper comparison
+  stats->max_speed_kbps   = 0;
+  stats->avg_speed_kbps   = 0;
+  stats->total_open_time  = 0;           // Not applicable for delete
+  stats->min_open_time    = 0;           // Not applicable for delete
+  stats->max_open_time    = 0;           // Not applicable for delete
+  stats->total_close_time = 0;           // Not applicable for delete
+  stats->min_close_time   = 0;           // Not applicable for delete
+  stats->max_close_time   = 0;           // Not applicable for delete
+  stats->total_io_time    = 0;           // Not applicable for delete
+  stats->crc_errors       = 0;           // Not applicable for delete
+  stats->pattern_errors   = 0;           // Not applicable for delete
+  stats->size_errors      = 0;           // Not applicable for delete
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -217,10 +217,19 @@ void Performance_stats_finalize(T_performance_stats *stats)
   if (stats->success_count > 0)
   {
     stats->avg_time = stats->total_time / stats->success_count;
+
+    // Calculate average speed - use I/O time if available, otherwise use total time
     if (stats->total_io_time > 0)
     {
+      // For read/write operations that track I/O time separately
       stats->avg_speed_kbps = (uint32_t)((float)stats->total_bytes * 1000000.0f / ((float)stats->total_io_time * 1024.0f));
     }
+    else if (stats->total_time > 0)
+    {
+      // For delete operations or when I/O time is not tracked
+      stats->avg_speed_kbps = (uint32_t)((float)stats->total_bytes * 1000000.0f / ((float)stats->total_time * 1024.0f));
+    }
+
     if (stats->min_speed_kbps == UINT32_MAX)
     {
       stats->min_speed_kbps = 0;
@@ -360,17 +369,16 @@ void Performance_stats_print_write_success(uint32_t close_time, uint32_t io_time
               file_size - expected file size in bytes
               crc32_value - CRC32 value from file
               crc_valid - whether CRC32 verification passed
-              pattern_valid - whether pattern verification passed (LittleFS only)
-              size_valid - whether size verification passed (LittleFS only)
+              pattern_valid - whether pattern verification passed
+              size_valid - whether size verification passed
               data_verification_enabled - whether data verification was enabled
-              is_littlefs - true for LittleFS, false for FileX
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
 void Performance_stats_print_read_success(uint32_t close_time, uint32_t io_time, uint32_t operation_time,
                                           uint32_t bytes_read, uint32_t file_size, uint32_t crc32_value,
                                           bool crc_valid, bool pattern_valid, bool size_valid,
-                                          bool data_verification_enabled, bool is_littlefs)
+                                          bool data_verification_enabled)
 {
   GET_MCBL;
   uint32_t speed_kbps;
@@ -385,40 +393,18 @@ void Performance_stats_print_read_success(uint32_t close_time, uint32_t io_time,
     speed_kbps = 0;
   }
 
-  if (is_littlefs)
-  {
-    MPRINTF("closed: %5u us, size: %5u bytes, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, bytes_read, io_time, operation_time, speed_kbps);
-  }
-  else
-  {
-    MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
-  }
+  MPRINTF("closed: %5u us, I/O: %6u us, total: %6u us, speed: %5u KB/s", close_time, io_time, operation_time, speed_kbps);
 
   // Show verification results if enabled
   if (data_verification_enabled && file_size >= FS_CRC32_SIZE)
   {
-    if (is_littlefs)
+    // Unified format for both filesystem types
+    MPRINTF(", CRC: %s", crc_valid ? "OK" : "ERROR");
+    MPRINTF(", Pattern: %s", pattern_valid ? "OK" : "ERROR");
+    MPRINTF(", Size: %s", size_valid ? "OK" : "ERROR");
+    if (crc_valid)
     {
-      // LittleFS format: CRC, Pattern, Size
-      MPRINTF(", CRC: %s", crc_valid ? "OK" : "ERROR");
-      MPRINTF(", Pattern: %s", pattern_valid ? "OK" : "ERROR");
-      MPRINTF(", Size: %s", size_valid ? "OK" : "ERROR");
-      if (crc_valid)
-      {
-        MPRINTF(" (0x%08X)", crc32_value);
-      }
-    }
-    else
-    {
-      // FileX format: CRC32 only
-      if (crc_valid)
-      {
-        MPRINTF(", CRC32: OK (0x%08X)", crc32_value);
-      }
-      else
-      {
-        MPRINTF(", CRC32: FAILED");
-      }
+      MPRINTF(" (0x%08X)", crc32_value);
     }
   }
   MPRINTF("\n\r");

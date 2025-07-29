@@ -680,9 +680,11 @@ static void _Do_read_test(void)
 
     MPRINTF("opened: %5u us, ", open_time);
 
-    // Initialize CRC calculation
+    // Initialize CRC calculation and verification flags
     uint32_t crc                  = 0xFFFFFFFF;
     bool     crc_valid            = true;
+    bool     pattern_valid        = true;
+    bool     size_valid           = true;
 
     // Read file data with I/O timing
     uint32_t        bytes_to_read = g_fs_test_config.file_size > FS_CRC32_SIZE ? g_fs_test_config.file_size - FS_CRC32_SIZE : g_fs_test_config.file_size;
@@ -708,6 +710,7 @@ static void _Do_read_test(void)
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
           MPRINTF("FAILED (verify at offset %lu): Data verification failed (I/O: %6u us, total: %6u us)\n\r", total_read, io_time, operation_time);
+          pattern_valid = false;
           verify_error = true;
           Performance_stats_increment_pattern_error(&stats);
           break;
@@ -773,10 +776,17 @@ static void _Do_read_test(void)
     }
     else if (!read_error && !verify_error)
     {
+      // Check file size
+      if (total_read != g_fs_test_config.file_size)
+      {
+        size_valid = false;
+        Performance_stats_increment_size_error(&stats);
+      }
+
       // Calculate speed in KB/s based on I/O time
       if (io_time > 0)
       {
-        speed_kbps = (uint32_t)((float)g_fs_test_config.file_size * 1000000.0f / ((float)io_time * 1024.0f));
+        speed_kbps = (uint32_t)((float)total_read * 1000000.0f / ((float)io_time * 1024.0f));
       }
       else
       {
@@ -785,7 +795,7 @@ static void _Do_read_test(void)
 
       uint32_t calculated_crc = ~crc;
       Performance_stats_print_read_success(close_time, io_time, operation_time, total_read, g_fs_test_config.file_size,
-                                           calculated_crc, crc_valid, false, true, g_fs_test_config.data_verification, false);
+                                           calculated_crc, crc_valid, pattern_valid, size_valid, g_fs_test_config.data_verification);
 
       // Update all statistics using common function
       Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, total_read, speed_kbps);

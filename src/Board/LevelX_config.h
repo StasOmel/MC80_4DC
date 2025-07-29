@@ -4,7 +4,7 @@
 #define G_FX_MEDIA_OSPI_NOR_MEDIA_MEMORY_SIZE    (2048)  // Increased buffer size for better performance
 #define G_FX_MEDIA_OSPI_NOR_VOLUME_NAME          ("Volume 1")
 #define G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS       (1)
-#define G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES    (512)   // Increased for more files
+#define G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES    (2048)   // Increased for more files
 #define G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS       (0)
 #define G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS        (65536) // Corrected: 32MB / 512 bytes per sector
 #define G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR     (512)

@@ -174,16 +174,15 @@ void Performance_stats_print_write_success(uint32_t close_time, uint32_t io_time
               file_size - expected file size in bytes
               crc32_value - CRC32 value from file
               crc_valid - whether CRC32 verification passed
-              pattern_valid - whether pattern verification passed (LittleFS only)
-              size_valid - whether size verification passed (LittleFS only)
+              pattern_valid - whether pattern verification passed
+              size_valid - whether size verification passed
               data_verification_enabled - whether data verification was enabled
-              is_littlefs - true for LittleFS, false for FileX
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
 void Performance_stats_print_read_success(uint32_t close_time, uint32_t io_time, uint32_t operation_time,
                                           uint32_t bytes_read, uint32_t file_size, uint32_t crc32_value,
                                           bool crc_valid, bool pattern_valid, bool size_valid,
-                                          bool data_verification_enabled, bool is_littlefs);
+                                          bool data_verification_enabled);
 
 #endif  // PERFORMANCE_STATS_H

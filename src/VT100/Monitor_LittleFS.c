@@ -1013,7 +1013,7 @@ static void _Do_read_test(void)
       }
 
       Performance_stats_print_read_success(close_time, io_time, operation_time, bytes_read, g_fs_test_config.file_size,
-                                          file_crc32, crc_valid, pattern_valid, size_valid, g_fs_test_config.data_verification, true);
+                                          file_crc32, crc_valid, pattern_valid, size_valid, g_fs_test_config.data_verification);
 
       // Update all statistics using common function
       Performance_stats_update_success(&stats, operation_time, open_time, close_time, io_time, bytes_read, speed_kbps);
