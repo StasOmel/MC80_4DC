@@ -1,0 +1,245 @@
+#include "yaffs_nor_adapter.h"
+#include "yaffs_nor_config.h"
+#include "MC80_OSPI_drv.h"
+
+/*-----------------------------------------------------------------------------------------------------
+  External reference to OSPI driver control structure
+  This should be initialized by the main application before using YAFFS2
+-----------------------------------------------------------------------------------------------------*/
+extern T_mc80_ospi_instance_ctrl g_ospi_ctrl;
+
+/*-----------------------------------------------------------------------------------------------------
+  Write page with tags to NOR Flash
+
+  Parameters:
+    dev      - YAFFS device structure
+    chunk_id - Page identifier (0-based sequential)
+    data     - User data buffer (2048 bytes, can be NULL for metadata-only write)
+    tags     - YAFFS extended tags structure (written to OOB area)
+
+  Return:
+    YAFFS_OK on success, YAFFS_FAIL on error
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
+                               const unsigned char *data,
+                               const struct yaffs_ext_tags *tags)
+{
+  fsp_err_t err;
+  T_yaffs_nor_page *p_page;
+  uint32_t page_address;
+
+  // Parameter validation
+  if (NULL == dev || chunk_id < 0)
+  {
+    return YAFFS_FAIL;
+  }
+
+  // Calculate physical address in NOR Flash
+  page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
+
+  // Allocate temporary page buffer
+  p_page = (T_yaffs_nor_page *)App_malloc(sizeof(T_yaffs_nor_page));
+  if (NULL == p_page)
+  {
+    return YAFFS_FAIL;
+  }
+
+  // Prepare page data area
+  if (NULL != data)
+  {
+    // Copy user data to page buffer
+    memcpy(p_page->data, data, YAFFS_NOR_PAGE_DATA_SIZE);
+  }
+  else
+  {
+    // Fill with erased pattern for metadata-only writes
+    memset(p_page->data, 0xFF, YAFFS_NOR_PAGE_DATA_SIZE);
+  }
+
+  // Prepare OOB area with tags
+  if (NULL != tags)
+  {
+    // Copy YAFFS tags to OOB area
+    memcpy(p_page->oob, tags, sizeof(struct yaffs_ext_tags));
+
+    // Fill remaining OOB space with erased pattern
+    if (sizeof(struct yaffs_ext_tags) < YAFFS_NOR_PAGE_OOB_SIZE)
+    {
+      memset(&p_page->oob[sizeof(struct yaffs_ext_tags)], 0xFF,
+             YAFFS_NOR_PAGE_OOB_SIZE - sizeof(struct yaffs_ext_tags));
+    }
+  }
+  else
+  {
+    // No tags - fill entire OOB with erased pattern
+    memset(p_page->oob, 0xFF, YAFFS_NOR_PAGE_OOB_SIZE);
+  }
+
+  // Write complete page (data + OOB) to NOR Flash using OSPI driver
+  err = Mc80_ospi_memory_mapped_write(&g_ospi_ctrl,
+                                     (uint8_t*)p_page,
+                                     page_address,
+                                     YAFFS_NOR_PAGE_TOTAL_SIZE);
+
+  // Free temporary buffer
+  App_free(p_page);
+
+  return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Read page with tags from NOR Flash
+
+  Parameters:
+    dev      - YAFFS device structure
+    chunk_id - Page identifier (0-based sequential)
+    data     - Buffer for user data (2048 bytes, can be NULL to skip data read)
+    tags     - Buffer for YAFFS extended tags (read from OOB area, can be NULL)
+
+  Return:
+    YAFFS_OK on success, YAFFS_FAIL on error
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_read_chunk_tags(struct yaffs_dev *dev, int chunk_id,
+                              unsigned char *data,
+                              struct yaffs_ext_tags *tags)
+{
+  fsp_err_t err;
+  T_yaffs_nor_page *p_page;
+  uint32_t page_address;
+
+  // Parameter validation
+  if (NULL == dev || chunk_id < 0)
+  {
+    return YAFFS_FAIL;
+  }
+
+  // Calculate physical address in NOR Flash
+  page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
+
+  // Allocate temporary page buffer
+  p_page = (T_yaffs_nor_page *)App_malloc(sizeof(T_yaffs_nor_page));
+  if (NULL == p_page)
+  {
+    return YAFFS_FAIL;
+  }
+
+  // Read complete page (data + OOB) from NOR Flash using OSPI driver
+  err = Mc80_ospi_memory_mapped_read(&g_ospi_ctrl,
+                                    (uint8_t*)p_page,
+                                    page_address,
+                                    YAFFS_NOR_PAGE_TOTAL_SIZE);
+
+  if (FSP_SUCCESS == err)
+  {
+    // Copy data to user buffer if requested
+    if (NULL != data)
+    {
+      memcpy(data, p_page->data, YAFFS_NOR_PAGE_DATA_SIZE);
+    }
+
+    // Extract tags from OOB area if requested
+    if (NULL != tags)
+    {
+      memcpy(tags, p_page->oob, sizeof(struct yaffs_ext_tags));
+    }
+  }
+
+  // Free temporary buffer
+  App_free(p_page);
+
+  return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Erase block in NOR Flash
+
+  Parameters:
+    dev      - YAFFS device structure
+    block_no - Block number to erase (0-based)
+
+  Return:
+    YAFFS_OK on success, YAFFS_FAIL on error
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_erase_block(struct yaffs_dev *dev, int block_no)
+{
+  fsp_err_t err;
+  uint32_t block_address;
+
+  // Parameter validation
+  if (NULL == dev || block_no < 0 || block_no >= YAFFS_NOR_TOTAL_BLOCKS)
+  {
+    return YAFFS_FAIL;
+  }
+
+  // Calculate physical address of block in NOR Flash
+  block_address = YAFFS_NOR_BLOCK_TO_ADDRESS(block_no);
+
+  // Erase block using OSPI driver
+  err = Mc80_ospi_erase(&g_ospi_ctrl, block_address, YAFFS_NOR_BLOCK_SIZE);
+
+  return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Bad block checking function for NOR Flash
+
+  NOR Flash typically doesn't have factory bad blocks like NAND Flash.
+  This function always returns good status but could be extended to track
+  blocks that fail during runtime.
+
+  Parameters:
+    dev      - YAFFS device structure
+    block_no - Block number to check
+
+  Return:
+    YAFFS_OK if block is good, YAFFS_FAIL if block is bad
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_check_bad_block(struct yaffs_dev *dev, int block_no)
+{
+  // NOR Flash typically doesn't have bad blocks
+  // Could be extended to track runtime failures
+  return YAFFS_OK;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Bad block marking function for NOR Flash
+
+  Parameters:
+    dev      - YAFFS device structure
+    block_no - Block number to mark as bad
+
+  Return:
+    YAFFS_OK on success
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_mark_bad_block(struct yaffs_dev *dev, int block_no)
+{
+  return YAFFS_OK;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Initialize NOR Flash driver
+
+  Parameters:
+    dev - YAFFS device structure
+
+  Return:
+    YAFFS_OK on success, YAFFS_FAIL on error
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_initialise(struct yaffs_dev *dev)
+{
+  return YAFFS_OK;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Deinitialize NOR Flash driver
+
+  Parameters:
+    dev - YAFFS device structure
+
+  Return:
+    YAFFS_OK on success
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_deinitialise(struct yaffs_dev *dev)
+{
+  return YAFFS_OK;
+}
