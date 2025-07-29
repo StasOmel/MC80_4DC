@@ -61,7 +61,6 @@ static void        _Do_format_test(void);
 static void        _Do_full_test(void);
 static void        _Print_filex_info(void);
 static void        _Print_test_config(void);
-static void        _Print_statistics(T_performance_stats *stats, const char *operation_name);
 static bool        _Push_dir_to_stack(const char *path, uint8_t depth);
 static bool        _Pop_dir_from_stack(char *path, uint8_t *depth);
 static void        _Print_tree_indent(uint8_t depth);
@@ -322,18 +321,6 @@ static void _Print_test_config(void)
   }
   MPRINTF("\n\r");
   MPRINTF("Data verification: %s\n\r", g_fs_test_config.data_verification ? "Enabled" : "Disabled");
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Print operation statistics (matches LittleFS format)
-
-  Parameters: stats - statistics structure, operation_name - name of operation
-
-  Return: none
------------------------------------------------------------------------------------------------------*/
-static void _Print_statistics(T_performance_stats *stats, const char *operation_name)
-{
-  Performance_stats_print(operation_name, stats, g_fs_test_config.data_verification);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -629,7 +616,7 @@ static void _Do_write_test(void)
   fx_directory_default_set(&g_fx_spi_nor_media, "/");
 
   MPRINTF("\n\r");
-  _Print_statistics(&stats, "Write Test");
+  Performance_stats_print("Write Test", &stats, g_fs_test_config.data_verification);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -839,7 +826,7 @@ static void _Do_read_test(void)
   fx_directory_default_set(&g_fx_spi_nor_media, "/");
 
   MPRINTF("\n\r");
-  _Print_statistics(&stats, "Read Test");
+  Performance_stats_print("Read Test", &stats, g_fs_test_config.data_verification);
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -919,7 +906,7 @@ static void _Do_delete_test(void)
   Performance_stats_finalize(&stats);
 
   MPRINTF("\n\r");
-  _Print_statistics(&stats, "Delete Test");
+  Performance_stats_print("Delete Test", &stats, g_fs_test_config.data_verification);
 }
 
 /*-----------------------------------------------------------------------------------------------------

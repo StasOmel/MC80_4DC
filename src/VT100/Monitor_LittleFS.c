@@ -108,18 +108,6 @@ static void _Print_tree_indent(uint8_t depth)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Print operation statistics
-
-  Parameters: operation_name - name of operation, stats - statistics to print
-
-  Return: none
------------------------------------------------------------------------------------------------------*/
-static void _Print_stats(const char *operation_name, T_performance_stats *stats)
-{
-  Performance_stats_print(operation_name, stats, g_fs_test_config.data_verification);
-}
-
-/*-----------------------------------------------------------------------------------------------------
   Description: Convert LittleFS error code to text description
 
   Parameters: error - LittleFS error code
@@ -1057,7 +1045,7 @@ static void _Do_read_test(void)
   // Calculate averages using common function
   Performance_stats_finalize(&stats);
 
-  _Print_stats("Read Test", &stats);
+  Performance_stats_print("Read Test", &stats, g_fs_test_config.data_verification);
 
   App_free(buffer);
 }
@@ -1125,7 +1113,7 @@ static void _Do_delete_test(void)
   // Calculate averages using common function
   Performance_stats_finalize(&stats);
 
-  _Print_stats("Delete Test", &stats);
+  Performance_stats_print("Delete Test", &stats, g_fs_test_config.data_verification);
 }
 
 /*-----------------------------------------------------------------------------------------------------
