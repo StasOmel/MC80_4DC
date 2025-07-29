@@ -933,7 +933,7 @@ static void _Do_read_test(void)
       operation_time = Timestump_diff_to_usec(&start_ts, &end_ts);
       MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
               _Littlefs_error_to_string(result), open_time, operation_time);
-      stats.error_count++;
+      Performance_stats_update_error(&stats);
       continue;
     }
 
@@ -983,7 +983,7 @@ static void _Do_read_test(void)
         if (!Test_patterns_verify_buffer(buffer, read_result, g_data_pattern, g_fill_constant, bytes_read))
         {
           pattern_valid = false;
-          stats.pattern_errors++;
+          Performance_stats_increment_pattern_error(&stats);
         }
       }
 
@@ -1014,14 +1014,14 @@ static void _Do_read_test(void)
         if (file_crc32 != calculated_crc32)
         {
           crc_valid = false;
-          stats.crc_errors++;
+          Performance_stats_increment_crc_error(&stats);
         }
         bytes_read += crc_read;
       }
       else
       {
         crc_valid = false;
-        stats.crc_errors++;
+        Performance_stats_increment_crc_error(&stats);
       }
     }
 
@@ -1046,7 +1046,7 @@ static void _Do_read_test(void)
       if (bytes_read != g_test_file_size)
       {
         size_valid = false;
-        stats.size_errors++;
+        Performance_stats_increment_size_error(&stats);
       }
 
       // Calculate speed in KB/s based on I/O time (avoid division by zero)
