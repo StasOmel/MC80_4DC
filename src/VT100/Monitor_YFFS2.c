@@ -51,6 +51,7 @@ const T_VT100_Menu_item MENU_YAFFS2_items[] = {
   { '1', Do_YAFFS2_init, NULL },
   { '2', Do_YAFFS2_list_files, NULL },
   { '3', Do_YAFFS2_performance_test, NULL },
+  { '4', Do_YAFFS2_list_lost_found, NULL },
   { 'R', NULL, NULL },
   { 0 }  // End of menu
 };
@@ -61,6 +62,7 @@ const T_VT100_Menu MENU_YAFFS2 = {
   "\033[5C <1> - Initialize YAFFS2 (auto-format if needed)\r\n"
   "\033[5C <2> - List files and directories\r\n"
   "\033[5C <3> - Performance test\r\n"
+  "\033[5C <4> - List lost+found directory\r\n"
   "\033[5C <R> - Return to previous menu\r\n",
   MENU_YAFFS2_items
 };
@@ -1409,4 +1411,124 @@ void Do_YAFFS2_performance_test(uint8_t keycode)
 
   // Free test buffer when exiting menu
   _Free_test_buffer();
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: List contents of lost+found directory
+
+  Parameters: keycode - key code from menu
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Do_YAFFS2_list_lost_found(uint8_t keycode)
+{
+  GET_MCBL;
+  yaffs_DIR           *dir_ptr;
+  struct yaffs_dirent *entry;
+  const char          *lost_found_path = "/lost+found";
+  int                 file_count = 0;
+
+  FSP_PARAMETER_NOT_USED(keycode);
+
+  MPRINTF(VT100_CLEAR_AND_HOME);
+  MPRINTF("=== YAFFS2 Lost+Found Directory ===\n\r");
+
+  // Check if filesystem is mounted by checking free space
+  Y_LOFF_T free_space = yaffs_freespace("/");
+  if (free_space < 0)
+  {
+    MPRINTF("Error: YAFFS2 filesystem not mounted. Please initialize first.\n\r");
+    MPRINTF("\nPress any key to continue...\n\r");
+    uint8_t key;
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
+
+  MPRINTF("Scanning lost+found directory: %s\n\r", lost_found_path);
+
+  // Open lost+found directory
+  dir_ptr = yaffs_opendir(lost_found_path);
+  if (dir_ptr == NULL)
+  {
+    MPRINTF("Failed to open lost+found directory: %s\n\r", _Get_YAFFS2_error_description(yaffs_get_error()));
+    MPRINTF("This could mean:\n\r");
+    MPRINTF("- Directory doesn't exist (normal for new filesystem)\n\r");
+    MPRINTF("- Filesystem is corrupted\n\r");
+    MPRINTF("- Insufficient permissions\n\r");
+    MPRINTF("\nPress any key to continue...\n\r");
+    uint8_t key;
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
+
+  MPRINTF("\nContents of lost+found directory:\n\r");
+  MPRINTF("==================================\n\r");
+
+  // Read directory entries
+  while ((entry = yaffs_readdir(dir_ptr)) != NULL)
+  {
+    // Skip "." and ".." entries
+    if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
+    {
+      // Get file/directory information
+      char full_path[MAX_PATH_LENGTH];
+      snprintf(full_path, MAX_PATH_LENGTH, "%s/%s", lost_found_path, entry->d_name);
+
+      struct yaffs_stat stat_buf;
+      if (yaffs_lstat(full_path, &stat_buf) >= 0)
+      {
+        if (S_ISDIR(stat_buf.st_mode))
+        {
+          MPRINTF("[DIR]  %s/\n\r", entry->d_name);
+        }
+        else
+        {
+          // Convert time to readable format (simplified)
+          time_t mod_time = stat_buf.yst_mtime;
+          struct tm *time_info = localtime(&mod_time);
+
+          MPRINTF("[FILE] %s (%lu bytes) %02d/%02d/%04d %02d:%02d:%02d\n\r",
+                  entry->d_name, (uint32_t)stat_buf.st_size,
+                  time_info->tm_mon + 1, time_info->tm_mday, time_info->tm_year + 1900,
+                  time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
+        }
+        file_count++;
+      }
+      else
+      {
+        MPRINTF("[UNKNOWN] %s (stat failed)\n\r", entry->d_name);
+        file_count++;
+      }
+    }
+  }
+
+  yaffs_closedir(dir_ptr);
+
+  if (file_count == 0)
+  {
+    MPRINTF("Directory is empty (no lost files)\n\r");
+    MPRINTF("\nThis is normal and indicates:\n\r");
+    MPRINTF("- Filesystem is healthy\n\r");
+    MPRINTF("- No corrupted files were found during last mount\n\r");
+
+    // Get device info to check auto-cleanup setting
+    struct yaffs_dev *dev = yaffs_getdev("/");
+    if (dev && dev->param.empty_lost_n_found)
+    {
+      MPRINTF("- Auto-cleanup is enabled (empty_lost_n_found=1)\n\r");
+    }
+  }
+  else
+  {
+    MPRINTF("\nTotal files/directories found: %d\n\r", file_count);
+    MPRINTF("\nWARNING: Files in lost+found may indicate:\n\r");
+    MPRINTF("- Previous filesystem corruption\n\r");
+    MPRINTF("- Interrupted write operations\n\r");
+    MPRINTF("- Power loss during file operations\n\r");
+    MPRINTF("\nYou may want to examine these files and restore them manually.\n\r");
+  }
+
+  MPRINTF("\nPress any key to continue...\n\r");
+  uint8_t key;
+  WAIT_CHAR(&key, ms_to_ticks(100000));
 }

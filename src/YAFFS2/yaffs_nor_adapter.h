@@ -17,8 +17,8 @@
 -----------------------------------------------------------------------------------------------------*/
 
 // Basic chunk operations (required by YAFFS2 even when using tagger)
-int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id, const unsigned char *data, const unsigned char *oob);
-int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id, unsigned char *data, unsigned char *oob, enum yaffs_ecc_result *ecc_result);
+int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id, const u8 *data, int data_len, const u8 *oob, int oob_len);
+int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id, u8 *data, int data_len, u8 *oob, int oob_len, enum yaffs_ecc_result *ecc_result);
 
 // Write chunk with tags to NOR Flash
 int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id, const unsigned char *data, const struct yaffs_ext_tags *tags);

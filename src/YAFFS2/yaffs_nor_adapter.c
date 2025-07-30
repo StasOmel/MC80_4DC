@@ -271,15 +271,21 @@ int Yaffs_nor_deinitialise(struct yaffs_dev *dev)
     dev      - YAFFS device structure
     chunk_id - Page identifier (0-based sequential)
     data     - User data buffer
+    data_len - Length of data buffer
     oob      - Out-of-band data (not used in inband tags mode)
+    oob_len  - Length of OOB buffer
 
   Return:
     YAFFS_OK on success, YAFFS_FAIL on error
 -----------------------------------------------------------------------------------------------------*/
 int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id,
-                          const unsigned char *data,
-                          const unsigned char *oob)
+                          const u8 *data, int data_len,
+                          const u8 *oob, int oob_len)
 {
+  // Parameter validation
+  FSP_PARAMETER_NOT_USED(data_len);  // Length should match page size
+  FSP_PARAMETER_NOT_USED(oob_len);   // Not used in inband tags mode
+
   // In inband tags mode, OOB is not used separately
   // Call the tags-based function with NULL tags to write data only
   return Yaffs_nor_write_chunk_tags(dev, chunk_id, data, NULL);
@@ -295,18 +301,24 @@ int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id,
     dev        - YAFFS device structure
     chunk_id   - Page identifier (0-based sequential)
     data       - Buffer for user data
+    data_len   - Length of data buffer
     oob        - Buffer for out-of-band data (not used in inband tags mode)
+    oob_len    - Length of OOB buffer
     ecc_result - ECC correction result (output)
 
   Return:
     YAFFS_OK on success, YAFFS_FAIL on error
 -----------------------------------------------------------------------------------------------------*/
 int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id,
-                         unsigned char *data,
-                         unsigned char *oob,
+                         u8 *data, int data_len,
+                         u8 *oob, int oob_len,
                          enum yaffs_ecc_result *ecc_result)
 {
   int result;
+
+  // Parameter validation
+  FSP_PARAMETER_NOT_USED(data_len);  // Length should match page size
+  FSP_PARAMETER_NOT_USED(oob_len);   // Not used in inband tags mode
 
   // In inband tags mode, OOB is not used separately
   // Call the tags-based function with NULL tags to read data only
