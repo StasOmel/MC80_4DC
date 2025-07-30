@@ -1009,17 +1009,6 @@ void Do_YAFFS2_init(uint8_t keycode)
   MPRINTF("\nPress any key to continue...\n\r");
   uint8_t key;
   WAIT_CHAR(&key, ms_to_ticks(100000));
-
-  // Check if media is already open
-  if (g_fx_spi_nor_media.fx_media_id == FX_MEDIA_ID)
-  {
-    MPRINTF("YFFS2 media is already initialized and open.\n\r");
-    _Print_YFFS2_info();
-    MPRINTF("\nPress any key to continue...\n\r");
-    uint8_t key;
-    WAIT_CHAR(&key, ms_to_ticks(100000));
-    return;
-  }
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -1038,10 +1027,11 @@ void Do_YFFS2_list_files(uint8_t keycode)
   MPRINTF(VT100_CLEAR_AND_HOME);
   MPRINTF("=== YFFS2 Directory Listing ===\n\r");
 
-  // Check if media is open
-  if (g_fx_spi_nor_media.fx_media_id != FX_MEDIA_ID)
+  // Check if filesystem is mounted by checking free space
+  Y_LOFF_T free_space = yaffs_freespace("/");
+  if (free_space < 0)
   {
-    MPRINTF("Error: YFFS2 media not initialized. Please initialize first.\n\r");
+    MPRINTF("Error: YFFS2 filesystem not mounted. Please initialize first.\n\r");
     MPRINTF("\nPress any key to continue...\n\r");
     uint8_t key;
     WAIT_CHAR(&key, ms_to_ticks(100000));
@@ -1089,21 +1079,21 @@ void Do_YFFS2_list_files(uint8_t keycode)
           MPRINTF("Opening file: %s\n\r", full_filename);
 
           // Open file for reading
-          FX_FILE file;
-          UINT    status = fx_file_open(&g_fx_spi_nor_media, &file, full_filename, FX_OPEN_FOR_READ);
-          if (status != FX_SUCCESS)
+          int fd = yaffs_open(full_filename, O_RDONLY, 0);
+          if (fd < 0)
           {
-            MPRINTF("Failed to open file: %s\n\r", _Get_YFFS2_error_description(status));
+            MPRINTF("Failed to open file: %s\n\r", full_filename);
           }
           else
           {
-            // Get file size
-            ULONG file_size;
-            status = fx_file_extended_seek(&file, 0);
-            if (status == FX_SUCCESS)
+            // Get file size using lseek
+            yaffs_lseek(fd, 0, SEEK_END);
+            int file_size = yaffs_lseek(fd, 0, SEEK_CUR);
+            yaffs_lseek(fd, 0, SEEK_SET);
+
+            if (file_size >= 0)
             {
-              file_size = file.fx_file_current_file_size;
-              MPRINTF("File size: %lu bytes\n\r", file_size);
+              MPRINTF("File size: %d bytes\n\r", file_size);
 
               if (file_size == 0)
               {
@@ -1118,37 +1108,34 @@ void Do_YFFS2_list_files(uint8_t keycode)
                 }
                 else
                 {
-                  // Read file in blocks using FILEX_TEST_BUFFER_SIZE
+                  // Read file in blocks using YAFFS2_TEST_BUFFER_SIZE
                   uint32_t block_size       = YAFFS2_TEST_BUFFER_SIZE;
                   uint32_t total_bytes_read = 0;
                   uint32_t current_offset   = 0;
 
                   // Read file block by block
-                  while (current_offset < file_size)
+                  while (current_offset < (uint32_t)file_size)
                   {
                     // Calculate bytes to read for this block
                     uint32_t bytes_to_read = block_size;
-                    if (current_offset + bytes_to_read > file_size)
+                    if (current_offset + bytes_to_read > (uint32_t)file_size)
                     {
-                      bytes_to_read = file_size - current_offset;
+                      bytes_to_read = (uint32_t)file_size - current_offset;
                     }
 
                     // Seek to current position
-                    status = fx_file_extended_seek(&file, current_offset);
-                    if (status != FX_SUCCESS)
+                    int seek_result = yaffs_lseek(fd, current_offset, SEEK_SET);
+                    if (seek_result < 0)
                     {
-                      MPRINTF("Failed to seek to offset %lu: %s\n\r",
-                              current_offset, _Get_YFFS2_error_description(status));
+                      MPRINTF("Failed to seek to offset %lu\n\r", current_offset);
                       break;
                     }
 
                     // Read one block
-                    ULONG actual_bytes_read;
-                    status = fx_file_read(&file, g_test_buffer, bytes_to_read, &actual_bytes_read);
-                    if (status != FX_SUCCESS)
+                    int actual_bytes_read = yaffs_read(fd, g_test_buffer, bytes_to_read);
+                    if (actual_bytes_read < 0)
                     {
-                      MPRINTF("Failed to read file at offset %lu: %s\n\r",
-                              current_offset, _Get_YFFS2_error_description(status));
+                      MPRINTF("Failed to read file at offset %lu\n\r", current_offset);
                       break;
                     }
 
@@ -1159,17 +1146,17 @@ void Do_YFFS2_list_files(uint8_t keycode)
                     }
 
                     // Display this block as HEX dump
-                    MPRINTF("Block at offset %lu (%lu bytes):\n\r", current_offset, actual_bytes_read);
+                    MPRINTF("Block at offset %lu (%d bytes):\n\r", current_offset, actual_bytes_read);
                     VT100_print_dump(current_offset, g_test_buffer, actual_bytes_read);
 
                     current_offset += actual_bytes_read;
                     total_bytes_read += actual_bytes_read;
 
                     // Show progress for large files
-                    if (file_size > block_size)
+                    if ((uint32_t)file_size > block_size)
                     {
-                      uint32_t progress_percent = (current_offset * 100) / file_size;
-                      MPRINTF("Progress: %lu%% (%lu/%lu bytes)\n\r",
+                      uint32_t progress_percent = (current_offset * 100) / (uint32_t)file_size;
+                      MPRINTF("Progress: %lu%% (%lu/%d bytes)\n\r",
                               progress_percent, current_offset, file_size);
                     }
                   }
@@ -1180,11 +1167,11 @@ void Do_YFFS2_list_files(uint8_t keycode)
             }
             else
             {
-              MPRINTF("Failed to get file size: %s\n\r", _Get_YFFS2_error_description(status));
+              MPRINTF("Failed to get file size\n\r");
             }
 
             // Close file
-            fx_file_close(&file);
+            yaffs_close(fd);
           }
         }
       }
@@ -1235,10 +1222,11 @@ void Do_YFFS2_performance_test(uint8_t keycode)
     MPRINTF(VT100_CLEAR_AND_HOME);
     MPRINTF("=== YFFS2 Test Operations ===\n\r");
 
-    // Check if media is open
-    if (g_fx_spi_nor_media.fx_media_id != FX_MEDIA_ID)
+    // Check if filesystem is mounted by checking free space
+    Y_LOFF_T free_space = yaffs_freespace("/");
+    if (free_space < 0)
     {
-      MPRINTF("\nERROR: YFFS2 media not initialized!\n\r");
+      MPRINTF("\nERROR: YFFS2 filesystem not mounted!\n\r");
       MPRINTF("Please initialize YFFS2 first from the main menu.\n\r");
       MPRINTF("\nPress any key to return...\n\r");
       WAIT_CHAR(&choice, ms_to_ticks(100000));
