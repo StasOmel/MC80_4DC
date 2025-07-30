@@ -5,9 +5,10 @@
 #include "Performance_Stats.h"
 #include "Test_Patterns.h"
 #include "FS_Test_Config.h"
+#include <time.h>
 
-#define MAX_PATH_LENGTH          256
-#define MAX_DIR_STACK_DEPTH      32
+#define MAX_PATH_LENGTH           256
+#define MAX_DIR_STACK_DEPTH       32
 #define YAFFS2_MEMORY_BUFFER_SIZE (32 * 1024)  // 32KB
 #define YAFFS2_TEST_BUFFER_SIZE   (16 * 1024)  // 16KB for test operations
 
@@ -19,15 +20,13 @@ typedef struct
 } T_dir_entry;
 
 static T_dir_entry g_dir_stack[MAX_DIR_STACK_DEPTH];
-static uint32_t    g_stack_top = 0;
-
-
+static uint32_t    g_stack_top              = 0;
 
 // Global pointer to YAFFS2 memory buffer
 static uint8_t *g_YAFFS2_memory_buffer      = NULL;
 
 // Global pointer to test buffer for file operations
-static uint8_t *g_test_buffer              = NULL;
+static uint8_t *g_test_buffer               = NULL;
 
 // Menu definition
 const T_VT100_Menu_item MENU_YAFFS2_items[] = {
@@ -245,7 +244,7 @@ static void _Print_YAFFS2_info(void)
     // For YAFFS2, we can estimate total space based on device configuration
     // This is a simplified approach - in real implementation you'd get this from device config
     uint64_t total_space = 32 * 1024 * 1024;  // 32MB estimated (adjust based on your NOR Flash size)
-    uint64_t used_space = total_space - free_space;
+    uint64_t used_space  = total_space - free_space;
 
     MPRINTF("Mount point          : /\n\r");
     MPRINTF("Filesystem type      : YAFFS2\n\r");
@@ -300,13 +299,10 @@ static void _Print_test_config(void)
 static void _List_directory_tree(const char *root_path, uint8_t max_depth)
 {
   GET_MCBL;
-  CHAR    entry_name[FX_MAX_LONG_NAME_LEN];
-  UINT    attributes;
-  ULONG   size;
-  UINT    year, month, day, hour, minute, second;
-  UINT    status;
-  char    current_path[MAX_PATH_LENGTH];
-  uint8_t current_depth;
+  yaffs_DIR    *dir_ptr;
+  struct yaffs_dirent *entry;
+  char         current_path[MAX_PATH_LENGTH];
+  uint8_t      current_depth;
 
   // Initialize stack and start with root directory
   g_stack_top = 0;
@@ -322,54 +318,64 @@ static void _List_directory_tree(const char *root_path, uint8_t max_depth)
     }
 
     // Set current directory
-    status = fx_directory_default_set(&g_fx_spi_nor_media, current_path);
-    if (status != FX_SUCCESS)
+    dir_ptr = yaffs_opendir(current_path);
+    if (dir_ptr == NULL)
     {
-      MPRINTF("Failed to set directory %s: %s\n\r", current_path, _Get_YFFS2_error_description(status));
+      MPRINTF("Failed to open directory %s: %s\n\r", current_path, _Get_YFFS2_error_description(status));
       continue;
     }
 
-    // Get first directory entry
-    status = fx_directory_first_full_entry_find(&g_fx_spi_nor_media, entry_name, &attributes, &size,
-                                                &year, &month, &day, &hour, &minute, &second);
-
-    while (status == FX_SUCCESS)
+    // Read directory entries
+    while ((entry = yaffs_readdir(dir_ptr)) != NULL)
     {
       // Skip "." and ".." entries
-      if (strcmp(entry_name, ".") != 0 && strcmp(entry_name, "..") != 0)
+      if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0)
       {
         _Print_tree_indent(current_depth);
 
-        if (attributes & FX_DIRECTORY)
+        // Get file/directory information
+        char full_path[MAX_PATH_LENGTH];
+        if (strcmp(current_path, "/") == 0)
         {
-          MPRINTF("[DIR]  %s/\n\r", entry_name);
+          snprintf(full_path, MAX_PATH_LENGTH, "/%s", entry->d_name);
+        }
+        else
+        {
+          snprintf(full_path, MAX_PATH_LENGTH, "%s/%s", current_path, entry->d_name);
+        }
 
-          // Add subdirectory to stack if not too deep and stack not full
-          if (current_depth < max_depth - 1 && g_stack_top < MAX_DIR_STACK_DEPTH - 1)
+        struct yaffs_stat stat_buf;
+        if (yaffs_lstat(full_path, &stat_buf) >= 0)
+        {
+          if (S_ISDIR(stat_buf.st_mode))
           {
-            char subdir_path[MAX_PATH_LENGTH];
-            if (strcmp(current_path, "/") == 0)
+            MPRINTF("[DIR]  %s/\n\r", entry->d_name);
+
+            // Add subdirectory to stack if not too deep and stack not full
+            if (current_depth < max_depth - 1 && g_stack_top < MAX_DIR_STACK_DEPTH - 1)
             {
-              snprintf(subdir_path, MAX_PATH_LENGTH, "/%s", entry_name);
+              _Push_dir_to_stack(full_path, current_depth + 1);
             }
-            else
-            {
-              snprintf(subdir_path, MAX_PATH_LENGTH, "%s/%s", current_path, entry_name);
-            }
-            _Push_dir_to_stack(subdir_path, current_depth + 1);
+          }
+          else
+          {
+            // Convert time to readable format (simplified)
+            time_t mod_time = stat_buf.yst_mtime;
+            struct tm *time_info = localtime(&mod_time);
+
+            MPRINTF("[FILE] %s (%lu bytes) %02d/%02d/%04d %02d:%02d:%02d\n\r",
+                    entry->d_name, (uint32_t)stat_buf.st_size,
+                    time_info->tm_mon + 1, time_info->tm_mday, time_info->tm_year + 1900,
+                    time_info->tm_hour, time_info->tm_min, time_info->tm_sec);
           }
         }
         else
         {
-          MPRINTF("[FILE] %s (%lu bytes) %02u/%02u/%04u %02u:%02u:%02u\n\r",
-                  entry_name, size, month, day, year, hour, minute, second);
+          MPRINTF("[UNKNOWN] %s (stat failed)\n\r", entry->d_name);
         }
-      }
-
-      // Get next directory entry
-      status = fx_directory_next_full_entry_find(&g_fx_spi_nor_media, entry_name, &attributes, &size,
-                                                 &year, &month, &day, &hour, &minute, &second);
     }
+
+    yaffs_closedir(dir_ptr);
   }
 }
 
@@ -678,7 +684,7 @@ static void _Do_read_test(void)
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
           MPRINTF("FAILED (verify at offset %lu): Data verification failed (I/O: %6u us, total: %6u us)\n\r", total_read, io_time, operation_time);
           pattern_valid = false;
-          verify_error = true;
+          verify_error  = true;
           Performance_stats_increment_pattern_error(&stats);
           break;
         }
@@ -904,7 +910,7 @@ static void _Do_format_test(void)
                            MC80_YFFS2_LevelX_DeviceDriver,           // Driver function
                            (void *)&g_rm_YFFS2_levelx_NOR_instance,  // Driver info pointer
                            (UCHAR *)g_test_buffer,                   // Memory pointer for work area
-                           YAFFS2_TEST_BUFFER_SIZE,                   // Memory size
+                           YAFFS2_TEST_BUFFER_SIZE,                  // Memory size
                            G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
                            G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
                            G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
@@ -1028,7 +1034,6 @@ void Do_YAFFS2_init(uint8_t keycode)
   MPRINTF("\nPress any key to continue...\n\r");
   uint8_t key;
   WAIT_CHAR(&key, ms_to_ticks(100000));
-}
 
   // Check if media is already open
   if (g_fx_spi_nor_media.fx_media_id == FX_MEDIA_ID)
