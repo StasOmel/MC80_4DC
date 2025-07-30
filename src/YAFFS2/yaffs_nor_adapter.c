@@ -21,8 +21,9 @@ extern T_mc80_ospi_instance_ctrl g_OSPI_ctrl;
   Parameters:
     dev      - YAFFS device structure
     chunk_id - Page identifier (0-based sequential)
-    data     - User data buffer (2048 bytes, can be NULL for metadata-only write)
-    tags     - YAFFS extended tags structure (written to OOB area)
+    data     - User data buffer (4096 bytes, can be NULL for metadata-only write)
+               In inband tags mode, YAFFS2 already embedded tags in last 16 bytes of this buffer
+    tags     - YAFFS extended tags structure (NOT USED in inband tags mode)
 
   Return:
     YAFFS_OK on success, YAFFS_FAIL on error
@@ -32,7 +33,6 @@ int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
                                const struct yaffs_ext_tags *tags)
 {
   fsp_err_t err;
-  T_yaffs_nor_page *p_page;
   uint32_t page_address;
 
   // Parameter validation
@@ -41,39 +41,50 @@ int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
     return YAFFS_FAIL;
   }
 
+  // Note: In inband tags mode, 'tags' parameter is not used because
+  // YAFFS2 already embedded the tags inside the 'data' buffer (last 16 bytes)
+  FSP_PARAMETER_NOT_USED(tags);
+
+  // DEBUG: Check if YAFFS2 unexpectedly passes non-NULL tags in inband mode
+  if (NULL != tags)
+  {
+    // Breakpoint: This should not happen in inband tags mode!
+    // If we hit this, it means YAFFS2 configuration might be wrong
+    __asm("bkpt #0");  // ARM Cortex-M breakpoint instruction
+  }
+
   // Calculate physical address in NOR Flash
   page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
 
-  // Allocate temporary page buffer
-  p_page = (T_yaffs_nor_page *)App_malloc(sizeof(T_yaffs_nor_page));
-  if (NULL == p_page)
-  {
-    return YAFFS_FAIL;
-  }
-
-  // Prepare page data area
   if (NULL != data)
   {
-    // Copy data to page buffer (includes inband tags at end if present)
-    memcpy(p_page->data, data, YAFFS_NOR_PAGE_DATA_SIZE);
+    // Direct write from user data buffer (includes inband tags at end if present)
+    err = Mc80_ospi_memory_mapped_write(&g_OSPI_ctrl,
+                                       data,
+                                       page_address,
+                                       YAFFS_NOR_PAGE_DATA_SIZE);
   }
   else
   {
-    // Fill with erased pattern for metadata-only writes
-    memset(p_page->data, 0xFF, YAFFS_NOR_PAGE_DATA_SIZE);
+    // DEBUG: Metadata-only write (should be rare in normal operation)
+    __asm("bkpt #2");  // Breakpoint #2: Metadata-only write
+
+    // For metadata-only writes in NOR Flash, no actual write needed
+    // NOR Flash erased state is already 0xFF, so writing 0xFF is redundant
+    // Just return success as the "erased" state is the desired state
+    err = FSP_SUCCESS;
   }
 
   // Note: With inband tags, YAFFS2 already placed tags inside data buffer
   // No separate OOB processing needed
 
-  // Write complete page (data + OOB) to NOR Flash using OSPI driver
-  err = Mc80_ospi_memory_mapped_write(&g_OSPI_ctrl,
-                                     (uint8_t*)p_page,
-                                     page_address,
-                                     YAFFS_NOR_PAGE_TOTAL_SIZE);
-
-  // Free temporary buffer
-  App_free(p_page);
+  // DEBUG: Check for write errors
+  if (FSP_SUCCESS != err)
+  {
+    // Breakpoint: Write operation failed!
+    // Examine 'err' value to understand the failure reason
+    __asm("bkpt #3");  // Breakpoint #3: Write operation failed
+  }
 
   return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
 }
@@ -84,8 +95,9 @@ int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
   Parameters:
     dev      - YAFFS device structure
     chunk_id - Page identifier (0-based sequential)
-    data     - Buffer for user data (2048 bytes, can be NULL to skip data read)
-    tags     - Buffer for YAFFS extended tags (read from OOB area, can be NULL)
+    data     - Buffer for user data (4096 bytes, can be NULL to skip data read)
+               In inband tags mode, last 16 bytes will contain YAFFS2 tags after read
+    tags     - Buffer for YAFFS extended tags (NOT USED in inband tags mode)
 
   Return:
     YAFFS_OK on success, YAFFS_FAIL on error
@@ -95,7 +107,6 @@ int Yaffs_nor_read_chunk_tags(struct yaffs_dev *dev, int chunk_id,
                               struct yaffs_ext_tags *tags)
 {
   fsp_err_t err;
-  T_yaffs_nor_page *p_page;
   uint32_t page_address;
 
   // Parameter validation
@@ -104,36 +115,37 @@ int Yaffs_nor_read_chunk_tags(struct yaffs_dev *dev, int chunk_id,
     return YAFFS_FAIL;
   }
 
+  // Note: In inband tags mode, 'tags' parameter is not used because
+  // YAFFS2 will extract tags from the 'data' buffer (last 16 bytes) after read
+  FSP_PARAMETER_NOT_USED(tags);
+
+  // DEBUG: Check if YAFFS2 unexpectedly passes non-NULL tags in inband mode
+  if (NULL != tags)
+  {
+    // Breakpoint: This should not happen in inband tags mode!
+    // If we hit this, it means YAFFS2 configuration might be wrong
+    __asm("bkpt #0");  // ARM Cortex-M breakpoint instruction
+  }
+
   // Calculate physical address in NOR Flash
   page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
 
-  // Allocate temporary page buffer
-  p_page = (T_yaffs_nor_page *)App_malloc(sizeof(T_yaffs_nor_page));
-  if (NULL == p_page)
+  if (NULL != data)
   {
-    return YAFFS_FAIL;
+    // Direct read into user data buffer (includes inband tags at end)
+    err = Mc80_ospi_memory_mapped_read(&g_OSPI_ctrl,
+                                      data,
+                                      page_address,
+                                      YAFFS_NOR_PAGE_DATA_SIZE);
+  }
+  else
+  {
+    // If no data buffer provided, just return success (tags-only read not supported in inband mode)
+    err = FSP_SUCCESS;
   }
 
-  // Read complete page (data + OOB) from NOR Flash using OSPI driver
-  err = Mc80_ospi_memory_mapped_read(&g_OSPI_ctrl,
-                                    (uint8_t*)p_page,
-                                    page_address,
-                                    YAFFS_NOR_PAGE_TOTAL_SIZE);
-
-  if (FSP_SUCCESS == err)
-  {
-    // Copy data to user buffer if requested (includes inband tags at end)
-    if (NULL != data)
-    {
-      memcpy(data, p_page->data, YAFFS_NOR_PAGE_DATA_SIZE);
-    }
-
-    // Note: With inband tags, YAFFS2 extracts tags from data buffer itself
-    // No separate OOB processing needed
-  }
-
-  // Free temporary buffer
-  App_free(p_page);
+  // Note: With inband tags, YAFFS2 extracts tags from data buffer itself
+  // No separate OOB processing needed
 
   return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
 }

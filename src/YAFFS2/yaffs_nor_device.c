@@ -55,13 +55,13 @@ static struct yaffs_dev g_yaffs_nor_device =
     .drv_deinitialise_fn = Yaffs_nor_deinitialise,
   },
 
-  // Tags handler for metadata operations
+  // Tags handler for metadata operations (NOT USED in inband tags mode)
   .tagger =
   {
-    .write_chunk_tags_fn = Yaffs_nor_write_chunk_tags,
-    .read_chunk_tags_fn = Yaffs_nor_read_chunk_tags,
+    .write_chunk_tags_fn = NULL,                  // Not used in inband tags mode
+    .read_chunk_tags_fn = NULL,                   // Not used in inband tags mode
     .query_block_fn = NULL,                       // Optional
-    .mark_bad_fn = Yaffs_nor_mark_bad_block,
+    .mark_bad_fn = NULL,                          // Not used in inband tags mode
   },
 
   // Runtime state (initialized by YAFFS2)

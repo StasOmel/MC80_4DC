@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ELF Linker V9.70.1.475/W64 for ARM                  30/Jul/2025  17:51:34
+# IAR ELF Linker V9.70.1.475/W64 for ARM                  30/Jul/2025  19:01:29
 # Copyright 2007-2025 IAR Systems AB.
 #
 #    Output file                  =
@@ -3627,7 +3627,7 @@ No sections matched the following patterns:
 "P1|P12|P17|P22|P24|P26", part 2 of 2:                          0x0
   DTCM_DATA_INIT                    0x200'01e0         16       0x0  <Block>
 
-"P2":                                                      0xd'80a6
+"P2":                                                      0xd'805e
   .rodata                 const     0x200'01e0          8      0x18  MC80_OSPI_drv.o [2]
   .rodata                 const     0x200'01f8          8      0x18  MC80_OSPI_drv.o [2]
   .rodata                 const     0x200'0210          8      0x18  MC80_OSPI_drv.o [2]
@@ -8557,70 +8557,70 @@ No sections matched the following patterns:
   .text                   ro code   0x20d'23fc          2      0x3a  ux_utility_thread_create.o [69]
   .text                   ro code   0x20d'2436          2      0x12  ux_utility_thread_delete.o [69]
   .text                   ro code   0x20d'2448          2       0x8  ux_utility_event_flags_delete.o [69]
-  .text                   ro code   0x20d'2450          4     0x15a  yaffs_nor_adapter.o [24]
-  .text                   ro code   0x20d'25ac          4      0x22  fpinit_M.o [82]
-  .text                   ro code   0x20d'25d0          4     0x13c  heap0.o [81]
-  .text                   ro code   0x20d'270c          4      0x2c  xgetmemchunk.o [81]
-  .text                   ro code   0x20d'2738          4      0x4c  iarwstdswo.o [84]
-  .version                const     0x20d'2784          4       0x4  bsp_common.o [27]
-  .version                const     0x20d'2788          4       0x8  bsp_common.o [27]
-  .version                const     0x20d'2790          4      0x44  bsp_common.o [27]
-  RAM_INIT_CODE                     0x20d'27d4                0x54c  <Block>
-    .code_in_ram_init               0x20d'27d4                0x54c  <Block>
-      Initializer bytes   const     0x20d'27d4          4     0x54c  <for .code_in_ram-1>
-  .data_init                        0x20d'2d20               0x1b78  <Block>
-    Initializer bytes     const     0x20d'2d20          4    0x1b78  <for .data-1>
-  .text                   ro code   0x20d'4898          2       0xa  common_data.o [55]
-  .text                   ro code   0x20d'48a2          2      0x18  gx_canvas_shift.o [72]
-  .text                   ro code   0x20d'48ba          2     0x210  gx_display_driver_16bpp_block_move.o [72]
-  .text                   ro code   0x20d'4aca          2      0xc4  gx_display_driver_16bpp_canvas_copy.o [72]
-  .text                   ro code   0x20d'4b8e          2      0x64  gx_display_driver_16bpp_horizontal_line_draw.o [72]
-  .text                   ro code   0x20d'4bf2          2      0x48  gx_display_driver_horizontal_line_alpha_draw.o [72]
-  .text                   ro code   0x20d'4c3a          2       0x8  gx_display_driver_16bpp_row_pitch_get.o [72]
-  .text                   ro code   0x20d'4c42          2     0x5a2  gx_display_driver_16bpp_simple_line_draw.o [72]
-  .text                   ro code   0x20d'51e4          2     0x4b6  gx_display_driver_simple_line_alpha_draw.o [72]
-  .text                   ro code   0x20d'569a          2      0x64  gx_display_driver_16bpp_vertical_line_draw.o [72]
-  .text                   ro code   0x20d'56fe          2      0x4c  gx_display_driver_vertical_line_alpha_draw.o [72]
-  .text                   ro code   0x20d'574a          2      0x54  gx_display_driver_16bpp_vertical_pattern_line_draw.o [72]
-  .text                   ro code   0x20d'579e          2     0x196  gx_display_driver_565rgb_canvas_blend.o [72]
-  .text                   ro code   0x20d'5934          2     0x384  gx_display_driver_565rgb_glyph_1bit_draw.o [72]
-  .text                   ro code   0x20d'5cb8          2     0x792  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
-  .text                   ro code   0x20d'644a          2     0x53e  gx_display_driver_generic_aliased_fixed_point_line_draw.o [72]
-  .text                   ro code   0x20d'6988          2     0x5d2  gx_display_driver_generic_aliased_line_draw.o [72]
-  .text                   ro code   0x20d'6f5a          2     0x1a4  gx_display_driver_generic_aliased_wide_line_draw.o [72]
-  .text                   ro code   0x20d'70fe          2     0x380  gx_display_driver_generic_alphamap_draw.o [72]
-  .text                   ro code   0x20d'747e          2     0x2be  gx_display_driver_generic_glyph_4bpp_draw.o [72]
-  .text                   ro code   0x20d'773c          2     0x132  gx_display_driver_generic_glyph_8bpp_draw.o [72]
-  .text                   ro code   0x20d'786e          2     0x162  gx_display_driver_generic_pie_fill.o [72]
-  .text                   ro code   0x20d'79d0          2      0x70  gx_display_driver_generic_polygon_draw.o [72]
-  .text                   ro code   0x20d'7a40          2     0x18e  gx_display_driver_generic_simple_wide_line_draw.o [72]
-  .text                   ro code   0x20d'7bce          2      0x32  gx_multi_line_text_view_draw.o [72]
-  .text                   ro code   0x20d'7c00          2      0x18  gx_prompt_draw.o [72]
-  .text                   ro code   0x20d'7c18          2      0x26  gx_widget_background_draw.o [72]
-  .text                   ro code   0x20d'7c3e          2      0x52  gx_prompt_text_draw.o [72]
-  .text                   ro code   0x20d'7c90          2      0xe2  gx_widget_text_draw.o [72]
-  .text                   ro code   0x20d'7d72          2      0x22  gx_prompt_text_get.o [72]
-  .text                   ro code   0x20d'7d94          2      0x18  gx_rich_text_view_draw.o [72]
-  .text                   ro code   0x20d'7dac          2      0xd0  gx_rich_text_view_scroll_info_get.o [72]
-  .text                   ro code   0x20d'7e7c          2      0x12  gx_widget_draw.o [72]
-  .text                   ro code   0x20d'7e8e          2      0x46  gx_window_root_event_process.o [72]
-  .text                   ro code   0x20d'7ed4          2      0xb4  gx_window_scroll_info_get.o [72]
-  .text                   ro code   0x20d'7f88          2      0x1c  ux_device_class_cdc_acm_activate.o [75]
-  .text                   ro code   0x20d'7fa4          2      0x4c  ux_device_class_cdc_acm_deactivate.o [75]
-  .text                   ro code   0x20d'7ff0          2     0x15a  ux_device_class_cdc_acm_ioctl.o [75]
-  .text                   ro code   0x20d'814a          2       0x8  ux_utility_thread_resume.o [69]
-  .text                   ro code   0x20d'8152          2      0x4e  ux_device_class_cdc_acm_entry.o [75]
-  .text                   ro code   0x20d'81a0          2      0x44  ux_device_class_cdc_acm_unitialize.o [75]
-  .text                   ro code   0x20d'81e4          2       0x4  heaptramp0.o [81]
-  .text                   ro code   0x20d'81e8          2      0x16  xprout.o [81]
-  .text                   ro code   0x20d'81fe          2      0x20  putchar.o [81]
-  .text                   ro code   0x20d'821e          2      0x10  write.o [84]
-  .text                   ro code   0x20d'822e          2      0x1e  dwrite.o [84]
-  .text                   ro code   0x20d'824c          2      0x22  iarwrite.o [84]
-  .rodata                 const     0x20d'826e                  0x8  Motor_Driver_task.o [73]
-  .rodata                 const     0x20d'8276                  0x8  Motor_Driver_task.o [73]
-  .rodata                 const     0x20d'827e                  0x8  Motor_Driver_task.o [73]
-                                  - 0x20d'8286             0xd'80a6
+  .text                   ro code   0x20d'2450          4     0x112  yaffs_nor_adapter.o [24]
+  .text                   ro code   0x20d'2564          4      0x22  fpinit_M.o [82]
+  .text                   ro code   0x20d'2588          4     0x13c  heap0.o [81]
+  .text                   ro code   0x20d'26c4          4      0x2c  xgetmemchunk.o [81]
+  .text                   ro code   0x20d'26f0          4      0x4c  iarwstdswo.o [84]
+  .version                const     0x20d'273c          4       0x4  bsp_common.o [27]
+  .version                const     0x20d'2740          4       0x8  bsp_common.o [27]
+  .version                const     0x20d'2748          4      0x44  bsp_common.o [27]
+  RAM_INIT_CODE                     0x20d'278c                0x54c  <Block>
+    .code_in_ram_init               0x20d'278c                0x54c  <Block>
+      Initializer bytes   const     0x20d'278c          4     0x54c  <for .code_in_ram-1>
+  .data_init                        0x20d'2cd8               0x1b78  <Block>
+    Initializer bytes     const     0x20d'2cd8          4    0x1b78  <for .data-1>
+  .text                   ro code   0x20d'4850          2       0xa  common_data.o [55]
+  .text                   ro code   0x20d'485a          2      0x18  gx_canvas_shift.o [72]
+  .text                   ro code   0x20d'4872          2     0x210  gx_display_driver_16bpp_block_move.o [72]
+  .text                   ro code   0x20d'4a82          2      0xc4  gx_display_driver_16bpp_canvas_copy.o [72]
+  .text                   ro code   0x20d'4b46          2      0x64  gx_display_driver_16bpp_horizontal_line_draw.o [72]
+  .text                   ro code   0x20d'4baa          2      0x48  gx_display_driver_horizontal_line_alpha_draw.o [72]
+  .text                   ro code   0x20d'4bf2          2       0x8  gx_display_driver_16bpp_row_pitch_get.o [72]
+  .text                   ro code   0x20d'4bfa          2     0x5a2  gx_display_driver_16bpp_simple_line_draw.o [72]
+  .text                   ro code   0x20d'519c          2     0x4b6  gx_display_driver_simple_line_alpha_draw.o [72]
+  .text                   ro code   0x20d'5652          2      0x64  gx_display_driver_16bpp_vertical_line_draw.o [72]
+  .text                   ro code   0x20d'56b6          2      0x4c  gx_display_driver_vertical_line_alpha_draw.o [72]
+  .text                   ro code   0x20d'5702          2      0x54  gx_display_driver_16bpp_vertical_pattern_line_draw.o [72]
+  .text                   ro code   0x20d'5756          2     0x196  gx_display_driver_565rgb_canvas_blend.o [72]
+  .text                   ro code   0x20d'58ec          2     0x384  gx_display_driver_565rgb_glyph_1bit_draw.o [72]
+  .text                   ro code   0x20d'5c70          2     0x792  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+  .text                   ro code   0x20d'6402          2     0x53e  gx_display_driver_generic_aliased_fixed_point_line_draw.o [72]
+  .text                   ro code   0x20d'6940          2     0x5d2  gx_display_driver_generic_aliased_line_draw.o [72]
+  .text                   ro code   0x20d'6f12          2     0x1a4  gx_display_driver_generic_aliased_wide_line_draw.o [72]
+  .text                   ro code   0x20d'70b6          2     0x380  gx_display_driver_generic_alphamap_draw.o [72]
+  .text                   ro code   0x20d'7436          2     0x2be  gx_display_driver_generic_glyph_4bpp_draw.o [72]
+  .text                   ro code   0x20d'76f4          2     0x132  gx_display_driver_generic_glyph_8bpp_draw.o [72]
+  .text                   ro code   0x20d'7826          2     0x162  gx_display_driver_generic_pie_fill.o [72]
+  .text                   ro code   0x20d'7988          2      0x70  gx_display_driver_generic_polygon_draw.o [72]
+  .text                   ro code   0x20d'79f8          2     0x18e  gx_display_driver_generic_simple_wide_line_draw.o [72]
+  .text                   ro code   0x20d'7b86          2      0x32  gx_multi_line_text_view_draw.o [72]
+  .text                   ro code   0x20d'7bb8          2      0x18  gx_prompt_draw.o [72]
+  .text                   ro code   0x20d'7bd0          2      0x26  gx_widget_background_draw.o [72]
+  .text                   ro code   0x20d'7bf6          2      0x52  gx_prompt_text_draw.o [72]
+  .text                   ro code   0x20d'7c48          2      0xe2  gx_widget_text_draw.o [72]
+  .text                   ro code   0x20d'7d2a          2      0x22  gx_prompt_text_get.o [72]
+  .text                   ro code   0x20d'7d4c          2      0x18  gx_rich_text_view_draw.o [72]
+  .text                   ro code   0x20d'7d64          2      0xd0  gx_rich_text_view_scroll_info_get.o [72]
+  .text                   ro code   0x20d'7e34          2      0x12  gx_widget_draw.o [72]
+  .text                   ro code   0x20d'7e46          2      0x46  gx_window_root_event_process.o [72]
+  .text                   ro code   0x20d'7e8c          2      0xb4  gx_window_scroll_info_get.o [72]
+  .text                   ro code   0x20d'7f40          2      0x1c  ux_device_class_cdc_acm_activate.o [75]
+  .text                   ro code   0x20d'7f5c          2      0x4c  ux_device_class_cdc_acm_deactivate.o [75]
+  .text                   ro code   0x20d'7fa8          2     0x15a  ux_device_class_cdc_acm_ioctl.o [75]
+  .text                   ro code   0x20d'8102          2       0x8  ux_utility_thread_resume.o [69]
+  .text                   ro code   0x20d'810a          2      0x4e  ux_device_class_cdc_acm_entry.o [75]
+  .text                   ro code   0x20d'8158          2      0x44  ux_device_class_cdc_acm_unitialize.o [75]
+  .text                   ro code   0x20d'819c          2       0x4  heaptramp0.o [81]
+  .text                   ro code   0x20d'81a0          2      0x16  xprout.o [81]
+  .text                   ro code   0x20d'81b6          2      0x20  putchar.o [81]
+  .text                   ro code   0x20d'81d6          2      0x10  write.o [84]
+  .text                   ro code   0x20d'81e6          2      0x1e  dwrite.o [84]
+  .text                   ro code   0x20d'8204          2      0x22  iarwrite.o [84]
+  .rodata                 const     0x20d'8226                  0x8  Motor_Driver_task.o [73]
+  .rodata                 const     0x20d'822e                  0x8  Motor_Driver_task.o [73]
+  .rodata                 const     0x20d'8236                  0x8  Motor_Driver_task.o [73]
+                                  - 0x20d'823e             0xd'805e
 
 "A1":                                                           0x0
   TZ_FLASH                          0x21f'8000                  0x0  <Block>
@@ -9476,7 +9476,7 @@ Unused ranges:
          ----           --       ----
          0x18       0xffff     0xffe8
    0x200'01d8   0x200'01df        0x8
-   0x20d'8286   0x21f'7fff  0x11'fd7a
+   0x20d'823e   0x21f'7fff  0x11'fdc2
   0x2000'0000  0x2000'ffff   0x1'0000
   0x2200'06cc  0x2200'06cf        0x4
   0x2200'2248  0x2200'2fff      0xdb8
@@ -9683,11 +9683,11 @@ D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\Out\Obj\VT100_18299657575648422751
     Total:                                                      56'434            51'678   27'888
 
 D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\Out\Obj\YAFFS2_3140758475801728502.dir: [24]
-    yaffs_nor_adapter.o                                            346
+    yaffs_nor_adapter.o                                            274
     yaffs_nor_device.o                                              16             3'742    3'740
     yaffs_osglue.o                                                 156                         93
     ---------------------------------------------------------------------------------------------
-    Total:                                                         518             3'742    3'833
+    Total:                                                         446             3'742    3'833
 
 D:\Embedded\Projects\OpenSource\MC80\MC80_4DC\Out\Obj\YAFFS_direct_16809459109005545922.dir: [25]
     yaffs_allocator.o                                              846               156
@@ -10798,7 +10798,7 @@ shb_l.a: [84]
     Gaps                                                           149                          3
     Linker created                                                  88       48       50
 -------------------------------------------------------------------------------------------------
-    Grand Total:                                               486'623    1'378  398'855  571'976
+    Grand Total:                                               486'551    1'378  398'855  571'976
 
 
 *******************************************************************************
@@ -10814,14 +10814,14 @@ Entry                       Address      Size  Type      Object
 .code_in_ram$$Length          0x54c             --   Gb  - Linker created -
 .code_in_ram$$Limit     0x2200'06cc             --   Gb  - Linker created -
 .code_in_ram_init$$Base
-                         0x20d'27d4             --   Gb  - Linker created -
+                         0x20d'278c             --   Gb  - Linker created -
 .code_in_ram_init$$Limit
-                         0x20d'2d20             --   Gb  - Linker created -
+                         0x20d'2cd8             --   Gb  - Linker created -
 .data$$Base             0x2200'06d0             --   Gb  - Linker created -
 .data$$Length                0x1b78             --   Gb  - Linker created -
 .data$$Limit            0x2200'2248             --   Gb  - Linker created -
-.data_init$$Base         0x20d'2d20             --   Gb  - Linker created -
-.data_init$$Limit        0x20d'4898             --   Gb  - Linker created -
+.data_init$$Base         0x20d'2cd8             --   Gb  - Linker created -
+.data_init$$Limit        0x20d'4850             --   Gb  - Linker created -
 AGT0_callback            0x20a'4829       0x8  Code  Gb  Manual_Encoder.o [9]
 Access_control           0x20a'e5dd      0x98  Code  Gb  Monitor_access_control.o [23]
 Adc_driver_calculate_scaling_factors
@@ -12717,8 +12717,8 @@ Pwm_update_all_phases_callback
                          0x206'd7d5     0x27e  Code  Gb  PWM_timer_driver.o [4]
 RAM_CODE$$Base          0x2200'0180             --   Gb  - Linker created -
 RAM_CODE$$Limit         0x2200'06cc             --   Gb  - Linker created -
-RAM_INIT_CODE$$Base      0x20d'27d4             --   Gb  - Linker created -
-RAM_INIT_CODE$$Limit     0x20d'2d20             --   Gb  - Linker created -
+RAM_INIT_CODE$$Base      0x20d'278c             --   Gb  - Linker created -
+RAM_INIT_CODE$$Limit     0x20d'2cd8             --   Gb  - Linker created -
 RAM_pool_create          0x206'e749      0x22  Code  Lc  Memory_manager.o [4]
 RM_BLOCK_MEDIA_SDMMC_CallbackSet
                          0x20d'11c3       0xa  Code  Gb  rm_block_media_sdmmc.o [56]
@@ -13159,19 +13159,19 @@ Write_to_IO_extender     0x206'a94d      0xd4  Code  Gb  IO_extender.o [2]
 X_OFFSET                0x2207'4770       0x4  Data  Lc  SPI_Display.o [2]
 Y_OFFSET                0x2207'4774       0x4  Data  Lc  SPI_Display.o [2]
 Yaffs_nor_check_bad_block
-                         0x20d'254b       0x4  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_deinitialise   0x20d'2589       0x4  Code  Gb  yaffs_nor_adapter.o [24]
+                         0x20d'2503       0x4  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_deinitialise   0x20d'2541       0x4  Code  Gb  yaffs_nor_adapter.o [24]
 Yaffs_nor_device_init    0x20c'5825       0xc  Code  Gb  yaffs_nor_device.o [24]
-Yaffs_nor_erase_block    0x20d'251f      0x2c  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_initialise     0x20d'2553      0x2e  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_erase_block    0x20d'24d7      0x2c  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_initialise     0x20d'250b      0x2c  Code  Gb  yaffs_nor_adapter.o [24]
 Yaffs_nor_mark_bad_block
-                         0x20d'254f       0x4  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_read_chunk     0x20d'2597      0x14  Code  Gb  yaffs_nor_adapter.o [24]
+                         0x20d'2507       0x4  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_read_chunk     0x20d'254f      0x14  Code  Gb  yaffs_nor_adapter.o [24]
 Yaffs_nor_read_chunk_tags
-                         0x20d'24bf      0x60  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_write_chunk    0x20d'258d       0xa  Code  Gb  yaffs_nor_adapter.o [24]
+                         0x20d'2499      0x3e  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_write_chunk    0x20d'2545       0xa  Code  Gb  yaffs_nor_adapter.o [24]
 Yaffs_nor_write_chunk_tags
-                         0x20d'2451      0x6e  Code  Gb  yaffs_nor_adapter.o [24]
+                         0x20d'2451      0x46  Code  Gb  yaffs_nor_adapter.o [24]
 _565rgb_buffer_toggle    0x20a'3f3b      0x12  Code  Lc  HMI.o [9]
 _565rgb_driver_setup     0x20a'3f4d      0x1a  Code  Lc  HMI.o [9]
 _Adc_configure_channels
@@ -13597,7 +13597,7 @@ _Process_tmc6200_commands
                          0x206'bedf     0x120  Code  Lc  TMC6200_Monitoring_task.o [73]
 _Process_tmc6200_commands::__FUNCTION__
                          0x205'c50c      0x1c  Data  Lc  TMC6200_Monitoring_task.o [73]
-_Prout                   0x20d'81e9      0x16  Code  Gb  xprout.o [81]
+_Prout                   0x20d'81a1      0x16  Code  Gb  xprout.o [81]
 _Push_dir_to_stack       0x20b'8771      0x56  Code  Lc  Monitor_FileX.o [23]
 _Push_dir_to_stack       0x20b'aa29      0x56  Code  Lc  Monitor_LittleFS.o [23]
 _Push_dir_to_stack       0x20c'2159      0x56  Code  Lc  Monitor_YFFS2.o [23]
@@ -13735,19 +13735,19 @@ __aeabi_memmove8         0x207'a3ed            Code  Gb  ABImemmove.o [83]
 __aeabi_memset           0x206'0899            Code  Gb  ABImemset.o [83]
 __aeabi_ui2d             0x206'3987       0xe  Code  Gb  U32ToDbl.o [82]
 __aeabi_uldivmod         0x206'0e81            Code  Gb  I64DivMod.o [83]
-__basic_free             0x20d'267d      0x16  Code  Gb  heap0.o [81]
-__basic_free_intern      0x20d'2693      0x74  Code  Lc  heap0.o [81]
-__basic_malloc           0x20d'25d1      0x18  Code  Gb  heap0.o [81]
-__basic_malloc_intern    0x20d'25e9      0x94  Code  Lc  heap0.o [81]
+__basic_free             0x20d'2635      0x16  Code  Gb  heap0.o [81]
+__basic_free_intern      0x20d'264b      0x74  Code  Lc  heap0.o [81]
+__basic_malloc           0x20d'2589      0x18  Code  Gb  heap0.o [81]
+__basic_malloc_intern    0x20d'25a1      0x94  Code  Lc  heap0.o [81]
 __bl_FSP_BOOTABLE_IMAGE {Abs}
                                 0x1             --   Gb  <internal module>
 __bln_FSP_BOOTABLE_IMAGE {Abs}
                                 0x1             --   Gb  <internal module>
 __call_ctors             0x20d'1571      0x18  Code  Gb  cppinit.o [81]
-__data_GetMemChunk       0x20d'270d      0x2c  Code  Gb  xgetmemchunk.o [81]
+__data_GetMemChunk       0x20d'26c5      0x2c  Code  Gb  xgetmemchunk.o [81]
 __data_GetMemChunk::start
                         0x2208'7338       0x4  Data  Lc  xgetmemchunk.o [81]
-__dwrite                 0x20d'822f      0x1e  Code  Gb  dwrite.o [84]
+__dwrite                 0x20d'81e7      0x1e  Code  Gb  dwrite.o [84]
 __exit                   0x206'4141      0x14  Code  Gb  exit.o [84]
 __iar_Daysto64           0x20c'e9c5      0x66  Code  Gb  xDaysTo64.o [81]
 __iar_Errno             0x2208'cd48       0x4  Tls   Gb  errno.o [81]
@@ -13780,7 +13780,7 @@ __iar_frexp32            0x207'b359            Code  Gb  frexpf.o [82]
 __iar_frexp64            0x206'3849            Code  Gb  frexp.o [82]
 __iar_frexpf             0x207'b36d            Code  Gb  frexpf.o [82]
 __iar_frexpl             0x206'386d            Code  Gb  frexp.o [82]
-__iar_init_vfp           0x20d'25ad            Code  Gb  fpinit_M.o [82]
+__iar_init_vfp           0x20d'2565            Code  Gb  fpinit_M.o [82]
 __iar_ldexp32            0x207'b3a1            Code  Gb  ldexpf.o [82]
 __iar_ldexp64            0x206'3421            Code  Gb  ldexp.o [82]
 __iar_log32              0x206'09a1            Code  Gb  logf.o [82]
@@ -13795,8 +13795,8 @@ __iar_scalbln32          0x207'b3a1            Code  Gb  ldexpf.o [82]
 __iar_scalbln64          0x206'3421            Code  Gb  ldexp.o [82]
 __iar_scalbn32           0x207'b3a1            Code  Gb  ldexpf.o [82]
 __iar_scalbn64           0x206'3421            Code  Gb  ldexp.o [82]
-__iar_sh_stdout_swo      0x20d'2739      0x4c  Code  Gb  iarwstdswo.o [84]
-__iar_sh_write           0x20d'824d      0x22  Code  Gb  iarwrite.o [84]
+__iar_sh_stdout_swo      0x20d'26f1      0x4c  Code  Gb  iarwstdswo.o [84]
+__iar_sh_write           0x20d'8205      0x22  Code  Gb  iarwrite.o [84]
 __iar_softfp___iar_Sto64
                          0x206'3403       0x8  Code  Gb  math_wrappers64.o [82]
 __iar_softfp___iar_frexp64
@@ -13865,7 +13865,7 @@ __tz_QSPI_FLASH_S {Abs}
                         0x6000'0000             --   Gb  <internal module>
 __tz_RAM_S {Abs}        0x2200'0000             --   Gb  <internal module>
 __tz_SDRAM_S {Abs}      0x6800'0000             --   Gb  <internal module>
-__write                  0x20d'821f      0x10  Code  Gb  write.o [84]
+__write                  0x20d'81d7      0x10  Code  Gb  write.o [84]
 _acDownBuffer           0x2200'5000    0x1000  Data  Lc  SEGGER_RTT.o [18]
 _acUpBuffer             0x2200'4000    0x1000  Data  Lc  SEGGER_RTT.o [18]
 _bit_buffer             0x2204'7e04       0x4  Data  Lc  gx_image_reader_png_decode.o [72]
@@ -14118,7 +14118,7 @@ _gx_canvas_rectangle_draw
                          0x209'296b     0x1be  Code  Gb  gx_canvas_rectangle_draw.o [72]
 _gx_canvas_rectangle_fill
                          0x209'2905      0x66  Code  Lc  gx_canvas_rectangle_draw.o [72]
-_gx_canvas_shift         0x20d'48a3      0x18  Code  Gb  gx_canvas_shift.o [72]
+_gx_canvas_shift         0x20d'485b      0x18  Code  Gb  gx_canvas_shift.o [72]
 _gx_canvas_text_draw_ext
                          0x209'2b2d     0x176  Code  Gb  gx_canvas_text_draw.o [72]
 _gx_context_brush_default
@@ -14149,13 +14149,13 @@ _gx_display_driver_16bpp_4444argb_pixelmap_compressed_write
 _gx_display_driver_16bpp_4444argb_pixelmap_raw_write
                          0x209'5be7      0xc2  Code  Lc  gx_display_driver_16bpp_pixelmap_draw.o [72]
 _gx_display_driver_16bpp_block_move
-                         0x20d'48bb     0x210  Code  Gb  gx_display_driver_16bpp_block_move.o [72]
+                         0x20d'4873     0x210  Code  Gb  gx_display_driver_16bpp_block_move.o [72]
 _gx_display_driver_16bpp_canvas_copy
-                         0x20d'4acb      0xc4  Code  Gb  gx_display_driver_16bpp_canvas_copy.o [72]
+                         0x20d'4a83      0xc4  Code  Gb  gx_display_driver_16bpp_canvas_copy.o [72]
 _gx_display_driver_16bpp_glyph_1bit_draw
-                         0x20d'5935     0x384  Code  Gb  gx_display_driver_565rgb_glyph_1bit_draw.o [72]
+                         0x20d'58ed     0x384  Code  Gb  gx_display_driver_565rgb_glyph_1bit_draw.o [72]
 _gx_display_driver_16bpp_horizontal_line_draw
-                         0x20d'4b8f      0x64  Code  Gb  gx_display_driver_16bpp_horizontal_line_draw.o [72]
+                         0x20d'4b47      0x64  Code  Gb  gx_display_driver_16bpp_horizontal_line_draw.o [72]
 _gx_display_driver_16bpp_horizontal_pattern_line_draw
                          0x206'dee7      0x4a  Code  Gb  gx_display_driver_16bpp_horizontal_pattern_line_draw.o [72]
 _gx_display_driver_16bpp_pixel_write
@@ -14171,37 +14171,37 @@ _gx_display_driver_16bpp_pixelmap_simple_alpha_rotate
 _gx_display_driver_16bpp_pixelmap_simple_rotate
                          0x209'3ad9     0x1dc  Code  Gb  gx_display_driver_16bpp_pixelmap_rotate.o [72]
 _gx_display_driver_16bpp_row_pitch_get
-                         0x20d'4c3b       0x8  Code  Gb  gx_display_driver_16bpp_row_pitch_get.o [72]
+                         0x20d'4bf3       0x8  Code  Gb  gx_display_driver_16bpp_row_pitch_get.o [72]
 _gx_display_driver_16bpp_simple_line_draw
-                         0x20d'4c43     0x5a2  Code  Gb  gx_display_driver_16bpp_simple_line_draw.o [72]
+                         0x20d'4bfb     0x5a2  Code  Gb  gx_display_driver_16bpp_simple_line_draw.o [72]
 _gx_display_driver_16bpp_vertical_line_draw
-                         0x20d'569b      0x64  Code  Gb  gx_display_driver_16bpp_vertical_line_draw.o [72]
+                         0x20d'5653      0x64  Code  Gb  gx_display_driver_16bpp_vertical_line_draw.o [72]
 _gx_display_driver_16bpp_vertical_pattern_line_draw
-                         0x20d'574b      0x54  Code  Gb  gx_display_driver_16bpp_vertical_pattern_line_draw.o [72]
+                         0x20d'5703      0x54  Code  Gb  gx_display_driver_16bpp_vertical_pattern_line_draw.o [72]
 _gx_display_driver_565rgb_4444argb_pixelmap_raw_blend
                          0x209'7edf      0xbe  Code  Lc  gx_display_driver_16bpp_pixelmap_blend.o [72]
 _gx_display_driver_565rgb_YCbCr2RGB
                          0x209'3ef5      0x80  Code  Gb  gx_display_driver_565rgb_jpeg_draw.o [72]
 _gx_display_driver_565rgb_canvas_blend
-                         0x20d'579f     0x196  Code  Gb  gx_display_driver_565rgb_canvas_blend.o [72]
+                         0x20d'5757     0x196  Code  Gb  gx_display_driver_565rgb_canvas_blend.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_alpha_blend
-                         0x20d'5d27      0x9c  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'5cdf      0x9c  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_alpha_write
-                         0x20d'60cd      0x7a  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'6085      0x7a  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_alpha_blend
-                         0x20d'5f03     0x172  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'5ebb     0x172  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_alpha_write
-                         0x20d'6233     0x142  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'61eb     0x142  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_blend
-                         0x20d'5dc3     0x140  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'5d7b     0x140  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_compressed_write
-                         0x20d'6147      0xec  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'60ff      0xec  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_draw
-                         0x20d'6375      0xd6  Code  Gb  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'632d      0xd6  Code  Gb  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_raw_blend
-                         0x20d'5cb9      0x6e  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'5c71      0x6e  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_horizontal_pixelmap_line_raw_write
-                         0x20d'6075      0x58  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
+                         0x20d'602d      0x58  Code  Lc  gx_display_driver_565rgb_horizontal_pixelmap_line_draw.o [72]
 _gx_display_driver_565rgb_jpeg_draw
                          0x209'4047      0x18  Code  Gb  gx_display_driver_565rgb_jpeg_draw.o [72]
 _gx_display_driver_565rgb_mcu_draw
@@ -14255,9 +14255,9 @@ _gx_display_driver_generic_aliased_ellipse_draw
 _gx_display_driver_generic_aliased_filled_circle_draw
                          0x209'a49d     0x32c  Code  Gb  gx_display_driver_generic_aliased_filled_circle_draw.o [72]
 _gx_display_driver_generic_aliased_fixed_point_line_draw
-                         0x20d'644b     0x53e  Code  Gb  gx_display_driver_generic_aliased_fixed_point_line_draw.o [72]
+                         0x20d'6403     0x53e  Code  Gb  gx_display_driver_generic_aliased_fixed_point_line_draw.o [72]
 _gx_display_driver_generic_aliased_line_draw
-                         0x20d'6989     0x5d2  Code  Gb  gx_display_driver_generic_aliased_line_draw.o [72]
+                         0x20d'6941     0x5d2  Code  Gb  gx_display_driver_generic_aliased_line_draw.o [72]
 _gx_display_driver_generic_aliased_wide_arc_draw
                          0x209'b091     0x348  Code  Gb  gx_display_driver_generic_aliased_wide_arc_draw.o [72]
 _gx_display_driver_generic_aliased_wide_circle_draw
@@ -14265,17 +14265,17 @@ _gx_display_driver_generic_aliased_wide_circle_draw
 _gx_display_driver_generic_aliased_wide_ellipse_draw
                          0x209'b749     0x444  Code  Gb  gx_display_driver_generic_aliased_wide_ellipse_draw.o [72]
 _gx_display_driver_generic_aliased_wide_line_draw
-                         0x20d'6f5b     0x1a4  Code  Gb  gx_display_driver_generic_aliased_wide_line_draw.o [72]
+                         0x20d'6f13     0x1a4  Code  Gb  gx_display_driver_generic_aliased_wide_line_draw.o [72]
 _gx_display_driver_generic_alphamap_compressed_alpha_draw
-                         0x20d'718d     0x124  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
+                         0x20d'7145     0x124  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
 _gx_display_driver_generic_alphamap_compressed_draw
-                         0x20d'7331     0x10e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
+                         0x20d'72e9     0x10e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
 _gx_display_driver_generic_alphamap_draw
-                         0x20d'743f      0x40  Code  Gb  gx_display_driver_generic_alphamap_draw.o [72]
+                         0x20d'73f7      0x40  Code  Gb  gx_display_driver_generic_alphamap_draw.o [72]
 _gx_display_driver_generic_alphamap_raw_alpha_draw
-                         0x20d'70ff      0x8e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
+                         0x20d'70b7      0x8e  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
 _gx_display_driver_generic_alphamap_raw_draw
-                         0x20d'72b1      0x80  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
+                         0x20d'7269      0x80  Code  Lc  gx_display_driver_generic_alphamap_draw.o [72]
 _gx_display_driver_generic_arc_draw
                          0x209'bb8d     0x2a4  Code  Gb  gx_display_driver_generic_arc_draw.o [72]
 _gx_display_driver_generic_arc_fill
@@ -14291,13 +14291,13 @@ _gx_display_driver_generic_ellipse_fill
 _gx_display_driver_generic_filled_circle_draw
                          0x209'ced1     0x25c  Code  Gb  gx_display_driver_generic_filled_circle_draw.o [72]
 _gx_display_driver_generic_glyph_4bit_draw
-                         0x20d'747f     0x2be  Code  Gb  gx_display_driver_generic_glyph_4bpp_draw.o [72]
+                         0x20d'7437     0x2be  Code  Gb  gx_display_driver_generic_glyph_4bpp_draw.o [72]
 _gx_display_driver_generic_glyph_8bit_draw
-                         0x20d'773d     0x132  Code  Gb  gx_display_driver_generic_glyph_8bpp_draw.o [72]
+                         0x20d'76f5     0x132  Code  Gb  gx_display_driver_generic_glyph_8bpp_draw.o [72]
 _gx_display_driver_generic_pie_fill
-                         0x20d'786f     0x162  Code  Gb  gx_display_driver_generic_pie_fill.o [72]
+                         0x20d'7827     0x162  Code  Gb  gx_display_driver_generic_pie_fill.o [72]
 _gx_display_driver_generic_polygon_draw
-                         0x20d'79d1      0x70  Code  Gb  gx_display_driver_generic_polygon_draw.o [72]
+                         0x20d'7989      0x70  Code  Gb  gx_display_driver_generic_polygon_draw.o [72]
 _gx_display_driver_generic_polygon_fill
                          0x209'd685     0x14c  Code  Gb  gx_display_driver_generic_polygon_fill.o [72]
 _gx_display_driver_generic_polygon_fill::aet
@@ -14313,7 +14313,7 @@ _gx_display_driver_generic_simple_pie_fill
 _gx_display_driver_generic_simple_wide_arc_draw
                          0x209'e179     0x56e  Code  Lc  gx_display_driver_generic_wide_arc_draw.o [72]
 _gx_display_driver_generic_simple_wide_line_draw
-                         0x20d'7a41     0x18e  Code  Gb  gx_display_driver_generic_simple_wide_line_draw.o [72]
+                         0x20d'79f9     0x18e  Code  Gb  gx_display_driver_generic_simple_wide_line_draw.o [72]
 _gx_display_driver_generic_wide_arc_draw
                          0x209'e6f1     0x308  Code  Gb  gx_display_driver_generic_wide_arc_draw.o [72]
 _gx_display_driver_generic_wide_circle_draw
@@ -14325,7 +14325,7 @@ _gx_display_driver_generic_wide_line_fill
 _gx_display_driver_generic_wide_line_points_calculate
                          0x209'f3b9     0x1d8  Code  Gb  gx_display_driver_generic_wide_line_points_calculate.o [72]
 _gx_display_driver_horizontal_line_alpha_draw
-                         0x20d'4bf3      0x48  Code  Gb  gx_display_driver_horizontal_line_alpha_draw.o [72]
+                         0x20d'4bab      0x48  Code  Gb  gx_display_driver_horizontal_line_alpha_draw.o [72]
 _gx_display_driver_polygon_active_edge_insert
                          0x209'd323      0x8c  Code  Lc  gx_display_driver_generic_polygon_fill.o [72]
 _gx_display_driver_polygon_active_edge_table_update_and_restore
@@ -14341,9 +14341,9 @@ _gx_display_driver_polygon_pixelmap_scan_line_draw
 _gx_display_driver_polygon_scan_line_draw
                          0x209'd405      0xac  Code  Lc  gx_display_driver_generic_polygon_fill.o [72]
 _gx_display_driver_simple_line_alpha_draw
-                         0x20d'51e5     0x4b6  Code  Gb  gx_display_driver_simple_line_alpha_draw.o [72]
+                         0x20d'519d     0x4b6  Code  Gb  gx_display_driver_simple_line_alpha_draw.o [72]
 _gx_display_driver_vertical_line_alpha_draw
-                         0x20d'56ff      0x4c  Code  Gb  gx_display_driver_vertical_line_alpha_draw.o [72]
+                         0x20d'56b7      0x4c  Code  Gb  gx_display_driver_vertical_line_alpha_draw.o [72]
 _gx_display_font_table_set
                          0x20a'2f91       0xe  Code  Gb  gx_display_font_table_set.o [72]
 _gx_display_language_table_set_ext
@@ -14556,7 +14556,7 @@ _gx_multi_line_text_view_create
 _gx_multi_line_text_view_display_info_get
                          0x20a'08c5     0x170  Code  Gb  gx_multi_line_text_view_display_info_get.o [72]
 _gx_multi_line_text_view_draw
-                         0x20d'7bcf      0x32  Code  Gb  gx_multi_line_text_view_draw.o [72]
+                         0x20d'7b87      0x32  Code  Gb  gx_multi_line_text_view_draw.o [72]
 _gx_multi_line_text_view_event_process
                          0x209'f865      0xf0  Code  Gb  gx_multi_line_text_view_event_process.o [72]
 _gx_multi_line_text_view_line_cache_update
@@ -14592,15 +14592,15 @@ _gx_multi_line_text_view_visible_rows_compute
 _gx_multi_line_text_view_whitespace_set
                          0x20a'32a9      0x36  Code  Gb  gx_multi_line_text_view_whitespace_set.o [72]
 _gx_prompt_create        0x20a'10d9      0x64  Code  Gb  gx_prompt_create.o [72]
-_gx_prompt_draw          0x20d'7c01      0x18  Code  Gb  gx_prompt_draw.o [72]
+_gx_prompt_draw          0x20d'7bb9      0x18  Code  Gb  gx_prompt_draw.o [72]
 _gx_prompt_event_process
                          0x20a'113d      0x44  Code  Gb  gx_prompt_event_process.o [72]
 _gx_prompt_font_set      0x20a'3381      0x14  Code  Gb  gx_prompt_font_set.o [72]
 _gx_prompt_text_color_set
                          0x20a'33d5      0x18  Code  Gb  gx_prompt_text_color_set.o [72]
-_gx_prompt_text_draw     0x20d'7c3f      0x52  Code  Gb  gx_prompt_text_draw.o [72]
+_gx_prompt_text_draw     0x20d'7bf7      0x52  Code  Gb  gx_prompt_text_draw.o [72]
 _gx_prompt_text_get_ext
-                         0x20d'7d73      0x22  Code  Gb  gx_prompt_text_get.o [72]
+                         0x20d'7d2b      0x22  Code  Gb  gx_prompt_text_get.o [72]
 _gx_prompt_text_set_ext
                          0x20a'3451      0x48  Code  Gb  gx_prompt_text_set.o [72]
 _gx_rich_text_resource_id_read
@@ -14620,11 +14620,11 @@ _gx_rich_text_view_context_save
 _gx_rich_text_view_create
                          0x20a'1285      0x58  Code  Gb  gx_rich_text_view_create.o [72]
 _gx_rich_text_view_draw
-                         0x20d'7d95      0x18  Code  Gb  gx_rich_text_view_draw.o [72]
+                         0x20d'7d4d      0x18  Code  Gb  gx_rich_text_view_draw.o [72]
 _gx_rich_text_view_line_info_get
                          0x20a'1b8b     0x1fa  Code  Gb  gx_rich_text_view_line_info_get.o [72]
 _gx_rich_text_view_scroll_info_get
-                         0x20d'7dad      0xd0  Code  Gb  gx_rich_text_view_scroll_info_get.o [72]
+                         0x20d'7d65      0xd0  Code  Gb  gx_rich_text_view_scroll_info_get.o [72]
 _gx_rich_text_view_single_line_draw
                          0x20a'1671     0x252  Code  Lc  gx_rich_text_view_text_draw.o [72]
 _gx_rich_text_view_tag_close
@@ -14842,7 +14842,7 @@ _gx_utility_utf8_string_character_get
 _gx_widget_allocate      0x20a'2709      0x2c  Code  Gb  gx_widget_allocate.o [72]
 _gx_widget_attach        0x209'092b      0x2e  Code  Gb  gx_widget_attach.o [72]
 _gx_widget_background_draw
-                         0x20d'7c19      0x26  Code  Gb  gx_widget_background_draw.o [72]
+                         0x20d'7bd1      0x26  Code  Gb  gx_widget_background_draw.o [72]
 _gx_widget_block_move    0x209'054f      0xce  Code  Gb  gx_widget_block_move.o [72]
 _gx_widget_border_draw   0x20a'281d     0x50a  Code  Gb  gx_widget_border_draw.o [72]
 _gx_widget_border_width_get
@@ -14870,7 +14870,7 @@ _gx_widget_delete        0x209'08fd      0x2e  Code  Gb  gx_widget_delete.o [72]
 _gx_widget_delete_helper
                          0x209'089d      0x5c  Code  Lc  gx_widget_delete.o [72]
 _gx_widget_detach        0x209'0835      0x2a  Code  Gb  gx_widget_detach.o [72]
-_gx_widget_draw          0x20d'7e7d      0x12  Code  Gb  gx_widget_draw.o [72]
+_gx_widget_draw          0x20d'7e35      0x12  Code  Gb  gx_widget_draw.o [72]
 _gx_widget_draw_set      0x20a'37e1       0x6  Code  Gb  gx_widget_draw_set.o [72]
 _gx_widget_event_generate
                          0x20a'045b      0x36  Code  Gb  gx_widget_event_generate.o [72]
@@ -14909,7 +14909,7 @@ _gx_widget_status_remove
 _gx_widget_string_get_ext
                          0x20a'0099      0x38  Code  Gb  gx_widget_string_get.o [72]
 _gx_widget_text_draw_ext
-                         0x20d'7c91      0xe2  Code  Gb  gx_widget_text_draw.o [72]
+                         0x20d'7c49      0xe2  Code  Gb  gx_widget_text_draw.o [72]
 _gx_widget_unlink        0x209'14c5      0x74  Code  Gb  gx_widget_unlink.o [72]
 _gx_widget_width_get     0x209'0e8d       0xe  Code  Gb  gx_widget_width_get.o [72]
 _gx_window_background_draw
@@ -14925,11 +14925,11 @@ _gx_window_event_process
                          0x209'f955     0x178  Code  Gb  gx_window_event_process.o [72]
 _gx_window_root_create   0x20a'2d41      0x70  Code  Gb  gx_window_root_create.o [72]
 _gx_window_root_event_process
-                         0x20d'7e8f      0x46  Code  Gb  gx_window_root_event_process.o [72]
+                         0x20d'7e47      0x46  Code  Gb  gx_window_root_event_process.o [72]
 _gx_window_root_find     0x209'1a87      0x20  Code  Gb  gx_window_root_find.o [72]
 _gx_window_scroll        0x20a'0021      0x78  Code  Gb  gx_window_scroll.o [72]
 _gx_window_scroll_info_get
-                         0x20d'7ed5      0xb4  Code  Gb  gx_window_scroll_info_get.o [72]
+                         0x20d'7e8d      0xb4  Code  Gb  gx_window_scroll_info_get.o [72]
 _gx_window_scrollbar_find
                          0x20a'011d      0x2e  Code  Gb  gx_window_scrollbar_find.o [72]
 _gx_window_view_update_detect
@@ -15517,7 +15517,7 @@ _txe_thread_resume       0x20a'f619      0x20  Code  Gb  txe_thread_resume.o [74
 _txe_thread_suspend      0x20a'f639      0x20  Code  Gb  txe_thread_suspend.o [74]
 _txe_thread_terminate    0x208'b7dd      0x38  Code  Gb  txe_thread_terminate.o [74]
 _ux_device_class_cdc_acm_activate
-                         0x20d'7f89      0x1c  Code  Gb  ux_device_class_cdc_acm_activate.o [75]
+                         0x20d'7f41      0x1c  Code  Gb  ux_device_class_cdc_acm_activate.o [75]
 _ux_device_class_cdc_acm_bulkin_thread
                          0x20d'1fdd      0xd8  Code  Gb  ux_device_class_cdc_acm_bulkin_thread.o [75]
 _ux_device_class_cdc_acm_bulkout_thread
@@ -15525,17 +15525,17 @@ _ux_device_class_cdc_acm_bulkout_thread
 _ux_device_class_cdc_acm_control_request
                          0x20d'213d      0xe4  Code  Gb  ux_device_class_cdc_acm_control_request.o [75]
 _ux_device_class_cdc_acm_deactivate
-                         0x20d'7fa5      0x4c  Code  Gb  ux_device_class_cdc_acm_deactivate.o [75]
+                         0x20d'7f5d      0x4c  Code  Gb  ux_device_class_cdc_acm_deactivate.o [75]
 _ux_device_class_cdc_acm_entry
-                         0x20d'8153      0x4e  Code  Gb  ux_device_class_cdc_acm_entry.o [75]
+                         0x20d'810b      0x4e  Code  Gb  ux_device_class_cdc_acm_entry.o [75]
 _ux_device_class_cdc_acm_initialize
                          0x20d'223d     0x19c  Code  Gb  ux_device_class_cdc_acm_initialize.o [75]
 _ux_device_class_cdc_acm_ioctl
-                         0x20d'7ff1     0x15a  Code  Gb  ux_device_class_cdc_acm_ioctl.o [75]
+                         0x20d'7fa9     0x15a  Code  Gb  ux_device_class_cdc_acm_ioctl.o [75]
 _ux_device_class_cdc_acm_read
                          0x208'bf8d      0xf6  Code  Gb  ux_device_class_cdc_acm_read.o [75]
 _ux_device_class_cdc_acm_uninitialize
-                         0x20d'81a1      0x44  Code  Gb  ux_device_class_cdc_acm_unitialize.o [75]
+                         0x20d'8159      0x44  Code  Gb  ux_device_class_cdc_acm_unitialize.o [75]
 _ux_device_class_cdc_acm_write
                          0x208'be81     0x106  Code  Gb  ux_device_class_cdc_acm_write.o [75]
 _ux_device_stack_alternate_setting_set
@@ -15624,7 +15624,7 @@ _ux_utility_thread_create
 _ux_utility_thread_delete
                          0x20d'2437      0x12  Code  Gb  ux_utility_thread_delete.o [69]
 _ux_utility_thread_resume
-                         0x20d'814b       0x8  Code  Gb  ux_utility_thread_resume.o [69]
+                         0x20d'8103       0x8  Code  Gb  ux_utility_thread_resume.o [69]
 _ux_utility_thread_suspend
                          0x20b'3e49       0x8  Code  Gb  ux_utility_thread_suspend.o [69]
 _uxe_system_initialize   0x20a'ff4d      0x14  Code  Gb  ux_system_initialize.o [69]
@@ -16134,7 +16134,7 @@ fmstr_tsaBuffSize       0x2204'3c0c       0x4  Data  Lc  freemaster_tsa.o [7]
 fmstr_tsaTableIndex     0x2204'3c14       0x4  Data  Lc  freemaster_tsa.o [7]
 font_SansPro_Regular_ttf_18_aa
                          0x200'73dc     0x474  Data  Lc  gx_system_font_8bpp.o [72]
-free                     0x20d'81e5       0x4  Code  Gb  heaptramp0.o [81]
+free                     0x20d'819d       0x4  Code  Gb  heaptramp0.o [81]
 freemaster_stack        0x2208'b0f8     0x800  Data  Lc  FreeMaster_thread.o [7]
 freemaster_thread       0x2204'3b24      0xe8  Data  Lc  FreeMaster_thread.o [7]
 frexp                    0x206'3849            Code  Gb  frexp.o [82]
@@ -16281,10 +16281,10 @@ g_flash_on_flash_hp      0x205'b39c      0x4c  Data  Gb  r_flash_hp.o [47]
 g_freemaster_interface_type
                         0x2204'3b20       0x4  Data  Gb  FreeMaster_thread.o [7]
 g_fs_test_config        0x2204'7b28      0x18  Data  Gb  FS_Test_Config.o [23]
-g_fsp_version            0x20d'2784       0x4  Data  Lc  bsp_common.o [27]
+g_fsp_version            0x20d'273c       0x4  Data  Lc  bsp_common.o [27]
 g_fsp_version_build_string
-                         0x20d'2790      0x44  Data  Lc  bsp_common.o [27]
-g_fsp_version_string     0x20d'2788       0x8  Data  Lc  bsp_common.o [27]
+                         0x20d'2748      0x44  Data  Lc  bsp_common.o [27]
+g_fsp_version_string     0x20d'2740       0x8  Data  Lc  bsp_common.o [27]
 g_fx_spi_nor_media      0x2201'3d90    0xdba8  Data  Gb  LevelX_config.o [2]
 g_gpt_registers          0x205'b2b8      0x18  Data  Lc  PWM_timer_driver.o [4]
 g_hcd_mbx_hdl           0x2207'2748      0x54  Data  Lc  r_usb_cstd_rtos.o [32]
@@ -16435,7 +16435,7 @@ g_saved_drv2_en_state   0x2208'738a       0x1  Data  Lc  Monitor_Motor.o [23]
 g_sdmmc                  0x200'0f20       0xc  Data  Gb  common_data.o [55]
 g_sdmmc_cfg             0x2200'0740      0x24  Data  Gb  common_data.o [55]
 g_sdmmc_ctrl            0x2203'3414     0x248  Data  Gb  common_data.o [55]
-g_sdmmc_dmac_callback    0x20d'4899       0xa  Code  Gb  common_data.o [55]
+g_sdmmc_dmac_callback    0x20d'4851       0xa  Code  Gb  common_data.o [55]
 g_sdmmc_on_sdhi          0x205'b3f0      0x34  Data  Gb  r_sdhi.o [52]
 g_sdmmc_transfer         0x200'0f14       0xc  Data  Gb  common_data.o [55]
 g_sdmmc_transfer_cfg     0x200'0f0c       0x8  Data  Gb  common_data.o [55]
@@ -17090,7 +17090,7 @@ pows                     0x207'5140      0x18  Data  Lc  strto32.o [82]
 prev_token               0x207'55e7      0x22  Code  Lc  jansson_pack_unpack.o [11]
 previous_encoder_value  0x2207'461c       0x4  Data  Lc  Screen_diagnostic_main.o [19]
 printf                   0x20a'cfe1      0x28  Code  Gb  printf.o [81]
-putchar                  0x20d'81ff      0x20  Code  Gb  putchar.o [81]
+putchar                  0x20d'81b7      0x20  Code  Gb  putchar.o [81]
 pwm_indx_to_comp        0x2207'1abc     0x320  Data  Lc  PWM_timer_driver.o [4]
 qsort                    0x207'ab29      0x18  Code  Gb  qsort.o [81]
 r_agt_common_preamble    0x20a'4fcd      0x26  Code  Lc  r_agt.o [40]
@@ -18209,7 +18209,7 @@ yaffsfs_readdir_no_lock
 [83] = rt7M_tl.a
 [84] = shb_l.a
 
-  486'623 bytes of readonly  code memory
+  486'551 bytes of readonly  code memory
     1'378 bytes of readwrite code memory
   398'855 bytes of readonly  data memory
   571'976 bytes of readwrite data memory
