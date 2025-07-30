@@ -61,11 +61,11 @@ typedef unsigned int       dev_t;   // Device ID type
 -----------------------------------------------------------------------------------------------------*/
 
 // Flash geometry configuration
-#define YAFFS_NOR_PAGE_TOTAL_SIZE       (4096)                                                   // Total page size (exactly 4KB) - matches NOR Flash sector size
+#define YAFFS_NOR_PAGE_TOTAL_SIZE       (1024)                                                   // Total page size (exactly 4KB) - matches NOR Flash sector size
 #define YAFFS_NOR_PAGE_OOB_SIZE         (0)                                                      // No separate OOB area (inband tags mode)
 #define YAFFS_NOR_PAGE_DATA_SIZE        (YAFFS_NOR_PAGE_TOTAL_SIZE - YAFFS_NOR_PAGE_OOB_SIZE)    // Data area per page (4096 bytes, includes 16-byte inband tags)
 
-#define YAFFS_NOR_PAGES_PER_BLOCK       (2)                                                      // Pages per block (minimum 2 pages required by YAFFS2)
+#define YAFFS_NOR_PAGES_PER_BLOCK       (64)                                                     // Pages per block (minimum 2 pages required by YAFFS2)
 #define YAFFS_NOR_BLOCK_SIZE            (YAFFS_NOR_PAGE_TOTAL_SIZE * YAFFS_NOR_PAGES_PER_BLOCK)  // 8192 bytes per block (8KB)
 
 // Filesystem layout configuration
