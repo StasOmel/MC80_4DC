@@ -273,9 +273,9 @@ static void _Ospi_display_custom_menu(T_ospi_operation_settings *settings, T_osp
   MPRINTF("  <2> - Configure size\n\r");
   MPRINTF("  <3> - Configure pattern\n\r");
   MPRINTF("  <4> - Read operation (memory-mapped with DMA)\n\r");
-  MPRINTF("  <5> - Read operation (memory-mapped without DMA)\n\r");
-  MPRINTF("  <6> - Read operation (via SPI commands)\n\r");
-  MPRINTF("  <7> - Read benchmark (DMA, pure speed test)\n\r");
+  MPRINTF("  <5> - Read benchmark (no DMA, pure speed test)\n\r");
+  MPRINTF("  <6> - Read benchmark (DMA, pure speed test)\n\r");
+  MPRINTF("  <7> - Read operation (via SPI commands)\n\r");
   MPRINTF("  <8> - Write operation\n\r");
   MPRINTF("  <9> - Erase operation\n\r");
   MPRINTF("  <A> - Switch protocol\n\r");
@@ -1191,9 +1191,9 @@ void OSPI_test_custom_operations(uint8_t keycode)
         break;
       }
 
-      case '5':  // Read operation (memory-mapped without DMA)
+      case '5':  // Read benchmark (no DMA, pure speed test)
       {
-        MPRINTF("\n\r===== Read Operation (Memory-Mapped without DMA) =====\n\r");
+        MPRINTF("\n\r===== Read Benchmark (no DMA, pure speed test) =====\n\r");
 
         // Allocate buffer
         uint8_t *read_buffer = (uint8_t *)App_malloc(settings.size);
@@ -1219,17 +1219,14 @@ void OSPI_test_custom_operations(uint8_t keycode)
 
         if (err == FSP_SUCCESS)
         {
-          MPRINTF("Memory-mapped read (no DMA)   : SUCCESS\n\r");
+          MPRINTF("Read benchmark (no DMA)       : SUCCESS\n\r");
           MPRINTF("Address                       : 0x%08X\n\r", settings.address);
           MPRINTF("Size                          : %u bytes\n\r", settings.size);
           MPRINTF("Time elapsed                  : %u us\n\r", elapsed_us);
           MPRINTF("Transfer speed                : ");
           _Ospi_display_speed(settings.size, elapsed_us);
 
-          // Display data (limited to prevent excessive output)
-          VT100_print_dump(settings.address, read_buffer, settings.size);
-
-          // Calculate and display checksum
+          // Calculate checksum for verification (no data display)
           uint32_t checksum = _Ospi_calculate_checksum(read_buffer, settings.size);
           MPRINTF("Data checksum (CRC32)         : 0x%08X\n\r", checksum);
 
@@ -1241,7 +1238,7 @@ void OSPI_test_custom_operations(uint8_t keycode)
         }
         else
         {
-          MPRINTF("Memory-mapped read (no DMA)   : FAILED (error: 0x%X)\n\r", err);
+          MPRINTF("Read benchmark (no DMA)       : FAILED (error: 0x%X)\n\r", err);
         }
 
         App_free(read_buffer);
@@ -1251,67 +1248,7 @@ void OSPI_test_custom_operations(uint8_t keycode)
         break;
       }
 
-      case '6':  // Read operation (via SPI commands)
-      {
-        MPRINTF("\n\r===== Read Operation (via SPI commands) =====\n\r");
-
-        // Allocate buffer
-        uint8_t *read_buffer = (uint8_t *)App_malloc(settings.size);
-        if (read_buffer == NULL)
-        {
-          MPRINTF("ERROR: Failed to allocate %u bytes for read buffer\n\r", settings.size);
-          MPRINTF("Press any key to continue...\n\r");
-          uint8_t dummy_key;
-          WAIT_CHAR(&dummy_key, ms_to_ticks(100000));
-          break;
-        }
-
-        // Clear buffer
-        memset(read_buffer, 0x00, settings.size);
-
-        // Measure time and perform direct read
-        T_sys_timestump start_time;
-        Get_hw_timestump(&start_time);
-        fsp_err_t       err = Mc80_ospi_direct_read(g_mc80_ospi.p_ctrl, read_buffer, settings.address, settings.size);
-        T_sys_timestump end_time;
-        Get_hw_timestump(&end_time);
-        uint32_t elapsed_us = Timestump_diff_to_usec(&start_time, &end_time);
-
-        if (err == FSP_SUCCESS)
-        {
-          MPRINTF("SPI command read operation    : SUCCESS\n\r");
-          MPRINTF("Address                       : 0x%08X\n\r", settings.address);
-          MPRINTF("Size                          : %u bytes\n\r", settings.size);
-          MPRINTF("Time elapsed                  : %u us\n\r", elapsed_us);
-          MPRINTF("Transfer speed                : ");
-          _Ospi_display_speed(settings.size, elapsed_us);
-
-          // Display data (limited to prevent excessive output)
-          VT100_print_dump(settings.address, read_buffer, settings.size);
-
-          // Calculate and display checksum
-          uint32_t checksum = _Ospi_calculate_checksum(read_buffer, settings.size);
-          MPRINTF("Data checksum (CRC32)         : 0x%08X\n\r", checksum);
-
-          // Update results
-          results.read_time_us           = elapsed_us;
-          results.last_bytes_transferred = settings.size;
-          results.last_checksum          = checksum;
-          results.results_valid          = true;
-        }
-        else
-        {
-          MPRINTF("SPI command read operation    : FAILED (error: 0x%X)\n\r", err);
-        }
-
-        App_free(read_buffer);
-        MPRINTF("\nPress any key to continue...\n\r");
-        uint8_t dummy_key;
-        WAIT_CHAR(&dummy_key, ms_to_ticks(100000));
-        break;
-      }
-
-      case '7':  // Read benchmark (DMA, pure speed test)
+      case '6':  // Read benchmark (DMA, pure speed test)
       {
         MPRINTF("\n\r===== Read Benchmark (DMA, pure speed test) =====\n\r");
         MPRINTF("Using current settings: address 0x%08X, size %u bytes\n\r", settings.address, settings.size);
@@ -1370,6 +1307,66 @@ void OSPI_test_custom_operations(uint8_t keycode)
         else
         {
           MPRINTF("Read benchmark (DMA)          : FAILED (error: 0x%X)\n\r", err);
+        }
+
+        App_free(read_buffer);
+        MPRINTF("\nPress any key to continue...\n\r");
+        uint8_t dummy_key;
+        WAIT_CHAR(&dummy_key, ms_to_ticks(100000));
+        break;
+      }
+
+      case '7':  // Read operation (via SPI commands)
+      {
+        MPRINTF("\n\r===== Read Operation (via SPI commands) =====\n\r");
+
+        // Allocate buffer
+        uint8_t *read_buffer = (uint8_t *)App_malloc(settings.size);
+        if (read_buffer == NULL)
+        {
+          MPRINTF("ERROR: Failed to allocate %u bytes for read buffer\n\r", settings.size);
+          MPRINTF("Press any key to continue...\n\r");
+          uint8_t dummy_key;
+          WAIT_CHAR(&dummy_key, ms_to_ticks(100000));
+          break;
+        }
+
+        // Clear buffer
+        memset(read_buffer, 0x00, settings.size);
+
+        // Measure time and perform direct read
+        T_sys_timestump start_time;
+        Get_hw_timestump(&start_time);
+        fsp_err_t       err = Mc80_ospi_direct_read(g_mc80_ospi.p_ctrl, read_buffer, settings.address, settings.size);
+        T_sys_timestump end_time;
+        Get_hw_timestump(&end_time);
+        uint32_t elapsed_us = Timestump_diff_to_usec(&start_time, &end_time);
+
+        if (err == FSP_SUCCESS)
+        {
+          MPRINTF("SPI command read operation    : SUCCESS\n\r");
+          MPRINTF("Address                       : 0x%08X\n\r", settings.address);
+          MPRINTF("Size                          : %u bytes\n\r", settings.size);
+          MPRINTF("Time elapsed                  : %u us\n\r", elapsed_us);
+          MPRINTF("Transfer speed                : ");
+          _Ospi_display_speed(settings.size, elapsed_us);
+
+          // Display data (limited to prevent excessive output)
+          VT100_print_dump(settings.address, read_buffer, settings.size);
+
+          // Calculate and display checksum
+          uint32_t checksum = _Ospi_calculate_checksum(read_buffer, settings.size);
+          MPRINTF("Data checksum (CRC32)         : 0x%08X\n\r", checksum);
+
+          // Update results
+          results.read_time_us           = elapsed_us;
+          results.last_bytes_transferred = settings.size;
+          results.last_checksum          = checksum;
+          results.results_valid          = true;
+        }
+        else
+        {
+          MPRINTF("SPI command read operation    : FAILED (error: 0x%X)\n\r", err);
         }
 
         App_free(read_buffer);
