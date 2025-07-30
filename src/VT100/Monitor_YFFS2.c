@@ -7,6 +7,23 @@
 #include "FS_Test_Config.h"
 #include <time.h>
 
+// YAFFS2 file operation constants
+#ifndef O_CREAT
+#define O_CREAT   0x0200
+#endif
+#ifndef O_WRONLY
+#define O_WRONLY  0x0001
+#endif
+#ifndef O_TRUNC
+#define O_TRUNC   0x0400
+#endif
+#ifndef S_IREAD
+#define S_IREAD   0x0100
+#endif
+#ifndef S_IWRITE
+#define S_IWRITE  0x0080
+#endif
+
 #define MAX_PATH_LENGTH           256
 #define MAX_DIR_STACK_DEPTH       32
 #define YAFFS2_MEMORY_BUFFER_SIZE (32 * 1024)  // 32KB
@@ -373,6 +390,7 @@ static void _List_directory_tree(const char *root_path, uint8_t max_depth)
         {
           MPRINTF("[UNKNOWN] %s (stat failed)\n\r", entry->d_name);
         }
+      }
     }
 
     yaffs_closedir(dir_ptr);
@@ -391,9 +409,9 @@ static void _Do_write_test(void)
   GET_MCBL;
   T_performance_stats stats;
   T_sys_timestump     start_ts, end_ts;
-  FX_FILE             file;
-  CHAR                filename[FS_MAX_FILENAME_LENGTH];
-  UINT                status;
+  int                 file_fd;
+  char                filename[FS_MAX_FILENAME_LENGTH];
+  int                 result;
 
   MPRINTF("\n=== YFFS2 Write Test ===\n\r");
   _Print_test_config();
@@ -410,13 +428,7 @@ static void _Do_write_test(void)
 
   Get_hw_timestump(&start_ts);
 
-  // Ensure we're in root directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
-  if (status != FX_SUCCESS)
-  {
-    MPRINTF("Error changing to root directory: %s\n\r", _Get_YFFS2_error_description(status));
-    return;
-  }
+  // YAFFS2 works with full paths, no need to set current directory
 
   MPRINTF("Writing %lu files of %lu bytes each...\n\r", g_fs_test_config.files_count, g_fs_test_config.file_size);
 
@@ -433,28 +445,17 @@ static void _Do_write_test(void)
 
     MPRINTF("File %s: ", filename);
 
-    // Create file
-    status = fx_file_create(&g_fx_spi_nor_media, filename);
-    if (status != FX_SUCCESS && status != FX_ALREADY_CREATED)
-    {
-      Get_hw_timestump(&file_end_ts);
-      operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-      MPRINTF("FAILED (create): %s (total: %6u us)\n\r", _Get_YFFS2_error_description(status), operation_time);
-      Performance_stats_update_error(&stats);
-      continue;
-    }
-
-    // Open file with timing
+    // Open file for writing (creates automatically if doesn't exist) with timing
     Get_hw_timestump(&open_start_ts);
-    status = fx_file_open(&g_fx_spi_nor_media, &file, filename, FX_OPEN_FOR_WRITE);
+    file_fd = yaffs_open(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE);
     Get_hw_timestump(&open_end_ts);
     open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
 
-    if (status != FX_SUCCESS)
+    if (file_fd < 0)
     {
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(status), open_time, operation_time);
+      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), open_time, operation_time);
       Performance_stats_update_error(&stats);
       continue;
     }
@@ -483,11 +484,11 @@ static void _Do_write_test(void)
       }
 
       Get_hw_timestump(&io_start_ts);
-      status = fx_file_write(&file, g_test_buffer, chunk_size);
+      int bytes_written = yaffs_write(file_fd, g_test_buffer, chunk_size);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
-      if (status == FX_SUCCESS)
+      if (bytes_written == (int)chunk_size)
       {
         total_written += chunk_size;
       }
@@ -495,7 +496,7 @@ static void _Do_write_test(void)
       {
         Get_hw_timestump(&file_end_ts);
         operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-        MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r", total_written, _Get_YFFS2_error_description(status), io_time, operation_time);
+        MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r", total_written, _Get_YFFS2_error_description(yaffs_get_error()), io_time, operation_time);
         write_error = true;
         Performance_stats_update_error(&stats);
       }
@@ -508,11 +509,11 @@ static void _Do_write_test(void)
       {
         uint32_t crc32_value = ~crc;
         Get_hw_timestump(&io_start_ts);
-        status = fx_file_write(&file, &crc32_value, FS_CRC32_SIZE);
+        int crc_bytes_written = yaffs_write(file_fd, &crc32_value, FS_CRC32_SIZE);
         Get_hw_timestump(&io_end_ts);
         io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
-        if (status == FX_SUCCESS)
+        if (crc_bytes_written == FS_CRC32_SIZE)
         {
           total_written += FS_CRC32_SIZE;
         }
@@ -520,7 +521,7 @@ static void _Do_write_test(void)
         {
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-          MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r", _Get_YFFS2_error_description(status), io_time, operation_time);
+          MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), io_time, operation_time);
           write_error = true;
           Performance_stats_update_error(&stats);
         }
@@ -531,15 +532,15 @@ static void _Do_write_test(void)
     {
       // Close file with timing
       Get_hw_timestump(&close_start_ts);
-      status = fx_file_close(&file);
+      result = yaffs_close(file_fd);
       Get_hw_timestump(&close_end_ts);
       close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
 
-      if (status != FX_SUCCESS)
+      if (result < 0)
       {
-        MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(status), close_time, operation_time);
+        MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), close_time, operation_time);
         Performance_stats_update_error(&stats);
       }
       else
@@ -564,7 +565,7 @@ static void _Do_write_test(void)
     else
     {
       // Close file even if write failed
-      fx_file_close(&file);
+      yaffs_close(file_fd);
     }
   }
 
@@ -574,7 +575,7 @@ static void _Do_write_test(void)
   Performance_stats_finalize(&stats);
 
   // Return to root directory
-  fx_directory_default_set(&g_fx_spi_nor_media, "/");
+  // YAFFS2 doesn't need to return to root directory
 
   MPRINTF("\n\r");
   Performance_stats_print("Write Test", &stats, g_fs_test_config.data_verification);
