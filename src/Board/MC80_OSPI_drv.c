@@ -917,6 +917,82 @@ fsp_err_t Mc80_ospi_memory_mapped_read(T_mc80_ospi_instance_ctrl *const p_ctrl, 
 }
 
 /*-----------------------------------------------------------------------------------------------------
+  Description: High-performance memory-mapped read from flash using direct CPU access (no DMA)
+
+  This function performs optimized memory-mapped reading from OSPI flash memory using direct
+  CPU memory access instead of DMA. This is useful for benchmarking and comparing performance
+  between DMA and direct CPU access methods.
+
+  CPU Direct Access Operation:
+  - Reads data directly from memory-mapped OSPI flash addresses using CPU memory operations
+  - Uses single optimized memory copy operation (memcpy) for maximum CPU performance
+  - No block processing - transfers entire data in one operation for minimal overhead
+  - No DMA setup overhead, no interrupt handling, immediate data availability
+  - CPU remains busy during entire transfer (no ability to perform other tasks)
+
+  Performance Characteristics:
+  - Lower latency for all transfers (no DMA setup time)
+  - Minimal function call overhead with single memcpy operation
+  - May be faster for small to medium size transfers depending on CPU speed and cache
+  - May be slower for very large transfers compared to DMA (CPU vs dedicated DMA engine)
+  - CPU is fully occupied during transfer (blocking operation)
+  - No RTOS synchronization overhead (immediate completion)
+
+  Protocol Support:
+  - Supports same protocols as DMA version (1S-1S-1S Standard SPI and 8D-8D-8D Octal DDR)
+  - Same alignment requirements as DMA version for DDR modes
+  - Uses same memory-mapped addresses and hardware configuration
+
+  Single Operation Processing:
+  - Transfers entire data size in one memcpy operation
+  - Eliminates loop overhead and block processing
+  - Optimal for performance comparison with DMA version
+
+  Parameters: p_ctrl - Pointer to OSPI instance control structure
+              p_dest - Destination buffer for read data
+              address - Physical flash address to read from (0x00000000-based)
+              bytes - Number of bytes to read (any size up to 4GB)
+
+  Return: FSP_SUCCESS - Data read successfully
+          FSP_ERR_ASSERTION - Invalid parameters
+          FSP_ERR_NOT_OPEN - Driver not opened
+-----------------------------------------------------------------------------------------------------*/
+fsp_err_t Mc80_ospi_memory_mapped_read_direct(T_mc80_ospi_instance_ctrl *const p_ctrl, uint8_t *const p_dest, uint32_t const address, uint32_t const bytes)
+{
+  // Parameter validation (same as DMA version)
+  if (MC80_OSPI_CFG_PARAM_CHECKING_ENABLE)
+  {
+    if ((NULL == p_ctrl) || (NULL == p_dest) || (0 == bytes))
+    {
+      return FSP_ERR_ASSERTION;
+    }
+    if (MC80_OSPI_PRV_OPEN != p_ctrl->open)
+    {
+      return FSP_ERR_NOT_OPEN;
+    }
+  }
+
+  // Calculate memory-mapped address based on channel (same as DMA version)
+  uint32_t memory_mapped_address;
+  if (p_ctrl->channel == MC80_OSPI_DEVICE_NUMBER_0)
+  {
+    memory_mapped_address = MC80_OSPI_DEVICE_0_START_ADDRESS + address;
+  }
+  else
+  {
+    memory_mapped_address = MC80_OSPI_DEVICE_1_START_ADDRESS + address;
+  }
+
+  // Single direct CPU memory copy from memory-mapped flash to destination buffer
+  // This transfers all data in one operation for maximum efficiency and minimal overhead
+  memcpy(p_dest,                                       // Destination: user buffer
+         (const void *)memory_mapped_address,          // Source: memory-mapped flash address
+         bytes);                                       // Size: entire transfer size
+
+  return FSP_SUCCESS;
+}
+
+/*-----------------------------------------------------------------------------------------------------
   Universal flash programming function with automatic alignment and size handling.
 
   This function performs high-performance flash programming using the OSPI memory-mapped mode

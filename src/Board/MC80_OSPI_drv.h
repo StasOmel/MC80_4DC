@@ -553,6 +553,7 @@ fsp_err_t Mc80_ospi_bank_set(T_mc80_ospi_instance_ctrl* const p_ctrl, uint32_t b
 fsp_err_t Mc80_ospi_auto_calibrate(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_calibration_data* const p_calibration_data);
 fsp_err_t Mc80_ospi_hardware_reset(T_mc80_ospi_instance_ctrl* const p_ctrl);
 fsp_err_t Mc80_ospi_memory_mapped_read(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t* const p_dest, uint32_t const address, uint32_t const bytes);
+fsp_err_t Mc80_ospi_memory_mapped_read_direct(T_mc80_ospi_instance_ctrl* const p_ctrl, uint8_t* const p_dest, uint32_t const address, uint32_t const bytes);
 
 // Debug and diagnostic functions
 fsp_err_t Mc80_ospi_capture_register_snapshot(T_mc80_ospi_instance_ctrl* const p_ctrl, T_mc80_ospi_register_snapshot* const p_snapshot);
