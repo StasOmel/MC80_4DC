@@ -182,7 +182,10 @@ int Yaffs_nor_device_unmount(const char *mount_point)
 int Yaffs_nor_device_garbage_collect(const char *mount_point, int urgency)
 {
   struct yaffs_dev *dev;
-  int blocks_collected;
+  int blocks_collected = 0;
+  int total_collected = 0;
+  int iterations = 0;
+  int max_iterations;
 
   if (NULL == mount_point)
   {
@@ -195,10 +198,42 @@ int Yaffs_nor_device_garbage_collect(const char *mount_point, int urgency)
     return -1;
   }
 
-  // Perform garbage collection
-  blocks_collected = yaffs_do_background_gc_reldev(dev, urgency);
+  // Force filesystem sync before GC
+  yaffs_sync(mount_point);
 
-  return blocks_collected;
+  // Set maximum iterations based on urgency
+  switch (urgency)
+  {
+    case YAFFS_GC_PASSIVE:
+      max_iterations = 1;
+      break;
+    case YAFFS_GC_NORMAL:
+      max_iterations = 3;
+      break;
+    case YAFFS_GC_AGGRESSIVE:
+      max_iterations = 10;
+      break;
+    default:
+      max_iterations = 1;
+      break;
+  }
+
+  // Perform garbage collection in iterations
+  do
+  {
+    blocks_collected = yaffs_do_background_gc_reldev(dev, urgency);
+
+    if (blocks_collected > 0)
+    {
+      total_collected += blocks_collected;
+    }
+
+    iterations++;
+
+    // Continue if we collected blocks and haven't reached max iterations
+  } while (blocks_collected > 0 && iterations < max_iterations);
+
+  return total_collected;
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -223,4 +258,80 @@ struct yaffs_dev* Yaffs_nor_get_device(void)
 int Yaffs_nor_is_mounted(void)
 {
   return g_yaffs_nor_device.is_mounted;
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Automatic periodic garbage collection
+
+  Performs intelligent garbage collection based on filesystem usage patterns.
+  Recommended to call this function periodically from a low-priority task.
+
+  Parameters:
+    mount_point - Mount point path
+    usage_threshold - Usage percentage threshold (0-100) above which GC is triggered
+
+  Return:
+    Number of blocks collected, -1 on error
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_device_auto_gc(const char *mount_point, uint32_t usage_threshold)
+{
+  Y_LOFF_T free_space;
+  uint64_t total_space;
+  uint32_t usage_percent;
+  int      urgency;
+  int      blocks_collected = 0;
+
+  if (NULL == mount_point || usage_threshold > 100)
+  {
+    return -1;
+  }
+
+  // Check if filesystem is mounted
+  if (!Yaffs_nor_is_mounted())
+  {
+    return -1;
+  }
+
+  // Get current free space
+  free_space = yaffs_freespace(mount_point);
+  if (free_space < 0)
+  {
+    return -1;
+  }
+
+  // Calculate usage percentage (using estimated total space)
+  total_space = 32 * 1024 * 1024;  // 32MB estimated (adjust based on your NOR Flash size)
+  if (total_space > 0)
+  {
+    uint64_t used_space = total_space - free_space;
+    usage_percent = (uint32_t)((used_space * 100) / total_space);
+  }
+  else
+  {
+    return -1;
+  }
+
+  // Determine GC urgency based on usage and threshold
+  if (usage_percent < usage_threshold)
+  {
+    // Below threshold - no GC needed
+    return 0;
+  }
+  else if (usage_percent < usage_threshold + 10)
+  {
+    urgency = YAFFS_GC_PASSIVE;
+  }
+  else if (usage_percent < usage_threshold + 20)
+  {
+    urgency = YAFFS_GC_NORMAL;
+  }
+  else
+  {
+    urgency = YAFFS_GC_AGGRESSIVE;
+  }
+
+  // Perform garbage collection
+  blocks_collected = Yaffs_nor_device_garbage_collect(mount_point, urgency);
+
+  return blocks_collected;
 }

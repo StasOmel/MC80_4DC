@@ -26,9 +26,6 @@
 #ifndef S_IWRITE
 #define S_IWRITE  0x0080
 #endif
-#ifndef O_SYNC
-#define O_SYNC    0x1000  // Synchronous I/O - writes immediately to storage
-#endif
 
 #define MAX_PATH_LENGTH           256
 #define MAX_DIR_STACK_DEPTH       32
@@ -55,6 +52,7 @@ const T_VT100_Menu_item MENU_YAFFS2_items[] = {
   { '2', Do_YAFFS2_list_files, NULL },
   { '3', Do_YAFFS2_performance_test, NULL },
   { '4', Do_YAFFS2_list_lost_found, NULL },
+  { '5', Do_YAFFS2_garbage_collect, NULL },
   { 'R', NULL, NULL },
   { 0 }  // End of menu
 };
@@ -66,6 +64,7 @@ const T_VT100_Menu MENU_YAFFS2 = {
   "\033[5C <2> - List files and directories\r\n"
   "\033[5C <3> - Performance test\r\n"
   "\033[5C <4> - List lost+found directory\r\n"
+  "\033[5C <5> - Garbage collection\r\n"
   "\033[5C <R> - Return to previous menu\r\n",
   MENU_YAFFS2_items
 };
@@ -275,6 +274,20 @@ static void _Print_YAFFS2_info(void)
     {
       uint32_t usage_percent = (uint32_t)((used_space * 100) / total_space);
       MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, 100 - usage_percent);
+
+      // Show GC recommendations based on usage
+      if (usage_percent > 80)
+      {
+        MPRINTF("GC Recommendation    : High usage - consider aggressive garbage collection\n\r");
+      }
+      else if (usage_percent > 60)
+      {
+        MPRINTF("GC Recommendation    : Medium usage - normal garbage collection recommended\n\r");
+      }
+      else
+      {
+        MPRINTF("GC Recommendation    : Low usage - passive garbage collection sufficient\n\r");
+      }
     }
   }
   else
@@ -429,13 +442,14 @@ static void _Do_write_test(void)
 
   Get_hw_timestump(&start_ts);
 
-  // YAFFS2 works with full paths, no need to set current directory
+  // YAFFS2 requires absolute paths for consistent file operations
+  // Using leading slash ensures files are created/accessed in root directory
 
   MPRINTF("Writing %lu files of %lu bytes each...\n\r", g_fs_test_config.files_count, g_fs_test_config.file_size);
 
   for (uint32_t i = 0; i < g_fs_test_config.files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
+    snprintf(filename, sizeof(filename), "/%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
     T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
@@ -447,9 +461,9 @@ static void _Do_write_test(void)
     MPRINTF("File %s: ", filename);
 
     // Open file for writing (creates automatically if doesn't exist) with timing
-    // O_SYNC ensures immediate write to storage without buffering
+    // Using explicit yaffs_fsync() calls for immediate write to storage
     Get_hw_timestump(&open_start_ts);
-    file_fd = yaffs_open(filename, O_CREAT | O_WRONLY | O_TRUNC | O_SYNC, S_IREAD | S_IWRITE);
+    file_fd = yaffs_open(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE);
     Get_hw_timestump(&open_end_ts);
     open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
 
@@ -487,6 +501,8 @@ static void _Do_write_test(void)
 
       Get_hw_timestump(&io_start_ts);
       int bytes_written = yaffs_write(file_fd, g_test_buffer, chunk_size);
+      // Force immediate write to storage
+      yaffs_fsync(file_fd);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
@@ -512,6 +528,8 @@ static void _Do_write_test(void)
         uint32_t crc32_value = ~crc;
         Get_hw_timestump(&io_start_ts);
         int crc_bytes_written = yaffs_write(file_fd, &crc32_value, FS_CRC32_SIZE);
+        // Force immediate write to storage
+        yaffs_fsync(file_fd);
         Get_hw_timestump(&io_end_ts);
         io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
@@ -532,8 +550,9 @@ static void _Do_write_test(void)
 
     if (!write_error)
     {
-      // Close file with timing
+      // Final sync before closing to ensure all data is written
       Get_hw_timestump(&close_start_ts);
+      yaffs_fsync(file_fd);
       result = yaffs_close(file_fd);
       Get_hw_timestump(&close_end_ts);
       close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
@@ -618,7 +637,7 @@ static void _Do_read_test(void)
 
   for (uint32_t i = 0; i < g_fs_test_config.files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
+    snprintf(filename, sizeof(filename), "/%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
     T_sys_timestump open_start_ts, open_end_ts, close_start_ts, close_end_ts;
@@ -807,7 +826,7 @@ static void _Do_delete_test(void)
 
   for (uint32_t i = 0; i < g_fs_test_config.files_count; i++)
   {
-    snprintf(filename, sizeof(filename), "%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
+    snprintf(filename, sizeof(filename), "/%s%03lu.bin", FS_TEST_FILE_PREFIX, i + 1);
 
     T_sys_timestump file_start_ts, file_end_ts;
     uint32_t        operation_time = 0;
@@ -846,11 +865,46 @@ static void _Do_delete_test(void)
 
   Get_hw_timestump(&end_ts);
 
+  // Force filesystem synchronization after all deletions to ensure metadata is updated
+  MPRINTF("Synchronizing filesystem after deletions...\n\r");
+  yaffs_sync("/");
+
   // Finalize statistics calculations
   Performance_stats_finalize(&stats);
 
   MPRINTF("\n\r");
   Performance_stats_print("Delete Test", &stats, g_fs_test_config.data_verification);
+
+  // Suggest garbage collection after file deletions
+  MPRINTF("\nRecommendation: Run garbage collection to optimize filesystem after deletions.\n\r");
+  MPRINTF("Press 'G' to run automatic garbage collection, or any other key to skip: ");
+
+  uint8_t gc_choice;
+  if (WAIT_CHAR(&gc_choice, ms_to_ticks(10000)) == RES_OK && (gc_choice == 'G' || gc_choice == 'g'))
+  {
+    MPRINTF("\nRunning automatic garbage collection...\n\r");
+
+    T_sys_timestump gc_start_ts, gc_end_ts;
+    Get_hw_timestump(&gc_start_ts);
+
+    int gc_result = Yaffs_nor_device_garbage_collect("/", YAFFS_GC_NORMAL);
+
+    Get_hw_timestump(&gc_end_ts);
+    uint32_t gc_time = Timestump_diff_to_usec(&gc_start_ts, &gc_end_ts) / 1000;  // Convert to ms
+
+    if (gc_result >= 0)
+    {
+      MPRINTF("Garbage collection completed in %lu ms, blocks collected: %d\n\r", gc_time, gc_result);
+    }
+    else
+    {
+      MPRINTF("Garbage collection failed with error code: %d\n\r", gc_result);
+    }
+  }
+  else
+  {
+    MPRINTF("\nSkipping garbage collection.\n\r");
+  }
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -1534,5 +1588,223 @@ void Do_YAFFS2_list_lost_found(uint8_t keycode)
 
   MPRINTF("\nPress any key to continue...\n\r");
   uint8_t key;
+  WAIT_CHAR(&key, ms_to_ticks(100000));
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Perform YAFFS2 garbage collection
+
+  Parameters: keycode - key code from menu
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Do_YAFFS2_garbage_collect(uint8_t keycode)
+{
+  GET_MCBL;
+  T_sys_timestump start_ts, end_ts;
+  int             result;
+  uint8_t         choice;
+  uint8_t         key;  // Declare key variable once at function level
+
+  FSP_PARAMETER_NOT_USED(keycode);
+
+  MPRINTF(VT100_CLEAR_AND_HOME);
+  MPRINTF("=== YAFFS2 Garbage Collection ===\n\r");
+
+  // Check if filesystem is mounted by checking free space
+  Y_LOFF_T free_space_before = yaffs_freespace("/");
+  if (free_space_before < 0)
+  {
+    MPRINTF("Error: YAFFS2 filesystem not mounted. Please initialize first.\n\r");
+    MPRINTF("\nPress any key to continue...\n\r");
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
+
+  MPRINTF("Current filesystem status:\n\r");
+  MPRINTF("Free space before GC: %lu KB (%lu MB)\n\r",
+          (uint32_t)(free_space_before / 1024),
+          (uint32_t)(free_space_before / (1024 * 1024)));
+
+  // Show device block information
+  struct yaffs_dev *dev = yaffs_getdev("/");
+  if (dev)
+  {
+    MPRINTF("Device block information:\n\r");
+    MPRINTF("Total blocks         : %d\n\r", dev->param.end_block - dev->param.start_block + 1);
+    MPRINTF("Start block          : %d\n\r", dev->param.start_block);
+    MPRINTF("End block            : %d\n\r", dev->param.end_block);
+    MPRINTF("Reserved blocks      : %d\n\r", dev->param.n_reserved_blocks);
+    MPRINTF("Bytes per chunk      : %d\n\r", dev->param.total_bytes_per_chunk);
+    MPRINTF("Chunks per block     : %d\n\r", dev->param.chunks_per_block);
+    MPRINTF("Block size           : %d bytes\n\r", dev->param.total_bytes_per_chunk * dev->param.chunks_per_block);
+
+    if (dev->n_free_chunks >= 0)
+    {
+      MPRINTF("Free chunks          : %d\n\r", dev->n_free_chunks);
+      MPRINTF("Free blocks (approx) : %d\n\r", dev->n_free_chunks / dev->param.chunks_per_block);
+    }
+
+    if (dev->n_deleted_files >= 0)
+    {
+      MPRINTF("Deleted files        : %d\n\r", dev->n_deleted_files);
+    }
+  }
+
+  MPRINTF("\nSelect garbage collection urgency level:\n\r");
+  MPRINTF("<1> - Passive GC (collect only when necessary)\n\r");
+  MPRINTF("<2> - Normal GC (standard garbage collection)\n\r");
+  MPRINTF("<3> - Aggressive GC (intensive cleanup)\n\r");
+  MPRINTF("<4> - Force GC (maximum cleanup + checkpoint)\n\r");
+  MPRINTF("<ESC> - Cancel and return\n\r");
+  MPRINTF("\nEnter choice: ");
+
+  if (WAIT_CHAR(&choice, ms_to_ticks(30000)) != RES_OK)
+  {
+    MPRINTF("TIMEOUT - returning to menu\n\r");
+    MPRINTF("\nPress any key to continue...\n\r");
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
+
+  int urgency;
+  const char *urgency_name;
+
+  switch (choice)
+  {
+    case '1':
+      urgency = YAFFS_GC_PASSIVE;
+      urgency_name = "Passive";
+      break;
+    case '2':
+      urgency = YAFFS_GC_NORMAL;
+      urgency_name = "Normal";
+      break;
+    case '3':
+      urgency = YAFFS_GC_AGGRESSIVE;
+      urgency_name = "Aggressive";
+      break;
+    case '4':
+      urgency = YAFFS_GC_AGGRESSIVE;
+      urgency_name = "Force";
+      break;
+    case VT100_ESC:
+      MPRINTF("\nGarbage collection cancelled.\n\r");
+      MPRINTF("\nPress any key to continue...\n\r");
+      WAIT_CHAR(&key, ms_to_ticks(100000));
+      return;
+    default:
+      MPRINTF("\nInvalid choice. Garbage collection cancelled.\n\r");
+      MPRINTF("\nPress any key to continue...\n\r");
+      WAIT_CHAR(&key, ms_to_ticks(100000));
+      return;
+  }
+
+  MPRINTF("\nStarting %s garbage collection...\n\r", urgency_name);
+
+  // Force filesystem synchronization before GC
+  MPRINTF("Synchronizing filesystem before GC...\n\r");
+  yaffs_sync("/");
+
+  // For Force mode, also do additional cleanup operations
+  if (choice == '4')
+  {
+    MPRINTF("Force mode: Performing additional cleanup operations...\n\r");
+
+    // Try to write a checkpoint to force metadata cleanup
+    struct yaffs_dev *dev = yaffs_getdev("/");
+    if (dev)
+    {
+      MPRINTF("Writing checkpoint to cleanup metadata...\n\r");
+      // Note: YAFFS2 checkpoints are internal, but sync should trigger cleanup
+      yaffs_sync("/");
+    }
+  }
+
+  Get_hw_timestump(&start_ts);
+
+  // Perform garbage collection
+  result = Yaffs_nor_device_garbage_collect("/", urgency);
+
+  Get_hw_timestump(&end_ts);
+  uint32_t gc_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
+
+  if (result >= 0)
+  {
+    MPRINTF("Garbage collection completed successfully in %lu ms\n\r", gc_time);
+    MPRINTF("Blocks collected: %d\n\r", result);
+
+    // Check free space after GC
+    Y_LOFF_T free_space_after = yaffs_freespace("/");
+    if (free_space_after >= 0)
+    {
+      MPRINTF("\nFilesystem status after GC:\n\r");
+      MPRINTF("Free space after GC : %lu KB (%lu MB)\n\r",
+              (uint32_t)(free_space_after / 1024),
+              (uint32_t)(free_space_after / (1024 * 1024)));
+
+      int64_t space_reclaimed = free_space_after - free_space_before;
+      if (space_reclaimed > 0)
+      {
+        MPRINTF("Space reclaimed     : %lu KB (%lu MB)\n\r",
+                (uint32_t)(space_reclaimed / 1024),
+                (uint32_t)(space_reclaimed / (1024 * 1024)));
+      }
+      else if (space_reclaimed == 0)
+      {
+        MPRINTF("No additional space reclaimed (filesystem was already clean)\n\r");
+      }
+      else
+      {
+        MPRINTF("Note: Free space calculation may vary due to filesystem metadata changes\n\r");
+      }
+
+      // Show updated device block information after GC
+      struct yaffs_dev *dev_after = yaffs_getdev("/");
+      if (dev_after)
+      {
+        MPRINTF("\nDevice block information after GC:\n\r");
+        if (dev_after->n_free_chunks >= 0)
+        {
+          MPRINTF("Free chunks          : %d\n\r", dev_after->n_free_chunks);
+          MPRINTF("Free blocks (approx) : %d\n\r", dev_after->n_free_chunks / dev_after->param.chunks_per_block);
+        }
+
+        if (dev_after->n_deleted_files >= 0)
+        {
+          MPRINTF("Deleted files        : %d\n\r", dev_after->n_deleted_files);
+        }
+      }
+    }
+
+    if (result == 0)
+    {
+      MPRINTF("\nNote: No blocks needed garbage collection at this urgency level.\n\r");
+      MPRINTF("This indicates the filesystem is already well-optimized.\n\r");
+      MPRINTF("Possible reasons:\n\r");
+      MPRINTF("- No deleted files to clean up\n\r");
+      MPRINTF("- Files are efficiently packed in blocks\n\r");
+      MPRINTF("- Try a higher urgency level for more aggressive collection\n\r");
+    }
+    else
+    {
+      MPRINTF("\nSuccessfully collected %d blocks.\n\r", result);
+    }
+  }
+  else
+  {
+    MPRINTF("Garbage collection failed with error code: %d\n\r", result);
+    MPRINTF("This could indicate:\n\r");
+    MPRINTF("- Filesystem corruption\n\r");
+    MPRINTF("- Hardware issues\n\r");
+    MPRINTF("- Insufficient free blocks for GC operation\n\r");
+  }
+
+  MPRINTF("\nRecommendations for optimal performance:\n\r");
+  MPRINTF("- Run Normal GC periodically after heavy file operations\n\r");
+  MPRINTF("- Use Aggressive GC when free space is critically low\n\r");
+  MPRINTF("- Consider GC after large file deletions\n\r");
+
+  MPRINTF("\nPress any key to continue...\n\r");
   WAIT_CHAR(&key, ms_to_ticks(100000));
 }

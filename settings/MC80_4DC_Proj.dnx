@@ -55,7 +55,7 @@
         <EnforceMemoryConfiguration>0</EnforceMemoryConfiguration>
     </ArmDriver>
     <DebugChecksum>
-        <Checksum>1786257831</Checksum>
+        <Checksum>3753041459</Checksum>
     </DebugChecksum>
     <InterruptStripe>
         <Title0>XSPI_CMP</Title0>
