@@ -20,12 +20,6 @@
 int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id, const u8 *data, int data_len, const u8 *oob, int oob_len);
 int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id, u8 *data, int data_len, u8 *oob, int oob_len, enum yaffs_ecc_result *ecc_result);
 
-// Write chunk with tags to NOR Flash
-int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id, const unsigned char *data, const struct yaffs_ext_tags *tags);
-
-// Read chunk with tags from NOR Flash
-int Yaffs_nor_read_chunk_tags(struct yaffs_dev *dev, int chunk_id, unsigned char *data, struct yaffs_ext_tags *tags);
-
 // Erase block in NOR Flash
 int Yaffs_nor_erase_block(struct yaffs_dev *dev, int block_no);
 

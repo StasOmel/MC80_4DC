@@ -16,141 +16,6 @@ _Static_assert(YAFFS_NOR_PAGE_OOB_SIZE == 0,
 extern T_mc80_ospi_instance_ctrl g_OSPI_ctrl;
 
 /*-----------------------------------------------------------------------------------------------------
-  Write page with tags to NOR Flash
-
-  Parameters:
-    dev      - YAFFS device structure
-    chunk_id - Page identifier (0-based sequential)
-    data     - User data buffer (4096 bytes, can be NULL for metadata-only write)
-               In inband tags mode, YAFFS2 already embedded tags in last 16 bytes of this buffer
-    tags     - YAFFS extended tags structure (NOT USED in inband tags mode)
-
-  Return:
-    YAFFS_OK on success, YAFFS_FAIL on error
------------------------------------------------------------------------------------------------------*/
-int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
-                               const unsigned char *data,
-                               const struct yaffs_ext_tags *tags)
-{
-  fsp_err_t err;
-  uint32_t page_address;
-
-  // Parameter validation
-  if (NULL == dev || chunk_id < 0)
-  {
-    return YAFFS_FAIL;
-  }
-
-  // Note: In inband tags mode, 'tags' parameter is not used because
-  // YAFFS2 already embedded the tags inside the 'data' buffer (last 16 bytes)
-  FSP_PARAMETER_NOT_USED(tags);
-
-  // DEBUG: Check if YAFFS2 unexpectedly passes non-NULL tags in inband mode
-  if (NULL != tags)
-  {
-    // Breakpoint: This should not happen in inband tags mode!
-    // If we hit this, it means YAFFS2 configuration might be wrong
-    __asm("bkpt #0");  // ARM Cortex-M breakpoint instruction
-  }
-
-  // Calculate physical address in NOR Flash
-  page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
-
-  if (NULL != data)
-  {
-    // Direct write from user data buffer (includes inband tags at end if present)
-    err = Mc80_ospi_memory_mapped_write(&g_OSPI_ctrl,
-                                       data,
-                                       page_address,
-                                       YAFFS_NOR_PAGE_DATA_SIZE);
-  }
-  else
-  {
-    // DEBUG: Metadata-only write (should be rare in normal operation)
-    __asm("bkpt #2");  // Breakpoint #2: Metadata-only write
-
-    // For metadata-only writes in NOR Flash, no actual write needed
-    // NOR Flash erased state is already 0xFF, so writing 0xFF is redundant
-    // Just return success as the "erased" state is the desired state
-    err = FSP_SUCCESS;
-  }
-
-  // Note: With inband tags, YAFFS2 already placed tags inside data buffer
-  // No separate OOB processing needed
-
-  // DEBUG: Check for write errors
-  if (FSP_SUCCESS != err)
-  {
-    // Breakpoint: Write operation failed!
-    // Examine 'err' value to understand the failure reason
-    __asm("bkpt #3");  // Breakpoint #3: Write operation failed
-  }
-
-  return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Read page with tags from NOR Flash
-
-  Parameters:
-    dev      - YAFFS device structure
-    chunk_id - Page identifier (0-based sequential)
-    data     - Buffer for user data (4096 bytes, can be NULL to skip data read)
-               In inband tags mode, last 16 bytes will contain YAFFS2 tags after read
-    tags     - Buffer for YAFFS extended tags (NOT USED in inband tags mode)
-
-  Return:
-    YAFFS_OK on success, YAFFS_FAIL on error
------------------------------------------------------------------------------------------------------*/
-int Yaffs_nor_read_chunk_tags(struct yaffs_dev *dev, int chunk_id,
-                              unsigned char *data,
-                              struct yaffs_ext_tags *tags)
-{
-  fsp_err_t err;
-  uint32_t page_address;
-
-  // Parameter validation
-  if (NULL == dev || chunk_id < 0)
-  {
-    return YAFFS_FAIL;
-  }
-
-  // Note: In inband tags mode, 'tags' parameter is not used because
-  // YAFFS2 will extract tags from the 'data' buffer (last 16 bytes) after read
-  FSP_PARAMETER_NOT_USED(tags);
-
-  // DEBUG: Check if YAFFS2 unexpectedly passes non-NULL tags in inband mode
-  if (NULL != tags)
-  {
-    // Breakpoint: This should not happen in inband tags mode!
-    // If we hit this, it means YAFFS2 configuration might be wrong
-    __asm("bkpt #0");  // ARM Cortex-M breakpoint instruction
-  }
-
-  // Calculate physical address in NOR Flash
-  page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
-
-  if (NULL != data)
-  {
-    // Direct read into user data buffer (includes inband tags at end)
-    err = Mc80_ospi_memory_mapped_read(&g_OSPI_ctrl,
-                                      data,
-                                      page_address,
-                                      YAFFS_NOR_PAGE_DATA_SIZE);
-  }
-  else
-  {
-    // If no data buffer provided, just return success (tags-only read not supported in inband mode)
-    err = FSP_SUCCESS;
-  }
-
-  // Note: With inband tags, YAFFS2 extracts tags from data buffer itself
-  // No separate OOB processing needed
-
-  return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
-}
-
-/*-----------------------------------------------------------------------------------------------------
   Erase block in NOR Flash
 
   Parameters:
@@ -177,7 +42,14 @@ int Yaffs_nor_erase_block(struct yaffs_dev *dev, int block_no)
   // Erase block using OSPI driver
   err = Mc80_ospi_erase(&g_OSPI_ctrl, block_address, YAFFS_NOR_BLOCK_SIZE);
 
-  return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
+  if (FSP_SUCCESS == err)
+  {
+    return YAFFS_OK;
+  }
+  else
+  {
+    return YAFFS_FAIL;
+  }
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -274,15 +146,12 @@ int Yaffs_nor_deinitialise(struct yaffs_dev *dev)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Write chunk without tags (basic interface required by YAFFS2)
-
-  This is a wrapper around the tags-based write function for compatibility.
-  YAFFS2 requires this function even when using tagger interface.
+  Write chunk to NOR Flash
 
   Parameters:
     dev      - YAFFS device structure
     chunk_id - Page identifier (0-based sequential)
-    data     - User data buffer
+    data     - User data buffer (includes inband tags at end if present)
     data_len - Length of data buffer
     oob      - Out-of-band data (not used in inband tags mode)
     oob_len  - Length of OOB buffer
@@ -294,25 +163,53 @@ int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id,
                           const u8 *data, int data_len,
                           const u8 *oob, int oob_len)
 {
+  fsp_err_t err;
+  uint32_t page_address;
+
   // Parameter validation
+  if (NULL == dev || chunk_id < 0)
+  {
+    return YAFFS_FAIL;
+  }
+
   FSP_PARAMETER_NOT_USED(data_len);  // Length should match page size
   FSP_PARAMETER_NOT_USED(oob_len);   // Not used in inband tags mode
+  FSP_PARAMETER_NOT_USED(oob);       // Not used in inband tags mode
 
-  // In inband tags mode, OOB is not used separately
-  // Call the tags-based function with NULL tags to write data only
-  return Yaffs_nor_write_chunk_tags(dev, chunk_id, data, NULL);
+  // Calculate physical address in NOR Flash
+  page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
+
+  if (NULL != data)
+  {
+    // Direct write from user data buffer (includes inband tags at end if present)
+    err = Mc80_ospi_memory_mapped_write(&g_OSPI_ctrl,
+                                       data,
+                                       page_address,
+                                       YAFFS_NOR_PAGE_DATA_SIZE);
+  }
+  else
+  {
+    // Metadata-only write: NOR Flash erased state (0xFF) is the desired state
+    err = FSP_SUCCESS;
+  }
+
+  if (FSP_SUCCESS == err)
+  {
+    return YAFFS_OK;
+  }
+  else
+  {
+    return YAFFS_FAIL;
+  }
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Read chunk without tags (basic interface required by YAFFS2)
-
-  This is a wrapper around the tags-based read function for compatibility.
-  YAFFS2 requires this function even when using tagger interface.
+  Read chunk from NOR Flash
 
   Parameters:
     dev        - YAFFS device structure
     chunk_id   - Page identifier (0-based sequential)
-    data       - Buffer for user data
+    data       - Buffer for user data (includes inband tags at end after read)
     data_len   - Length of data buffer
     oob        - Buffer for out-of-band data (not used in inband tags mode)
     oob_len    - Length of OOB buffer
@@ -326,15 +223,35 @@ int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id,
                          u8 *oob, int oob_len,
                          enum yaffs_ecc_result *ecc_result)
 {
-  int result;
+  fsp_err_t err;
+  uint32_t page_address;
 
   // Parameter validation
+  if (NULL == dev || chunk_id < 0)
+  {
+    return YAFFS_FAIL;
+  }
+
   FSP_PARAMETER_NOT_USED(data_len);  // Length should match page size
   FSP_PARAMETER_NOT_USED(oob_len);   // Not used in inband tags mode
+  FSP_PARAMETER_NOT_USED(oob);       // Not used in inband tags mode
 
-  // In inband tags mode, OOB is not used separately
-  // Call the tags-based function with NULL tags to read data only
-  result = Yaffs_nor_read_chunk_tags(dev, chunk_id, data, NULL);
+  // Calculate physical address in NOR Flash
+  page_address = YAFFS_NOR_CHUNK_TO_ADDRESS(chunk_id);
+
+  if (NULL != data)
+  {
+    // Direct read into user data buffer (includes inband tags at end)
+    err = Mc80_ospi_memory_mapped_read(&g_OSPI_ctrl,
+                                      data,
+                                      page_address,
+                                      YAFFS_NOR_PAGE_DATA_SIZE);
+  }
+  else
+  {
+    // If no data buffer provided, just return success (tags-only read not supported in inband mode)
+    err = FSP_SUCCESS;
+  }
 
   // Set ECC result to indicate no ECC errors (NOR Flash is reliable)
   if (ecc_result)
@@ -342,5 +259,12 @@ int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id,
     *ecc_result = YAFFS_ECC_RESULT_NO_ERROR;
   }
 
-  return result;
+  if (FSP_SUCCESS == err)
+  {
+    return YAFFS_OK;
+  }
+  else
+  {
+    return YAFFS_FAIL;
+  }
 }
