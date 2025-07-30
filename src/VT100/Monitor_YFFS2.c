@@ -14,6 +14,9 @@
 #ifndef O_WRONLY
 #define O_WRONLY  0x0001
 #endif
+#ifndef O_RDONLY
+#define O_RDONLY  0x0000
+#endif
 #ifndef O_TRUNC
 #define O_TRUNC   0x0400
 #endif
@@ -338,7 +341,7 @@ static void _List_directory_tree(const char *root_path, uint8_t max_depth)
     dir_ptr = yaffs_opendir(current_path);
     if (dir_ptr == NULL)
     {
-      MPRINTF("Failed to open directory %s: %s\n\r", current_path, _Get_YFFS2_error_description(status));
+      MPRINTF("Failed to open directory %s: %s\n\r", current_path, _Get_YFFS2_error_description(yaffs_get_error()));
       continue;
     }
 
@@ -593,10 +596,9 @@ static void _Do_read_test(void)
   GET_MCBL;
   T_performance_stats stats;
   T_sys_timestump     start_ts, end_ts;
-  FX_FILE             file;
-  CHAR                filename[FS_MAX_FILENAME_LENGTH];
-  UINT                status;
-  ULONG               actual_read;
+  int                 file_fd;
+  char                filename[FS_MAX_FILENAME_LENGTH];
+  int                 bytes_read;
 
   MPRINTF("\n=== YFFS2 Read Test ===\n\r");
   _Print_test_config();
@@ -608,14 +610,6 @@ static void _Do_read_test(void)
   if (!_Allocate_test_buffer())
   {
     MPRINTF("Error: Failed to allocate test buffer\n\r");
-    return;
-  }
-
-  // Change to root directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
-  if (status != FX_SUCCESS)
-  {
-    MPRINTF("Error: Could not access root directory. Run write test first.\n\r");
     return;
   }
 
@@ -638,16 +632,16 @@ static void _Do_read_test(void)
 
     // Open file for reading with timing
     Get_hw_timestump(&open_start_ts);
-    status = fx_file_open(&g_fx_spi_nor_media, &file, filename, FX_OPEN_FOR_READ);
+    file_fd = yaffs_open(filename, O_RDONLY, 0);
     Get_hw_timestump(&open_end_ts);
     open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
 
-    if (status != FX_SUCCESS)
+    if (file_fd < 0)
     {
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
       MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
-              _Get_YFFS2_error_description(status), open_time, operation_time);
+              _Get_YFFS2_error_description(yaffs_get_error()), open_time, operation_time);
       Performance_stats_update_error(&stats);
       continue;
     }
@@ -672,14 +666,14 @@ static void _Do_read_test(void)
       uint32_t chunk_size = (bytes_to_read - total_read > YAFFS2_TEST_BUFFER_SIZE) ? YAFFS2_TEST_BUFFER_SIZE : (bytes_to_read - total_read);
 
       Get_hw_timestump(&io_start_ts);
-      status = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
+      bytes_read = yaffs_read(file_fd, g_test_buffer, chunk_size);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
-      if (status == FX_SUCCESS && actual_read == chunk_size)
+      if (bytes_read == (int)chunk_size)
       {
         // Verify data if enabled (use offset before incrementing total_read)
-        if (g_fs_test_config.data_verification && !Test_patterns_verify_buffer(g_test_buffer, actual_read, g_fs_test_config.data_pattern, g_fs_test_config.fill_constant, total_read))
+        if (g_fs_test_config.data_verification && !Test_patterns_verify_buffer(g_test_buffer, bytes_read, g_fs_test_config.data_pattern, g_fs_test_config.fill_constant, total_read))
         {
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
@@ -690,19 +684,19 @@ static void _Do_read_test(void)
           break;
         }
 
-        total_read += actual_read;
+        total_read += bytes_read;
 
         // Update CRC with this chunk if verification enabled
         if (g_fs_test_config.data_verification && g_fs_test_config.file_size >= FS_CRC32_SIZE)
         {
-          crc = CRC32_IEEE802_3(crc, g_test_buffer, actual_read);
+          crc = CRC32_IEEE802_3(crc, g_test_buffer, bytes_read);
         }
       }
       else
       {
         Get_hw_timestump(&file_end_ts);
         operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-        MPRINTF("FAILED (read at offset %lu): %s (read %lu, expected %lu, I/O: %6u us, total: %6u us)\n\r", total_read, _Get_YFFS2_error_description(status), actual_read, chunk_size, io_time, operation_time);
+        MPRINTF("FAILED (read at offset %lu): %s (read %d, expected %lu, I/O: %6u us, total: %6u us)\n\r", total_read, _Get_YFFS2_error_description(yaffs_get_error()), bytes_read, chunk_size, io_time, operation_time);
         read_error = true;
         Performance_stats_update_error(&stats);
         break;
@@ -714,11 +708,11 @@ static void _Do_read_test(void)
     {
       uint32_t file_crc32, calculated_crc32;
       Get_hw_timestump(&io_start_ts);
-      status = fx_file_read(&file, &file_crc32, FS_CRC32_SIZE, &actual_read);
+      bytes_read = yaffs_read(file_fd, &file_crc32, FS_CRC32_SIZE);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
-      if (status == FX_SUCCESS && actual_read == FS_CRC32_SIZE)
+      if (bytes_read == FS_CRC32_SIZE)
       {
         calculated_crc32 = ~crc;
         if (file_crc32 != calculated_crc32)
@@ -726,7 +720,7 @@ static void _Do_read_test(void)
           crc_valid = false;
           Performance_stats_increment_crc_error(&stats);
         }
-        total_read += actual_read;
+        total_read += bytes_read;
       }
       else
       {
@@ -737,15 +731,15 @@ static void _Do_read_test(void)
 
     // Close file with timing
     Get_hw_timestump(&close_start_ts);
-    status = fx_file_close(&file);
+    int result = yaffs_close(file_fd);
     Get_hw_timestump(&close_end_ts);
     close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
     Get_hw_timestump(&file_end_ts);
     operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
 
-    if (status != FX_SUCCESS)
+    if (result < 0)
     {
-      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(status), close_time, operation_time);
+      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), close_time, operation_time);
       Performance_stats_update_error(&stats);
     }
     else if (!read_error && !verify_error)
@@ -782,7 +776,7 @@ static void _Do_read_test(void)
   Performance_stats_finalize(&stats);
 
   // Return to root directory
-  fx_directory_default_set(&g_fx_spi_nor_media, "/");
+  // YAFFS2 doesn't need to return to root directory
 
   MPRINTF("\n\r");
   Performance_stats_print("Read Test", &stats, g_fs_test_config.data_verification);
@@ -800,21 +794,13 @@ static void _Do_delete_test(void)
   GET_MCBL;
   T_performance_stats stats;
   T_sys_timestump     start_ts, end_ts;
-  CHAR                filename[FS_MAX_FILENAME_LENGTH];
-  UINT                status;
+  char                filename[FS_MAX_FILENAME_LENGTH];
+  int                 result;
 
   MPRINTF("\n=== YFFS2 Delete Test ===\n\r");
 
   // Initialize statistics for delete operations (limited fields used)
   Performance_stats_init_delete(&stats);
-
-  // Change to root directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
-  if (status != FX_SUCCESS)
-  {
-    MPRINTF("Error: Could not access root directory. Run write test first.\n\r");
-    return;
-  }
 
   Get_hw_timestump(&start_ts);
 
@@ -832,11 +818,11 @@ static void _Do_delete_test(void)
 
     MPRINTF("File %s: ", filename);
 
-    status = fx_file_delete(&g_fx_spi_nor_media, filename);
+    result = yaffs_unlink(filename);
     Get_hw_timestump(&file_end_ts);
     operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
 
-    if (status == FX_SUCCESS)
+    if (result >= 0)
     {
       // Calculate speed in KB/s based on operation time (avoid division by zero)
       // Using binary KB (1 KB = 1024 bytes) for speed calculation with floating point precision
@@ -854,7 +840,7 @@ static void _Do_delete_test(void)
     }
     else
     {
-      MPRINTF("FAILED: %s (%6u us)\n\r", _Get_YFFS2_error_description(status), operation_time);
+      MPRINTF("FAILED: %s (%6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), operation_time);
       Performance_stats_update_error(&stats);
     }
   }
@@ -879,7 +865,7 @@ static void _Do_format_test(void)
 {
   GET_MCBL;
   T_sys_timestump start_ts, end_ts;
-  UINT            status;
+  int             result;
 
   MPRINTF("\n=== YFFS2 Format Test ===\n\r");
   MPRINTF("WARNING: This will erase all data on the media!\n\r");
@@ -892,54 +878,35 @@ static void _Do_format_test(void)
     return;
   }
 
-  // Allocate test buffer
-  if (!_Allocate_test_buffer())
-  {
-    MPRINTF("\nError: Failed to allocate test buffer\n\r");
-    return;
-  }
-
-  MPRINTF("\nFormatting media...\n\r");
+  MPRINTF("\nFormatting YAFFS2 filesystem...\n\r");
 
   Get_hw_timestump(&start_ts);
 
-  // Close media first
-  fx_media_close(&g_fx_spi_nor_media);
-
-  // Format the media using LevelX NOR driver
-  status = fx_media_format(&g_fx_spi_nor_media,
-                           MC80_YFFS2_LevelX_DeviceDriver,           // Driver function
-                           (void *)&g_rm_YFFS2_levelx_NOR_instance,  // Driver info pointer
-                           (UCHAR *)g_test_buffer,                   // Memory pointer for work area
-                           YAFFS2_TEST_BUFFER_SIZE,                  // Memory size
-                           G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
-                           G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
-                           G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
-                           G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
-                           G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
-                           G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
-                           G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
-                           1,                                        // Heads
-                           1);                                       // Sectors per track
-
-  if (status == FX_SUCCESS)
+  // Unmount filesystem first
+  result = yaffs_unmount("/");
+  if (result < 0)
   {
-    // Reopen the media with the saved memory buffer
-    status = fx_media_open(&g_fx_spi_nor_media, "YFFS2 Media", MC80_YFFS2_LevelX_DeviceDriver,
-                           (void *)&g_rm_YFFS2_levelx_NOR_instance, g_YFFS2_memory_buffer, FILEX_MEMORY_BUFFER_SIZE);
+    MPRINTF("Warning: Failed to unmount filesystem: %s\n\r", _Get_YFFS2_error_description(yaffs_get_error()));
   }
+
+  // YAFFS2 doesn't have a direct format function like other filesystems
+  // The closest equivalent is to unmount and remount the filesystem
+  // This will cause YAFFS2 to scan and rebuild its internal structures
+
+  // Remount the filesystem (this will rebuild YAFFS2 structures)
+  result = yaffs_mount("/");
 
   Get_hw_timestump(&end_ts);
   uint32_t format_time = Timestump_diff_to_usec(&start_ts, &end_ts);
 
-  if (status == FX_SUCCESS)
+  if (result >= 0)
   {
     MPRINTF("Format completed successfully in %lu us\n\r", format_time);
-    _Print_YFFS2_info();
+    _Print_YAFFS2_info();
   }
   else
   {
-    MPRINTF("Format failed with error: %s\n\r", _Get_YFFS2_error_description(status));
+    MPRINTF("Format failed with error: %s\n\r", _Get_YFFS2_error_description(yaffs_get_error()));
   }
 }
 
@@ -1002,34 +969,41 @@ void Do_YAFFS2_init(uint8_t keycode)
   MPRINTF(VT100_CLEAR_AND_HOME);
   MPRINTF("=== YAFFS2 NOR Flash Initialization ===\n\r");
 
+  // Check if filesystem is already mounted
+  Y_LOFF_T free_space = yaffs_freespace("/");
+  if (free_space >= 0)
+  {
+    MPRINTF("YAFFS2 filesystem is already mounted and accessible.\n\r");
+    _Print_YAFFS2_info();
+    MPRINTF("\nPress any key to continue...\n\r");
+    uint8_t key;
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
+
+  MPRINTF("Attempting to mount YAFFS2 filesystem...\n\r");
+
   Get_hw_timestump(&start_ts);
 
-  // Initialize YAFFS2 device
-  int result = yaffs_nor_device_init();
+  // Try to mount filesystem
+  int result = yaffs_mount("/");
 
   Get_hw_timestump(&end_ts);
-  uint32_t init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
+  uint32_t mount_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
 
   if (result >= 0)
   {
-    MPRINTF("YAFFS2 device initialized successfully in %lu ms\n\r", init_time);
-
-    // Mount filesystem
-    result = yaffs_mount("/");
-    if (result >= 0)
-    {
-      MPRINTF("YAFFS2 filesystem mounted successfully\n\r");
-      _Print_YAFFS2_info();
-    }
-    else
-    {
-      MPRINTF("Failed to mount YAFFS2 filesystem: %s\n\r", _Get_YAFFS2_error_description(yaffs_get_error()));
-      MPRINTF("The filesystem may need to be formatted or is corrupted.\n\r");
-    }
+    MPRINTF("YAFFS2 filesystem mounted successfully in %lu ms\n\r", mount_time);
+    _Print_YAFFS2_info();
   }
   else
   {
-    MPRINTF("YAFFS2 device initialization failed: %s\n\r", _Get_YAFFS2_error_description(result));
+    MPRINTF("Failed to mount YAFFS2 filesystem: %s\n\r", _Get_YAFFS2_error_description(yaffs_get_error()));
+    MPRINTF("This could indicate:\n\r");
+    MPRINTF("- Device not properly configured\n\r");
+    MPRINTF("- Filesystem corrupted or unformatted\n\r");
+    MPRINTF("- Hardware connection issues\n\r");
+    MPRINTF("\nYou can try using the format option from the performance test menu.\n\r");
   }
 
   MPRINTF("\nPress any key to continue...\n\r");
@@ -1046,110 +1020,6 @@ void Do_YAFFS2_init(uint8_t keycode)
     WAIT_CHAR(&key, ms_to_ticks(100000));
     return;
   }
-
-  // Allocate memory for YFFS2 operations
-  media_memory = App_malloc(YAFFS2_MEMORY_BUFFER_SIZE);
-  if (media_memory == NULL)
-  {
-    MPRINTF("Error: Failed to allocate memory for YFFS2 operations\n\r");
-    MPRINTF("\nPress any key to continue...\n\r");
-    uint8_t key;
-    WAIT_CHAR(&key, ms_to_ticks(100000));
-    return;
-  }
-
-  Get_hw_timestump(&start_ts);
-
-  // Initialize YFFS2 media
-  status = fx_media_open(&g_fx_spi_nor_media, "YFFS2 NOR Media",
-                         MC80_YFFS2_LevelX_DeviceDriver,
-                         (void *)&g_rm_YFFS2_levelx_NOR_instance,
-                         media_memory, FILEX_MEMORY_BUFFER_SIZE);
-
-  Get_hw_timestump(&end_ts);
-  uint32_t init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
-
-  if (status == FX_SUCCESS)
-  {
-    MPRINTF("YFFS2 media initialized successfully in %lu ms\n\r", init_time);
-    g_YAFFS2_memory_buffer = media_memory;  // Save pointer for later use
-    _Print_YFFS2_info();
-  }
-  else if (status == FX_BOOT_ERROR)
-  {
-    MPRINTF("YFFS2 media initialization failed: %s\n\r", _Get_YFFS2_error_description(status));
-    MPRINTF("Media appears to be unformatted. Attempting to format...\n\r");
-
-    // Allocate test buffer for formatting
-    if (!_Allocate_test_buffer())
-    {
-      MPRINTF("Error: Failed to allocate test buffer for formatting\n\r");
-      App_free(media_memory);
-      MPRINTF("\nPress any key to continue...\n\r");
-      uint8_t key;
-      WAIT_CHAR(&key, ms_to_ticks(100000));
-      return;
-    }
-
-    // Close media first
-    fx_media_close(&g_fx_spi_nor_media);
-
-    // Try to format the media
-    UINT format_status = fx_media_format(&g_fx_spi_nor_media,
-                                         MC80_YFFS2_LevelX_DeviceDriver,
-                                         (void *)&g_rm_YFFS2_levelx_NOR_instance,
-                                         (UCHAR *)g_test_buffer,
-                                         YAFFS2_TEST_BUFFER_SIZE,
-                                         G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
-                                         G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
-                                         G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
-                                         G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
-                                         G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
-                                         G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
-                                         G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
-                                         1,                                        // Heads
-                                         1);                                       // Sectors per track
-
-    if (format_status == FX_SUCCESS)
-    {
-      MPRINTF("Format successful! Reopening media...\n\r");
-
-      // Try to reopen the formatted media
-      status = fx_media_open(&g_fx_spi_nor_media, "YFFS2 NOR Media",
-                             MC80_YFFS2_LevelX_DeviceDriver,
-                             (void *)&g_rm_YFFS2_levelx_NOR_instance,
-                             media_memory, FILEX_MEMORY_BUFFER_SIZE);
-
-      if (status == FX_SUCCESS)
-      {
-        MPRINTF("YFFS2 media formatted and opened successfully!\n\r");
-        g_YAFFS2_memory_buffer = media_memory;
-        _Print_YFFS2_info();
-      }
-      else
-      {
-        MPRINTF("Failed to reopen formatted media: %s\n\r", _Get_YFFS2_error_description(status));
-        App_free(media_memory);
-        _Free_test_buffer();
-      }
-    }
-    else
-    {
-      MPRINTF("Format failed: %s\n\r", _Get_YFFS2_error_description(format_status));
-      App_free(media_memory);
-      _Free_test_buffer();
-    }
-  }
-  else
-  {
-    MPRINTF("YFFS2 media initialization failed: %s\n\r", _Get_YFFS2_error_description(status));
-    // Free allocated memory on failure
-    App_free(media_memory);
-  }
-
-  MPRINTF("\nPress any key to continue...\n\r");
-  uint8_t key;
-  WAIT_CHAR(&key, ms_to_ticks(100000));
 }
 
 /*-----------------------------------------------------------------------------------------------------
