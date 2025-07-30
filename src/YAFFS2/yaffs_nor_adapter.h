@@ -16,6 +16,10 @@
   YAFFS2 callback function prototypes for NOR Flash operations
 -----------------------------------------------------------------------------------------------------*/
 
+// Basic chunk operations (required by YAFFS2 even when using tagger)
+int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id, const unsigned char *data, const unsigned char *oob);
+int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id, unsigned char *data, unsigned char *oob, enum yaffs_ecc_result *ecc_result);
+
 // Write chunk with tags to NOR Flash
 int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id, const unsigned char *data, const struct yaffs_ext_tags *tags);
 

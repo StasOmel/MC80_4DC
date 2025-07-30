@@ -260,3 +260,63 @@ int Yaffs_nor_deinitialise(struct yaffs_dev *dev)
 
   return YAFFS_OK;
 }
+
+/*-----------------------------------------------------------------------------------------------------
+  Write chunk without tags (basic interface required by YAFFS2)
+
+  This is a wrapper around the tags-based write function for compatibility.
+  YAFFS2 requires this function even when using tagger interface.
+
+  Parameters:
+    dev      - YAFFS device structure
+    chunk_id - Page identifier (0-based sequential)
+    data     - User data buffer
+    oob      - Out-of-band data (not used in inband tags mode)
+
+  Return:
+    YAFFS_OK on success, YAFFS_FAIL on error
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_write_chunk(struct yaffs_dev *dev, int chunk_id,
+                          const unsigned char *data,
+                          const unsigned char *oob)
+{
+  // In inband tags mode, OOB is not used separately
+  // Call the tags-based function with NULL tags to write data only
+  return Yaffs_nor_write_chunk_tags(dev, chunk_id, data, NULL);
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Read chunk without tags (basic interface required by YAFFS2)
+
+  This is a wrapper around the tags-based read function for compatibility.
+  YAFFS2 requires this function even when using tagger interface.
+
+  Parameters:
+    dev        - YAFFS device structure
+    chunk_id   - Page identifier (0-based sequential)
+    data       - Buffer for user data
+    oob        - Buffer for out-of-band data (not used in inband tags mode)
+    ecc_result - ECC correction result (output)
+
+  Return:
+    YAFFS_OK on success, YAFFS_FAIL on error
+-----------------------------------------------------------------------------------------------------*/
+int Yaffs_nor_read_chunk(struct yaffs_dev *dev, int chunk_id,
+                         unsigned char *data,
+                         unsigned char *oob,
+                         enum yaffs_ecc_result *ecc_result)
+{
+  int result;
+
+  // In inband tags mode, OOB is not used separately
+  // Call the tags-based function with NULL tags to read data only
+  result = Yaffs_nor_read_chunk_tags(dev, chunk_id, data, NULL);
+
+  // Set ECC result to indicate no ECC errors (NOR Flash is reliable)
+  if (ecc_result)
+  {
+    *ecc_result = YAFFS_ECC_RESULT_NO_ERROR;
+  }
+
+  return result;
+}

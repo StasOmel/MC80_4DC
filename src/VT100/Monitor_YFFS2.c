@@ -962,6 +962,18 @@ void Do_YAFFS2_init(uint8_t keycode)
   MPRINTF(VT100_CLEAR_AND_HOME);
   MPRINTF("=== YAFFS2 NOR Flash Initialization ===\n\r");
 
+  // Initialize YAFFS2 device (register device in device list)
+  MPRINTF("Initializing YAFFS2 device...\n\r");
+  if (Yaffs_nor_device_init() != 0)
+  {
+    MPRINTF("Failed to initialize YAFFS2 device\n\r");
+    MPRINTF("\nPress any key to continue...\n\r");
+    uint8_t key;
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
+  MPRINTF("YAFFS2 device initialized successfully\n\r");
+
   // Check if filesystem is already mounted
   Y_LOFF_T free_space = yaffs_freespace("/");
   if (free_space >= 0)

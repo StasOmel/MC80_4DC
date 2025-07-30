@@ -15,6 +15,7 @@
 #define CONFIG_YAFFS_DEFINES_TYPES      (0)  // Don't redefine types (use our own)
 #define CONFIG_YAFFS_SHORT_NAMES_IN_RAM (1)  // Use short names in RAM
 #define CONFIG_YAFFS_USE_32_BIT_TIME_T  (1)  // Use 32-bit time
+#define LOFF_T_32_BIT
 
 // Define types locally to avoid conflicts
 typedef unsigned char      u8;
@@ -23,7 +24,7 @@ typedef unsigned int       u32;
 typedef unsigned long long u64;
 typedef signed int         s32;
 
-typedef long long          off_t;   //
+typedef int                off_t;   //
 typedef long long          loff_t;  //
 
 /* POSIX-style types for filesystem operations */
@@ -64,12 +65,12 @@ typedef unsigned int       dev_t;   // Device ID type
 #define YAFFS_NOR_PAGE_OOB_SIZE         (0)                                                      // No separate OOB area (inband tags mode)
 #define YAFFS_NOR_PAGE_DATA_SIZE        (YAFFS_NOR_PAGE_TOTAL_SIZE - YAFFS_NOR_PAGE_OOB_SIZE)    // Data area per page (4096 bytes, includes 16-byte inband tags)
 
-#define YAFFS_NOR_PAGES_PER_BLOCK       (1)                                                      // Pages per block (1 page = 1 erasable sector)
-#define YAFFS_NOR_BLOCK_SIZE            (YAFFS_NOR_PAGE_TOTAL_SIZE * YAFFS_NOR_PAGES_PER_BLOCK)  // 4096 bytes per block (4KB)
+#define YAFFS_NOR_PAGES_PER_BLOCK       (2)                                                      // Pages per block (minimum 2 pages required by YAFFS2)
+#define YAFFS_NOR_BLOCK_SIZE            (YAFFS_NOR_PAGE_TOTAL_SIZE * YAFFS_NOR_PAGES_PER_BLOCK)  // 8192 bytes per block (8KB)
 
 // Filesystem layout configuration
-#define YAFFS_NOR_TOTAL_BLOCKS          (8000)  // Total blocks available (~32MB filesystem, 8000 × 4KB = 32MB)
-#define YAFFS_NOR_RESERVED_BLOCKS       (200)   // Reserved blocks for wear leveling and bad block management
+#define YAFFS_NOR_TOTAL_BLOCKS          (4000)  // Total blocks available (~32MB filesystem, 4000 × 8KB = 32MB)
+#define YAFFS_NOR_RESERVED_BLOCKS       (100)   // Reserved blocks for wear leveling and bad block management
 #define YAFFS_NOR_START_BLOCK           (0)     // First block used by filesystem
 #define YAFFS_NOR_END_BLOCK             (YAFFS_NOR_TOTAL_BLOCKS - 1)
 
@@ -107,10 +108,10 @@ typedef struct
   uint8_t oob[YAFFS_NOR_PAGE_OOB_SIZE];    // No separate OOB area (0 bytes)
 } T_yaffs_nor_page;
 
-// Block structure (now contains only one page since 1 block = 1 erasable sector)
+// Block structure (contains 2 pages since YAFFS2 requires minimum 2 chunks per block)
 typedef struct
 {
-  T_yaffs_nor_page pages[YAFFS_NOR_PAGES_PER_BLOCK];  // Single page per block (4KB)
+  T_yaffs_nor_page pages[YAFFS_NOR_PAGES_PER_BLOCK];  // Two pages per block (8KB total)
 } T_yaffs_nor_block;
 
 // Address conversion macros

@@ -21,7 +21,7 @@ static struct yaffs_dev g_yaffs_nor_device =
   .param =
   {
     // Device identification
-    .name = "norflash",
+    .name = "/",
     .total_bytes_per_chunk = YAFFS_NOR_PAGE_DATA_SIZE,
     .chunks_per_block = YAFFS_NOR_PAGES_PER_BLOCK,
     .spare_bytes_per_chunk = YAFFS_NOR_PAGE_OOB_SIZE,
@@ -46,8 +46,8 @@ static struct yaffs_dev g_yaffs_nor_device =
   // Driver functions for hardware interface
   .drv =
   {
-    .drv_write_chunk_fn = NULL,                   // Not used - we use tagger
-    .drv_read_chunk_fn = NULL,                    // Not used - we use tagger
+    .drv_write_chunk_fn = Yaffs_nor_write_chunk,     // Basic write function (required)
+    .drv_read_chunk_fn = Yaffs_nor_read_chunk,       // Basic read function (required)
     .drv_erase_fn = Yaffs_nor_erase_block,
     .drv_mark_bad_fn = Yaffs_nor_mark_bad_block,
     .drv_check_bad_fn = Yaffs_nor_check_bad_block,
