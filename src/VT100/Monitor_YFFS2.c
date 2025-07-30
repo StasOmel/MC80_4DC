@@ -26,6 +26,9 @@
 #ifndef S_IWRITE
 #define S_IWRITE  0x0080
 #endif
+#ifndef O_SYNC
+#define O_SYNC    0x1000  // Synchronous I/O - writes immediately to storage
+#endif
 
 #define MAX_PATH_LENGTH           256
 #define MAX_DIR_STACK_DEPTH       32
@@ -444,8 +447,9 @@ static void _Do_write_test(void)
     MPRINTF("File %s: ", filename);
 
     // Open file for writing (creates automatically if doesn't exist) with timing
+    // O_SYNC ensures immediate write to storage without buffering
     Get_hw_timestump(&open_start_ts);
-    file_fd = yaffs_open(filename, O_CREAT | O_WRONLY | O_TRUNC, S_IREAD | S_IWRITE);
+    file_fd = yaffs_open(filename, O_CREAT | O_WRONLY | O_TRUNC | O_SYNC, S_IREAD | S_IWRITE);
     Get_hw_timestump(&open_end_ts);
     open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
 
