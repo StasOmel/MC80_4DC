@@ -14351,6 +14351,12 @@
                     <name>$PROJ_DIR$\src\VT100\Monitor_VT100_manager.h</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\src\VT100\Monitor_YFFS2.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\VT100\Monitor_YFFS2.h</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\src\VT100\Performance_Stats.c</name>
                 </file>
                 <file>
@@ -14497,9 +14503,6 @@
                         <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffsfs.h</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\ydirectenv.c</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\ydirectenv.h</name>
                     </file>
                     <file>
@@ -14520,6 +14523,12 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\src\YAFFS2\yaffs_nor_device.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\YAFFS2\yaffs_osglue.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\YAFFS2\yaffs_osglue.h</name>
                 </file>
             </group>
             <file>

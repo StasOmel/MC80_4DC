@@ -21,10 +21,11 @@ const T_VT100_Menu_item MENU_DIAGNOSTIC_ITEMS[] =
   { '4', Diagnostic_TMC6200,           0                      },
   { '5', Diagnostic_Motor,             0                      },
   { '6', Diagnostic_CAN,               0                      },
-  { '7', 0,                            (void *)&MENU_LittleFS },
-  { '8', 0,                            (void *)&MENU_FileX    },
-  { '9', 0,                            (void *)&MENU_RTT      },
-  { 'A', 0,                            (void *)&MENU_OSPI     },
+  { '7', 0,                            (void *)&MENU_OSPI     },
+  { '8', 0,                            (void *)&MENU_LittleFS },
+  { '9', 0,                            (void *)&MENU_FileX    },
+  { 'A', 0,                            (void *)&MENU_YAFFS2   },
+  { 'B', 0,                            (void *)&MENU_RTT      },
   { 'R', 0,                            0                      },
   { 'M', 0,                            (void *)&MENU_MAIN     },
   { 0 } // End of menu
@@ -40,10 +41,11 @@ const T_VT100_Menu MENU_DIAGNOSTIC = {
   "\033[5C <4> - TMC6200 driver state\r\n"
   "\033[5C <5> - Motor diagnostic\r\n"
   "\033[5C <6> - CAN diagnostic\r\n"
-  "\033[5C <7> - LittleFS file system\r\n"
-  "\033[5C <8> - FileX with LevelX file system\r\n"
-  "\033[5C <9> - RTT testing menu\r\n"
-  "\033[5C <A> - OSPI flash testing\r\n"
+  "\033[5C <7> - OSPI flash testing\r\n"
+  "\033[5C <8> - LittleFS file system\r\n"
+  "\033[5C <9> - FileX with LevelX file system\r\n"
+  "\033[5C <A> - YAFFS2 file system\r\n"
+  "\033[5C <B> - RTT testing menu\r\n"
   "\033[5C <R> - Display previous menu\r\n"
   "\033[5C <M> - Display main menu\r\n",
   MENU_DIAGNOSTIC_ITEMS,

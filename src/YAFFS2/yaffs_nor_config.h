@@ -89,6 +89,12 @@ typedef unsigned int       dev_t;   // Device ID type
 #define YAFFS_NOR_INBAND_TAGS           (1)  // Store tags inside data area (inband mode)
 #define YAFFS_NOR_NO_TAGS_ECC           (1)  // Disable ECC for tags
 
+// OSPI driver configuration
+// Available protocols:
+// - MC80_OSPI_PROTOCOL_1S_1S_1S: Standard SPI mode (reliable, supports all operations including erase)
+// - MC80_OSPI_PROTOCOL_8D_8D_8D: Octal DDR mode (high performance, but erase operations must be done in SPI mode)
+#define YAFFS_NOR_OSPI_PROTOCOL         MC80_OSPI_PROTOCOL_8D_8D_8D  // Standard SPI mode for YAFFS2
+
 // Performance optimization
 #define YAFFS_NOR_REFRESH_PERIOD        (0)  // Disable automatic refresh (manual control)
 #define YAFFS_NOR_USE_HEADER_FILE_SIZE  (1)  // Use header for file size information

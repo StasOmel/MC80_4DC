@@ -1,6 +1,8 @@
 #include "App.h"
 #include "yaffs_nor_adapter.h"
+#include "yaffs_nor_config.h"
 #include "MC80_OSPI_drv.h"
+#include "MC80_OSPI_config.h"
 
 // Compile-time check for inband tags mode (tags are stored within data area)
 _Static_assert(YAFFS_NOR_PAGE_OOB_SIZE == 0,
@@ -11,7 +13,7 @@ _Static_assert(YAFFS_NOR_PAGE_OOB_SIZE == 0,
   External reference to OSPI driver control structure
   This should be initialized by the main application before using YAFFS2
 -----------------------------------------------------------------------------------------------------*/
-extern T_mc80_ospi_instance_ctrl g_ospi_ctrl;
+extern T_mc80_ospi_instance_ctrl g_OSPI_ctrl;
 
 /*-----------------------------------------------------------------------------------------------------
   Write page with tags to NOR Flash
@@ -65,7 +67,7 @@ int Yaffs_nor_write_chunk_tags(struct yaffs_dev *dev, int chunk_id,
   // No separate OOB processing needed
 
   // Write complete page (data + OOB) to NOR Flash using OSPI driver
-  err = Mc80_ospi_memory_mapped_write(&g_ospi_ctrl,
+  err = Mc80_ospi_memory_mapped_write(&g_OSPI_ctrl,
                                      (uint8_t*)p_page,
                                      page_address,
                                      YAFFS_NOR_PAGE_TOTAL_SIZE);
@@ -113,7 +115,7 @@ int Yaffs_nor_read_chunk_tags(struct yaffs_dev *dev, int chunk_id,
   }
 
   // Read complete page (data + OOB) from NOR Flash using OSPI driver
-  err = Mc80_ospi_memory_mapped_read(&g_ospi_ctrl,
+  err = Mc80_ospi_memory_mapped_read(&g_OSPI_ctrl,
                                     (uint8_t*)p_page,
                                     page_address,
                                     YAFFS_NOR_PAGE_TOTAL_SIZE);
@@ -161,7 +163,7 @@ int Yaffs_nor_erase_block(struct yaffs_dev *dev, int block_no)
   block_address = YAFFS_NOR_BLOCK_TO_ADDRESS(block_no);
 
   // Erase block using OSPI driver
-  err = Mc80_ospi_erase(&g_ospi_ctrl, block_address, YAFFS_NOR_BLOCK_SIZE);
+  err = Mc80_ospi_erase(&g_OSPI_ctrl, block_address, YAFFS_NOR_BLOCK_SIZE);
 
   return (FSP_SUCCESS == err) ? YAFFS_OK : YAFFS_FAIL;
 }
@@ -213,6 +215,31 @@ int Yaffs_nor_mark_bad_block(struct yaffs_dev *dev, int block_no)
 -----------------------------------------------------------------------------------------------------*/
 int Yaffs_nor_initialise(struct yaffs_dev *dev)
 {
+  fsp_err_t err;
+
+  // Initialize OSPI driver first (similar to LittleFS and LevelX initialization)
+  err = Mc80_ospi_open(g_mc80_ospi.p_ctrl, g_mc80_ospi.p_cfg);
+  if (err != FSP_SUCCESS)
+  {
+    // Check if driver is already opened
+    if (err == FSP_ERR_ALREADY_OPEN)
+    {
+      // Driver already opened, this is acceptable
+    }
+    else
+    {
+      // Initialization failed
+      return YAFFS_FAIL;
+    }
+  }
+
+  // Set OSPI protocol as configured for YAFFS2 (configurable via YAFFS_NOR_OSPI_PROTOCOL)
+  err = Mc80_ospi_spi_protocol_switch_safe(g_mc80_ospi.p_ctrl, YAFFS_NOR_OSPI_PROTOCOL);
+  if (err != FSP_SUCCESS)
+  {
+    return YAFFS_FAIL;
+  }
+
   return YAFFS_OK;
 }
 
@@ -227,5 +254,9 @@ int Yaffs_nor_initialise(struct yaffs_dev *dev)
 -----------------------------------------------------------------------------------------------------*/
 int Yaffs_nor_deinitialise(struct yaffs_dev *dev)
 {
+  // Note: In this implementation, we don't close the OSPI driver because
+  // it might be shared with other filesystems (LittleFS, LevelX, etc.)
+  // The driver will be closed when the application shuts down
+
   return YAFFS_OK;
 }

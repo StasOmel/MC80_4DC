@@ -42,11 +42,9 @@ typedef struct
 static T_dir_entry g_dir_stack[MAX_DIR_STACK_DEPTH];
 static uint32_t    g_stack_top              = 0;
 
-// Global pointer to YAFFS2 memory buffer
-static uint8_t *g_YAFFS2_memory_buffer      = NULL;
-
 // Global pointer to test buffer for file operations
 static uint8_t *g_test_buffer               = NULL;
+
 
 // Menu definition
 const T_VT100_Menu_item MENU_YAFFS2_items[] = {
@@ -66,11 +64,6 @@ const T_VT100_Menu MENU_YAFFS2 = {
   "\033[5C <R> - Return to previous menu\r\n",
   MENU_YAFFS2_items
 };
-
-// Function declarations
-void Do_YAFFS2_init(uint8_t keycode);
-void Do_YAFFS2_list_files(uint8_t keycode);
-void Do_YAFFS2_performance_test(uint8_t keycode);
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Static function declarations
@@ -310,7 +303,7 @@ static void _Print_test_config(void)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: List YFFS2 directory tree (non-recursive with stack)
+  Description: List YAFFS2 directory tree (non-recursive with stack)
 
   Parameters: root_path - starting directory path, max_depth - maximum depth to traverse
 
@@ -341,7 +334,7 @@ static void _List_directory_tree(const char *root_path, uint8_t max_depth)
     dir_ptr = yaffs_opendir(current_path);
     if (dir_ptr == NULL)
     {
-      MPRINTF("Failed to open directory %s: %s\n\r", current_path, _Get_YFFS2_error_description(yaffs_get_error()));
+      MPRINTF("Failed to open directory %s: %s\n\r", current_path, _Get_YAFFS2_error_description(yaffs_get_error()));
       continue;
     }
 
@@ -416,7 +409,7 @@ static void _Do_write_test(void)
   char                filename[FS_MAX_FILENAME_LENGTH];
   int                 result;
 
-  MPRINTF("\n=== YFFS2 Write Test ===\n\r");
+  MPRINTF("\n=== YAFFS2 Write Test ===\n\r");
   _Print_test_config();
 
   // Initialize statistics (matches LittleFS format)
@@ -458,7 +451,7 @@ static void _Do_write_test(void)
     {
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), open_time, operation_time);
+      MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r", _Get_YAFFS2_error_description(yaffs_get_error()), open_time, operation_time);
       Performance_stats_update_error(&stats);
       continue;
     }
@@ -499,7 +492,7 @@ static void _Do_write_test(void)
       {
         Get_hw_timestump(&file_end_ts);
         operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-        MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r", total_written, _Get_YFFS2_error_description(yaffs_get_error()), io_time, operation_time);
+        MPRINTF("FAILED (write at offset %lu): %s (I/O: %6u us, total: %6u us)\n\r", total_written, _Get_YAFFS2_error_description(yaffs_get_error()), io_time, operation_time);
         write_error = true;
         Performance_stats_update_error(&stats);
       }
@@ -524,7 +517,7 @@ static void _Do_write_test(void)
         {
           Get_hw_timestump(&file_end_ts);
           operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-          MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), io_time, operation_time);
+          MPRINTF("FAILED (write CRC): %s (I/O: %6u us, total: %6u us)\n\r", _Get_YAFFS2_error_description(yaffs_get_error()), io_time, operation_time);
           write_error = true;
           Performance_stats_update_error(&stats);
         }
@@ -543,7 +536,7 @@ static void _Do_write_test(void)
 
       if (result < 0)
       {
-        MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), close_time, operation_time);
+        MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YAFFS2_error_description(yaffs_get_error()), close_time, operation_time);
         Performance_stats_update_error(&stats);
       }
       else
@@ -600,7 +593,7 @@ static void _Do_read_test(void)
   char                filename[FS_MAX_FILENAME_LENGTH];
   int                 bytes_read;
 
-  MPRINTF("\n=== YFFS2 Read Test ===\n\r");
+  MPRINTF("\n=== YAFFS2 Read Test ===\n\r");
   _Print_test_config();
 
   // Initialize statistics (matches LittleFS format)
@@ -641,7 +634,7 @@ static void _Do_read_test(void)
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
       MPRINTF("FAILED (open): %s (open: %5u us, total: %6u us)\n\r",
-              _Get_YFFS2_error_description(yaffs_get_error()), open_time, operation_time);
+              _Get_YAFFS2_error_description(yaffs_get_error()), open_time, operation_time);
       Performance_stats_update_error(&stats);
       continue;
     }
@@ -696,7 +689,7 @@ static void _Do_read_test(void)
       {
         Get_hw_timestump(&file_end_ts);
         operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-        MPRINTF("FAILED (read at offset %lu): %s (read %d, expected %lu, I/O: %6u us, total: %6u us)\n\r", total_read, _Get_YFFS2_error_description(yaffs_get_error()), bytes_read, chunk_size, io_time, operation_time);
+        MPRINTF("FAILED (read at offset %lu): %s (read %d, expected %lu, I/O: %6u us, total: %6u us)\n\r", total_read, _Get_YAFFS2_error_description(yaffs_get_error()), bytes_read, chunk_size, io_time, operation_time);
         read_error = true;
         Performance_stats_update_error(&stats);
         break;
@@ -739,7 +732,7 @@ static void _Do_read_test(void)
 
     if (result < 0)
     {
-      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), close_time, operation_time);
+      MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_YAFFS2_error_description(yaffs_get_error()), close_time, operation_time);
       Performance_stats_update_error(&stats);
     }
     else if (!read_error && !verify_error)
@@ -797,7 +790,7 @@ static void _Do_delete_test(void)
   char                filename[FS_MAX_FILENAME_LENGTH];
   int                 result;
 
-  MPRINTF("\n=== YFFS2 Delete Test ===\n\r");
+  MPRINTF("\n=== YAFFS2 Delete Test ===\n\r");
 
   // Initialize statistics for delete operations (limited fields used)
   Performance_stats_init_delete(&stats);
@@ -840,7 +833,7 @@ static void _Do_delete_test(void)
     }
     else
     {
-      MPRINTF("FAILED: %s (%6u us)\n\r", _Get_YFFS2_error_description(yaffs_get_error()), operation_time);
+      MPRINTF("FAILED: %s (%6u us)\n\r", _Get_YAFFS2_error_description(yaffs_get_error()), operation_time);
       Performance_stats_update_error(&stats);
     }
   }
@@ -867,7 +860,7 @@ static void _Do_format_test(void)
   T_sys_timestump start_ts, end_ts;
   int             result;
 
-  MPRINTF("\n=== YFFS2 Format Test ===\n\r");
+  MPRINTF("\n=== YAFFS2 Format Test ===\n\r");
   MPRINTF("WARNING: This will erase all data on the media!\n\r");
   MPRINTF("Press 'Y' to confirm or any other key to cancel: ");
 
@@ -886,7 +879,7 @@ static void _Do_format_test(void)
   result = yaffs_unmount("/");
   if (result < 0)
   {
-    MPRINTF("Warning: Failed to unmount filesystem: %s\n\r", _Get_YFFS2_error_description(yaffs_get_error()));
+    MPRINTF("Warning: Failed to unmount filesystem: %s\n\r", _Get_YAFFS2_error_description(yaffs_get_error()));
   }
 
   // YAFFS2 doesn't have a direct format function like other filesystems
@@ -906,7 +899,7 @@ static void _Do_format_test(void)
   }
   else
   {
-    MPRINTF("Format failed with error: %s\n\r", _Get_YFFS2_error_description(yaffs_get_error()));
+    MPRINTF("Format failed with error: %s\n\r", _Get_YAFFS2_error_description(yaffs_get_error()));
   }
 }
 
@@ -953,7 +946,7 @@ static void _Do_full_test(void)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Initialize YFFS2 media
+  Description: Initialize YAFFS2 media
 
   Parameters: keycode - key code from menu
 
@@ -1018,7 +1011,7 @@ void Do_YAFFS2_init(uint8_t keycode)
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-void Do_YFFS2_list_files(uint8_t keycode)
+void Do_YAFFS2_list_files(uint8_t keycode)
 {
   GET_MCBL;
 
@@ -1038,7 +1031,7 @@ void Do_YFFS2_list_files(uint8_t keycode)
     return;
   }
 
-  _Print_YFFS2_info();
+  _Print_YAFFS2_info();
 
   MPRINTF("\n=== Directory Tree (max depth 5) ===\n\r");
   g_stack_top = 0;  // Reset directory stack
@@ -1206,7 +1199,7 @@ void Do_YFFS2_list_files(uint8_t keycode)
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-void Do_YFFS2_performance_test(uint8_t keycode)
+void Do_YAFFS2_performance_test(uint8_t keycode)
 {
   GET_MCBL;
   uint8_t choice;
@@ -1233,7 +1226,7 @@ void Do_YFFS2_performance_test(uint8_t keycode)
       return;
     }
 
-    _Print_YFFS2_info();
+    _Print_YAFFS2_info();
     _Print_test_config();
 
     MPRINTF("\n\rTest operations:\n\r");
