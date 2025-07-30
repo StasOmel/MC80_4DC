@@ -1,13 +1,15 @@
 #include "App.h"
-#include "LevelX_config.h"
+#include "yaffs_nor_device.h"
+#include "yaffs_guts.h"
+#include "yaffsfs.h"
 #include "Performance_Stats.h"
 #include "Test_Patterns.h"
 #include "FS_Test_Config.h"
 
 #define MAX_PATH_LENGTH          256
 #define MAX_DIR_STACK_DEPTH      32
-#define FILEX_MEMORY_BUFFER_SIZE (32 * 1024)  // 32KB
-#define FILEX_TEST_BUFFER_SIZE   (16 * 1024)  // 16KB for test operations
+#define YAFFS2_MEMORY_BUFFER_SIZE (32 * 1024)  // 32KB
+#define YAFFS2_TEST_BUFFER_SIZE   (16 * 1024)  // 16KB for test operations
 
 // Directory navigation stack
 typedef struct
@@ -21,30 +23,35 @@ static uint32_t    g_stack_top = 0;
 
 
 
-// Global pointer to YFFS2 memory buffer
-static uint8_t *g_YFFS2_memory_buffer      = NULL;
+// Global pointer to YAFFS2 memory buffer
+static uint8_t *g_YAFFS2_memory_buffer      = NULL;
 
 // Global pointer to test buffer for file operations
 static uint8_t *g_test_buffer              = NULL;
 
 // Menu definition
-const T_VT100_Menu_item MENU_YFFS2_items[] = {
-  { '1', Do_YFFS2_init, NULL },
-  { '2', Do_YFFS2_list_files, NULL },
-  { '3', Do_YFFS2_performance_test, NULL },
+const T_VT100_Menu_item MENU_YAFFS2_items[] = {
+  { '1', Do_YAFFS2_init, NULL },
+  { '2', Do_YAFFS2_list_files, NULL },
+  { '3', Do_YAFFS2_performance_test, NULL },
   { 'R', NULL, NULL },
   { 0 }  // End of menu
 };
 
-const T_VT100_Menu MENU_YFFS2 = {
-  "YFFS2 with LevelX Manager",
-  "\033[5C YFFS2 file system with LevelX wear leveling management menu\r\n"
-  "\033[5C <1> - Initialize YFFS2 with LevelX (auto-format if needed)\r\n"
+const T_VT100_Menu MENU_YAFFS2 = {
+  "YAFFS2 NOR Flash Manager",
+  "\033[5C YAFFS2 file system for NOR Flash menu\r\n"
+  "\033[5C <1> - Initialize YAFFS2 (auto-format if needed)\r\n"
   "\033[5C <2> - List files and directories\r\n"
   "\033[5C <3> - Performance test\r\n"
   "\033[5C <R> - Return to previous menu\r\n",
-  MENU_YFFS2_items
+  MENU_YAFFS2_items
 };
+
+// Function declarations
+void Do_YAFFS2_init(uint8_t keycode);
+void Do_YAFFS2_list_files(uint8_t keycode);
+void Do_YAFFS2_performance_test(uint8_t keycode);
 
 /*-----------------------------------------------------------------------------------------------------
   Description: Static function declarations
@@ -58,13 +65,13 @@ static void        _Do_read_test(void);
 static void        _Do_delete_test(void);
 static void        _Do_format_test(void);
 static void        _Do_full_test(void);
-static void        _Print_YFFS2_info(void);
+static void        _Print_YAFFS2_info(void);
 static void        _Print_test_config(void);
 static bool        _Push_dir_to_stack(const char *path, uint8_t depth);
 static bool        _Pop_dir_from_stack(char *path, uint8_t *depth);
 static void        _Print_tree_indent(uint8_t depth);
 static void        _List_directory_tree(const char *root_path, uint8_t max_depth);
-static const char *_Get_YFFS2_error_description(UINT status);
+static const char *_Get_YAFFS2_error_description(int status);
 static bool        _Allocate_test_buffer(void);
 static void        _Free_test_buffer(void);
 
@@ -110,64 +117,48 @@ static bool _Pop_dir_from_stack(char *path, uint8_t *depth)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Get YFFS2 error description string
+  Description: Get YAFFS2 error description string
 
-  Parameters: status - YFFS2 error status code
+  Parameters: status - YAFFS2 error status code
 
   Return: pointer to error description string
 -----------------------------------------------------------------------------------------------------*/
-static const char *_Get_YFFS2_error_description(UINT status)
+static const char *_Get_YAFFS2_error_description(int status)
 {
   switch (status)
   {
-    case FX_SUCCESS:
-      return "FX_SUCCESS";
-    case FX_BOOT_ERROR:
-      return "FX_BOOT_ERROR";
-    case FX_MEDIA_NOT_OPEN:
-      return "FX_MEDIA_NOT_OPEN";
-    case FX_NOT_FOUND:
-      return "FX_NOT_FOUND";
-    case FX_NOT_A_FILE:
-      return "FX_NOT_A_FILE";
-    case FX_ACCESS_ERROR:
-      return "FX_ACCESS_ERROR";
-    case FX_FILE_CORRUPT:
-      return "FX_FILE_CORRUPT";
-    case FX_INVALID_PATH:
-      return "FX_INVALID_PATH";
-    case FX_ALREADY_CREATED:
-      return "FX_ALREADY_CREATED";
-    case FX_INVALID_NAME:
-      return "FX_INVALID_NAME";
-    case FX_MEDIA_INVALID:
-      return "FX_MEDIA_INVALID";
-    case FX_IO_ERROR:
-      return "FX_IO_ERROR";
-    case FX_WRITE_PROTECT:
-      return "FX_WRITE_PROTECT";
-    case FX_PTR_ERROR:
-      return "FX_PTR_ERROR";
-    case FX_CALLER_ERROR:
-      return "FX_CALLER_ERROR";
-    case FX_INVALID_OPTION:
-      return "FX_INVALID_OPTION";
-    case FX_SECTOR_INVALID:
-      return "FX_SECTOR_INVALID";
-    case FX_NO_MORE_SPACE:
-      return "FX_NO_MORE_SPACE";
-    case FX_NO_MORE_ENTRIES:
-      return "FX_NO_MORE_ENTRIES";
-    case FX_NOT_DIRECTORY:
-      return "FX_NOT_DIRECTORY";
-    case FX_END_OF_FILE:
-      return "FX_END_OF_FILE";
-    case FX_NOT_IMPLEMENTED:
-      return "FX_NOT_IMPLEMENTED";
-    case FX_READ_CONTINUE:
-      return "FX_READ_CONTINUE";
-    case FX_BUFFER_ERROR:
-      return "FX_BUFFER_ERROR";
+    case 0:
+      return "SUCCESS";
+    case -1:
+      return "GENERIC_ERROR";
+    case -2:
+      return "NOT_FOUND";
+    case -3:
+      return "EXISTS";
+    case -4:
+      return "NOT_DIRECTORY";
+    case -5:
+      return "IS_DIRECTORY";
+    case -6:
+      return "NO_SPACE";
+    case -7:
+      return "IO_ERROR";
+    case -8:
+      return "INVALID_PARAMETER";
+    case -9:
+      return "TOO_MANY_OBJECTS";
+    case -10:
+      return "ACCESS_DENIED";
+    case -11:
+      return "NO_MEMORY";
+    case -12:
+      return "BUSY";
+    case -13:
+      return "READ_ONLY";
+    case -14:
+      return "TIMEOUT";
+    case -15:
+      return "CROSS_DEVICE_LINK";
     default:
       return "UNKNOWN_ERROR";
   }
@@ -184,7 +175,7 @@ static bool _Allocate_test_buffer(void)
 {
   if (g_test_buffer == NULL)
   {
-    g_test_buffer = App_malloc(FILEX_TEST_BUFFER_SIZE);
+    g_test_buffer = App_malloc(YAFFS2_TEST_BUFFER_SIZE);
     if (g_test_buffer == NULL)
     {
       return false;
@@ -234,60 +225,44 @@ static void _Print_tree_indent(uint8_t depth)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Print YFFS2 media information
+  Description: Print YAFFS2 media information
 
   Parameters: none
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-static void _Print_YFFS2_info(void)
+static void _Print_YAFFS2_info(void)
 {
   GET_MCBL;
-  ULONG total_clusters, available_bytes;
-  ULONG sectors_per_cluster, bytes_per_sector;
 
-  MPRINTF("\n=== YFFS2 Media Information ===\n\r");
+  MPRINTF("\n=== YAFFS2 Media Information ===\n\r");
 
-  // Get media information - fx_media_space_available returns available bytes, not clusters
-  UINT status = fx_media_space_available(&g_fx_spi_nor_media, &available_bytes);
-  if (status == FX_SUCCESS)
+  // Get YAFFS2 filesystem statistics using yaffs_freespace
+  Y_LOFF_T free_space = yaffs_freespace("/");
+
+  if (free_space >= 0)
   {
-    total_clusters             = g_fx_spi_nor_media.fx_media_total_clusters;
-    sectors_per_cluster        = g_fx_spi_nor_media.fx_media_sectors_per_cluster;
-    bytes_per_sector           = g_fx_spi_nor_media.fx_media_bytes_per_sector;
+    // For YAFFS2, we can estimate total space based on device configuration
+    // This is a simplified approach - in real implementation you'd get this from device config
+    uint64_t total_space = 32 * 1024 * 1024;  // 32MB estimated (adjust based on your NOR Flash size)
+    uint64_t used_space = total_space - free_space;
 
-    // Calculate sizes in bytes first to avoid overflow
-    ULONG cluster_size_bytes   = sectors_per_cluster * bytes_per_sector;
+    MPRINTF("Mount point          : /\n\r");
+    MPRINTF("Filesystem type      : YAFFS2\n\r");
+    MPRINTF("Total space          : %lu KB (%lu MB)\n\r", (uint32_t)(total_space / 1024), (uint32_t)(total_space / (1024 * 1024)));
+    MPRINTF("Free space           : %lu KB (%lu MB)\n\r", (uint32_t)(free_space / 1024), (uint32_t)(free_space / (1024 * 1024)));
+    MPRINTF("Used space           : %lu KB (%lu MB)\n\r", (uint32_t)(used_space / 1024), (uint32_t)(used_space / (1024 * 1024)));
 
-    // Use data cluster count from media structure (this is the actual user data area)
-    ULONG data_clusters        = g_fx_spi_nor_media.fx_media_available_clusters;
-
-    // Calculate sizes based on data clusters from media structure
-    ULONG total_size_bytes     = total_clusters * cluster_size_bytes;
-    ULONG data_size_bytes      = data_clusters * cluster_size_bytes;
-    ULONG used_size_bytes      = total_size_bytes - available_bytes;
-
-    MPRINTF("Media ID             : 0x%lX\n\r", g_fx_spi_nor_media.fx_media_id);
-    MPRINTF("Total clusters       : %lu\n\r", total_clusters);
-    MPRINTF("Data clusters        : %lu\n\r", data_clusters);
-    MPRINTF("Sectors per cluster  : %lu\n\r", sectors_per_cluster);
-    MPRINTF("Bytes per sector     : %lu\n\r", bytes_per_sector);
-    MPRINTF("Cluster size         : %lu bytes\n\r", cluster_size_bytes);
-    MPRINTF("Total space          : %lu KB (%lu MB)\n\r", total_size_bytes / 1024, total_size_bytes / (1024 * 1024));
-    MPRINTF("Data space           : %lu KB (%lu MB)\n\r", data_size_bytes / 1024, data_size_bytes / (1024 * 1024));
-    MPRINTF("Available space      : %lu KB (%lu MB)\n\r", available_bytes / 1024, available_bytes / (1024 * 1024));
-    MPRINTF("Used space           : %lu KB (%lu MB)\n\r", used_size_bytes / 1024, used_size_bytes / (1024 * 1024));
-
-    // Calculate and display usage percentage based on total disk space
-    if (total_size_bytes > 0)
+    // Calculate and display usage percentage
+    if (total_space > 0)
     {
-      ULONG usage_percent = (used_size_bytes * 100) / total_size_bytes;
+      uint32_t usage_percent = (uint32_t)((used_space * 100) / total_space);
       MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, 100 - usage_percent);
     }
   }
   else
   {
-    MPRINTF("Error getting media information: %s\n\r", _Get_YFFS2_error_description(status));
+    MPRINTF("Error getting filesystem information: %s\n\r", _Get_YAFFS2_error_description(yaffs_get_error()));
   }
 }
 
@@ -491,7 +466,7 @@ static void _Do_write_test(void)
 
     while (total_written < bytes_to_write && !write_error)
     {
-      uint32_t chunk_size = (bytes_to_write - total_written > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
+      uint32_t chunk_size = (bytes_to_write - total_written > YAFFS2_TEST_BUFFER_SIZE) ? YAFFS2_TEST_BUFFER_SIZE : (bytes_to_write - total_written);
 
       Test_patterns_fill_buffer(g_test_buffer, chunk_size, g_fs_test_config.data_pattern, g_fs_test_config.fill_constant, total_written);
 
@@ -687,7 +662,7 @@ static void _Do_read_test(void)
 
     while (total_read < bytes_to_read && !read_error)
     {
-      uint32_t chunk_size = (bytes_to_read - total_read > FILEX_TEST_BUFFER_SIZE) ? FILEX_TEST_BUFFER_SIZE : (bytes_to_read - total_read);
+      uint32_t chunk_size = (bytes_to_read - total_read > YAFFS2_TEST_BUFFER_SIZE) ? YAFFS2_TEST_BUFFER_SIZE : (bytes_to_read - total_read);
 
       Get_hw_timestump(&io_start_ts);
       status = fx_file_read(&file, g_test_buffer, chunk_size, &actual_read);
@@ -929,7 +904,7 @@ static void _Do_format_test(void)
                            MC80_YFFS2_LevelX_DeviceDriver,           // Driver function
                            (void *)&g_rm_YFFS2_levelx_NOR_instance,  // Driver info pointer
                            (UCHAR *)g_test_buffer,                   // Memory pointer for work area
-                           FILEX_TEST_BUFFER_SIZE,                   // Memory size
+                           YAFFS2_TEST_BUFFER_SIZE,                   // Memory size
                            G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
                            G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
                            G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
@@ -1010,17 +985,50 @@ static void _Do_full_test(void)
 
   Return: none
 -----------------------------------------------------------------------------------------------------*/
-void Do_YFFS2_init(uint8_t keycode)
+void Do_YAFFS2_init(uint8_t keycode)
 {
   GET_MCBL;
-  UINT            status;
   T_sys_timestump start_ts, end_ts;
-  uint8_t        *media_memory;
 
   FSP_PARAMETER_NOT_USED(keycode);
 
   MPRINTF(VT100_CLEAR_AND_HOME);
-  MPRINTF("=== YFFS2 with LevelX Initialization ===\n\r");
+  MPRINTF("=== YAFFS2 NOR Flash Initialization ===\n\r");
+
+  Get_hw_timestump(&start_ts);
+
+  // Initialize YAFFS2 device
+  int result = yaffs_nor_device_init();
+
+  Get_hw_timestump(&end_ts);
+  uint32_t init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
+
+  if (result >= 0)
+  {
+    MPRINTF("YAFFS2 device initialized successfully in %lu ms\n\r", init_time);
+
+    // Mount filesystem
+    result = yaffs_mount("/");
+    if (result >= 0)
+    {
+      MPRINTF("YAFFS2 filesystem mounted successfully\n\r");
+      _Print_YAFFS2_info();
+    }
+    else
+    {
+      MPRINTF("Failed to mount YAFFS2 filesystem: %s\n\r", _Get_YAFFS2_error_description(yaffs_get_error()));
+      MPRINTF("The filesystem may need to be formatted or is corrupted.\n\r");
+    }
+  }
+  else
+  {
+    MPRINTF("YAFFS2 device initialization failed: %s\n\r", _Get_YAFFS2_error_description(result));
+  }
+
+  MPRINTF("\nPress any key to continue...\n\r");
+  uint8_t key;
+  WAIT_CHAR(&key, ms_to_ticks(100000));
+}
 
   // Check if media is already open
   if (g_fx_spi_nor_media.fx_media_id == FX_MEDIA_ID)
@@ -1034,7 +1042,7 @@ void Do_YFFS2_init(uint8_t keycode)
   }
 
   // Allocate memory for YFFS2 operations
-  media_memory = App_malloc(FILEX_MEMORY_BUFFER_SIZE);
+  media_memory = App_malloc(YAFFS2_MEMORY_BUFFER_SIZE);
   if (media_memory == NULL)
   {
     MPRINTF("Error: Failed to allocate memory for YFFS2 operations\n\r");
@@ -1058,7 +1066,7 @@ void Do_YFFS2_init(uint8_t keycode)
   if (status == FX_SUCCESS)
   {
     MPRINTF("YFFS2 media initialized successfully in %lu ms\n\r", init_time);
-    g_YFFS2_memory_buffer = media_memory;  // Save pointer for later use
+    g_YAFFS2_memory_buffer = media_memory;  // Save pointer for later use
     _Print_YFFS2_info();
   }
   else if (status == FX_BOOT_ERROR)
@@ -1085,7 +1093,7 @@ void Do_YFFS2_init(uint8_t keycode)
                                          MC80_YFFS2_LevelX_DeviceDriver,
                                          (void *)&g_rm_YFFS2_levelx_NOR_instance,
                                          (UCHAR *)g_test_buffer,
-                                         FILEX_TEST_BUFFER_SIZE,
+                                         YAFFS2_TEST_BUFFER_SIZE,
                                          G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
                                          G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
                                          G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
@@ -1109,7 +1117,7 @@ void Do_YFFS2_init(uint8_t keycode)
       if (status == FX_SUCCESS)
       {
         MPRINTF("YFFS2 media formatted and opened successfully!\n\r");
-        g_YFFS2_memory_buffer = media_memory;
+        g_YAFFS2_memory_buffer = media_memory;
         _Print_YFFS2_info();
       }
       else
@@ -1235,7 +1243,7 @@ void Do_YFFS2_list_files(uint8_t keycode)
                 else
                 {
                   // Read file in blocks using FILEX_TEST_BUFFER_SIZE
-                  uint32_t block_size       = FILEX_TEST_BUFFER_SIZE;
+                  uint32_t block_size       = YAFFS2_TEST_BUFFER_SIZE;
                   uint32_t total_bytes_read = 0;
                   uint32_t current_offset   = 0;
 
