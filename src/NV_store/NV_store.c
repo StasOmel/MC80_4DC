@@ -801,7 +801,7 @@ static uint32_t Restore_settings_from_DataFlash(uint8_t ptype)
     }
 
     // Читаем и проверяем контрольную сумму
-    if (DataFlash_bgo_ReadArea(flash_addr + 8 + sz, (uint8_t *)&crc1, 4) != RES_OK)
+    if (DataFlash_bgo_ReadArea(flash_addr + 8 + sz, (uint8_t *)&crc1, 2) != RES_OK)
     {
       g_settings_area_error_codes[ptype][i] = DF_AREA_ERR_READ_DATA;
       NV_MEM_FREE(buf);
@@ -943,7 +943,7 @@ uint32_t Check_settings_in_DataFlash(uint8_t ptype, T_settings_state *sstate)
           DataFlash_bgo_ReadArea(flash_addr, (uint8_t *)buf, buf_sz);
           // Читаем записанную контрольную сумму
           uint16_t crc1, crc2;
-          DataFlash_bgo_ReadArea(flash_addr + 8 + sz, (uint8_t *)&crc1, 4);
+          DataFlash_bgo_ReadArea(flash_addr + 8 + sz, (uint8_t *)&crc1, 2);
           // Расчитываем фактическую контрольную сумму
           crc2 = Get_CRC16_of_block(buf, buf_sz, 0xFFFF);
           if (crc1 != crc2)
