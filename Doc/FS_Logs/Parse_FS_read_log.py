@@ -11,13 +11,14 @@ import numpy as np
 import os
 
 # Default log file path
-DEFAULT_LOG_FILE = 'FileX_read.log'
+DEFAULT_LOG_FILE = 'YFFS2_read.log'
 
 def parse_log_file(filename):
     """Parse log file and return lists of data"""
-    # Regex patterns to match both LittleFS and FileX read log lines
+    # Regex patterns to match LittleFS, FileX, and YAFFS2 read log lines
     # LittleFS: Reading /test_001.bin... opened:  1937 us, closed:     3 us, I/O:   1892 us, total:   8989 us, speed:  5285 KB/s, CRC: OK, Pattern: OK, Size: OK (0xC61C2AA0)
     # FileX: File test_001.bin: opened:  6829 us, closed:     2 us, I/O:  11719 us, total:  23866 us, speed:   853 KB/s, CRC: OK, Pattern: OK, Size: OK (0xC61C2AA0)
+    # YAFFS2: File /test_001.bin: opened:   440 us, closed:     3 us, I/O:   2135 us, total:   7859 us, speed:  4683 KB/s, CRC: OK, Pattern: OK, Size: OK (0xC61C2AA0)
 
     littlefs_pattern = re.compile(
         r'Reading\s+/test_(\d+)\.bin\.\.\.\s+'
@@ -30,6 +31,15 @@ def parse_log_file(filename):
 
     filex_pattern = re.compile(
         r'File\s+test_(\d+)\.bin:\s+'
+        r'opened:\s*(\d+)\s+us,\s+'
+        r'closed:\s*(\d+)\s+us,\s+'
+        r'I/O:\s*(\d+)\s+us,\s+'
+        r'total:\s*(\d+)\s+us,\s+'
+        r'speed:\s*(\d+)\s+KB/s'
+    )
+
+    yaffs2_pattern = re.compile(
+        r'File\s+/test_(\d+)\.bin:\s+'
         r'opened:\s*(\d+)\s+us,\s+'
         r'closed:\s*(\d+)\s+us,\s+'
         r'I/O:\s*(\d+)\s+us,\s+'
@@ -51,12 +61,14 @@ def parse_log_file(filename):
                 if not line:
                     continue
 
-                # Try both patterns
+                # Try all three patterns
                 match = None
                 if line.startswith('Reading /test_'):
                     match = littlefs_pattern.search(line)
                 elif line.startswith('File test_'):
                     match = filex_pattern.search(line)
+                elif line.startswith('File /test_'):
+                    match = yaffs2_pattern.search(line)
 
                 if match:
                     try:
@@ -234,7 +246,7 @@ def main():
 
     print("FS Read Log Parser")
     print("==================")
-    print("Supports both LittleFS and FileX read logs")
+    print("Supports LittleFS, FileX, and YAFFS2 read logs")
 
     # Check if log file exists
     if not os.path.exists(log_file):

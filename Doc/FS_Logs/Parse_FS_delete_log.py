@@ -11,13 +11,14 @@ import numpy as np
 import os
 
 # Default log file path
-DEFAULT_LOG_FILE = 'FileX_delete.log'
+DEFAULT_LOG_FILE = 'YFFS2_delete.log'
 
 def parse_log_file(filename):
     """Parse delete log file and return lists of data"""
-    # Regex patterns to match both LittleFS and FileX delete log lines
+    # Regex patterns to match LittleFS, FileX, and YAFFS2 delete log lines
     # LittleFS: Deleting /test_001.bin... deleted:   1667 us, speed:  5998 KB/s
     # FileX: File test_001.bin: deleted:  13761 us, speed:   726 KB/s
+    # YAFFS2: File /test_001.bin: deleted:   5852 us, speed:  1708 KB/s
 
     littlefs_pattern = re.compile(
         r'Deleting\s+/test_(\d+)\.bin\.\.\.\s+'
@@ -27,6 +28,12 @@ def parse_log_file(filename):
 
     filex_pattern = re.compile(
         r'File\s+test_(\d+)\.bin:\s+'
+        r'deleted:\s*(\d+)\s+us,\s+'
+        r'speed:\s*(\d+)\s+KB/s'
+    )
+
+    yaffs2_pattern = re.compile(
+        r'File\s+/test_(\d+)\.bin:\s+'
         r'deleted:\s*(\d+)\s+us,\s+'
         r'speed:\s*(\d+)\s+KB/s'
     )
@@ -42,12 +49,14 @@ def parse_log_file(filename):
                 if not line:
                     continue
 
-                # Try both patterns
+                # Try all three patterns
                 match = None
                 if line.startswith('Deleting /test_'):
                     match = littlefs_pattern.search(line)
                 elif line.startswith('File test_') and 'deleted:' in line:
                     match = filex_pattern.search(line)
+                elif line.startswith('File /test_') and 'deleted:' in line:
+                    match = yaffs2_pattern.search(line)
 
                 if match:
                     try:
@@ -210,7 +219,7 @@ def main():
 
     print("FS Delete Log Parser")
     print("====================")
-    print("Supports both LittleFS and FileX delete logs")
+    print("Supports LittleFS, FileX, and YAFFS2 delete logs")
 
     # Check if log file exists
     if not os.path.exists(log_file):
