@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ELF Linker V9.70.1.475/W64 for ARM                  31/Jul/2025  12:18:40
+# IAR ELF Linker V9.70.1.475/W64 for ARM                  31/Jul/2025  12:23:05
 # Copyright 2007-2025 IAR Systems AB.
 #
 #    Output file                  =
@@ -13226,16 +13226,16 @@ X_OFFSET                0x2207'4770       0x4  Data  Lc  SPI_Display.o [2]
 Y_OFFSET                0x2207'4774       0x4  Data  Lc  SPI_Display.o [2]
 Yaffs_nor_check_bad_block
                          0x20d'3765       0x4  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_deinitialise   0x20d'3799       0x4  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_deinitialise   0x20d'379b       0x4  Code  Gb  yaffs_nor_adapter.o [24]
 Yaffs_nor_device_garbage_collect
                          0x20c'6a6d      0x6c  Code  Gb  yaffs_nor_device.o [24]
 Yaffs_nor_device_init    0x20c'6a61       0xc  Code  Gb  yaffs_nor_device.o [24]
 Yaffs_nor_erase_block    0x20d'3739      0x2c  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_initialise     0x20d'376d      0x2c  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_initialise     0x20d'376d      0x2e  Code  Gb  yaffs_nor_adapter.o [24]
 Yaffs_nor_mark_bad_block
                          0x20d'3769       0x4  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_read_chunk     0x20d'37d5      0x42  Code  Gb  yaffs_nor_adapter.o [24]
-Yaffs_nor_write_chunk    0x20d'379d      0x38  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_read_chunk     0x20d'37d7      0x42  Code  Gb  yaffs_nor_adapter.o [24]
+Yaffs_nor_write_chunk    0x20d'379f      0x38  Code  Gb  yaffs_nor_adapter.o [24]
 _565rgb_buffer_toggle    0x20a'49db      0x12  Code  Lc  HMI.o [9]
 _565rgb_driver_setup     0x20a'49ed      0x1a  Code  Lc  HMI.o [9]
 _Adc_configure_channels

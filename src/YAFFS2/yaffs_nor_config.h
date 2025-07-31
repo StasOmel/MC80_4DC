@@ -94,7 +94,7 @@ typedef unsigned int       dev_t;   // Device ID type
 // Available protocols:
 // - MC80_OSPI_PROTOCOL_1S_1S_1S: Standard SPI mode (reliable, supports all operations including erase)
 // - MC80_OSPI_PROTOCOL_8D_8D_8D: Octal DDR mode (high performance, but erase operations must be done in SPI mode)
-#define YAFFS_NOR_OSPI_PROTOCOL         MC80_OSPI_PROTOCOL_1S_1S_1S  // Standard SPI mode for YAFFS2 (more reliable)
+#define YAFFS_NOR_OSPI_PROTOCOL         MC80_OSPI_PROTOCOL_8D_8D_8D  // Standard SPI mode for YAFFS2 (more reliable)
 
 // Performance optimization
 #define YAFFS_NOR_REFRESH_PERIOD        (0)  // Disable automatic refresh (manual control)
