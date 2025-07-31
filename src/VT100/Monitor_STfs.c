@@ -245,7 +245,7 @@ static void _Print_test_config(void)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Perform write test
+  Description: Perform STfs write test
 
   Parameters: none
 
@@ -256,11 +256,11 @@ static void _Do_write_test(void)
   GET_MCBL;
   T_performance_stats stats;
   T_sys_timestump     start_ts, end_ts;
-  FX_FILE             file;
+  int32_t             fcbl_index;
   CHAR                filename[FS_MAX_FILENAME_LENGTH];
-  UINT                status;
+  int32_t             status;
 
-  MPRINTF("\n=== FileX Write Test ===\n\r");
+  MPRINTF("\n=== STfs Write Test ===\n\r");
   _Print_test_config();
 
   // Initialize statistics (matches LittleFS format)
@@ -290,24 +290,13 @@ static void _Do_write_test(void)
 
     MPRINTF("File %s: ", filename);
 
-    // Create file
-    status = fx_file_create(&g_fx_spi_nor_media, filename);
-    if (status != FX_SUCCESS && status != FX_ALREADY_CREATED)
-    {
-      Get_hw_timestump(&file_end_ts);
-      operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
-      MPRINTF("FAILED (create): %s (total: %6u us)\n\r", _Get_STfs_error_description(status), operation_time);
-      Performance_stats_update_error(&stats);
-      continue;
-    }
-
-    // Open file with timing
+    // Open file for writing with timing (STfs creates file automatically if it doesn't exist)
     Get_hw_timestump(&open_start_ts);
-    status = fx_file_open(&g_fx_spi_nor_media, &file, filename, FX_OPEN_FOR_WRITE);
+    status = STfs_open(0, filename, STFS_OPEN_WRITE, &fcbl_index); // Using drive_id = 0
     Get_hw_timestump(&open_end_ts);
     open_time = Timestump_diff_to_usec(&open_start_ts, &open_end_ts);
 
-    if (status != FX_SUCCESS)
+    if (status != STFS_OK)
     {
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
@@ -340,11 +329,11 @@ static void _Do_write_test(void)
       }
 
       Get_hw_timestump(&io_start_ts);
-      status = fx_file_write(&file, g_test_buffer, chunk_size);
+      status = STfs_write(fcbl_index, g_test_buffer, chunk_size);
       Get_hw_timestump(&io_end_ts);
       io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
-      if (status == FX_SUCCESS)
+      if (status == STFS_OK)
       {
         total_written += chunk_size;
       }
@@ -365,11 +354,11 @@ static void _Do_write_test(void)
       {
         uint32_t crc32_value = ~crc;
         Get_hw_timestump(&io_start_ts);
-        status = fx_file_write(&file, &crc32_value, FS_CRC32_SIZE);
+        status = STfs_write(fcbl_index, (uint8_t *)&crc32_value, FS_CRC32_SIZE);
         Get_hw_timestump(&io_end_ts);
         io_time += Timestump_diff_to_usec(&io_start_ts, &io_end_ts);
 
-        if (status == FX_SUCCESS)
+        if (status == STFS_OK)
         {
           total_written += FS_CRC32_SIZE;
         }
@@ -388,13 +377,13 @@ static void _Do_write_test(void)
     {
       // Close file with timing
       Get_hw_timestump(&close_start_ts);
-      status = fx_file_close(&file);
+      status = STfs_close(fcbl_index);
       Get_hw_timestump(&close_end_ts);
       close_time = Timestump_diff_to_usec(&close_start_ts, &close_end_ts);
       Get_hw_timestump(&file_end_ts);
       operation_time = Timestump_diff_to_usec(&file_start_ts, &file_end_ts);
 
-      if (status != FX_SUCCESS)
+      if (status != STFS_OK)
       {
         MPRINTF("FAILED (close): %s (close: %5u us, total: %6u us)\n\r", _Get_STfs_error_description(status), close_time, operation_time);
         Performance_stats_update_error(&stats);
@@ -421,7 +410,7 @@ static void _Do_write_test(void)
     else
     {
       // Close file even if write failed
-      fx_file_close(&file);
+      STfs_close(fcbl_index);
     }
   }
 
