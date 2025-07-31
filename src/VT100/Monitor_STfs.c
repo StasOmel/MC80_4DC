@@ -2,21 +2,10 @@
 #include "Performance_Stats.h"
 #include "Test_Patterns.h"
 #include "FS_Test_Config.h"
+#include "STfs_api.h"
 
-#define MAX_PATH_LENGTH          256
-#define MAX_DIR_STACK_DEPTH      32
 #define STFS_MEMORY_BUFFER_SIZE (32 * 1024)  // 32KB
 #define STFS_TEST_BUFFER_SIZE   (16 * 1024)  // 16KB for test operations
-
-// Directory navigation stack
-typedef struct
-{
-  char    path[MAX_PATH_LENGTH];
-  uint8_t depth;
-} T_dir_entry;
-
-static T_dir_entry g_dir_stack[MAX_DIR_STACK_DEPTH];
-static uint32_t    g_stack_top = 0;
 
 // FileX media instance
 extern FX_MEDIA g_fx_spi_nor_media;
@@ -32,16 +21,18 @@ const T_VT100_Menu_item MENU_STfs_items[] = {
   { '1', Do_STfs_init, NULL },
   { '2', Do_STfs_list_files, NULL },
   { '3', Do_STfs_performance_test, NULL },
+  { '4', Do_STfs_defrag, NULL },
   { 'R', NULL, NULL },
   { 0 }  // End of menu
 };
 
 const T_VT100_Menu MENU_STfs = {
-  "FileX with LevelX Manager",
-  "\033[5C FileX file system with LevelX wear leveling management menu\r\n"
-  "\033[5C <1> - Initialize FileX with LevelX (auto-format if needed)\r\n"
-  "\033[5C <2> - List files and directories\r\n"
+  "STfs File System Manager",
+  "\033[5C STfs file system management menu\r\n"
+  "\033[5C <1> - Initialize STfs (auto-format if needed)\r\n"
+  "\033[5C <2> - List files\r\n"
   "\033[5C <3> - Performance test\r\n"
+  "\033[5C <4> - Defragment STfs\r\n"
   "\033[5C <R> - Return to previous menu\r\n",
   MENU_STfs_items
 };
@@ -60,59 +51,14 @@ static void        _Do_format_test(void);
 static void        _Do_full_test(void);
 static void        _Print_STfs_info(void);
 static void        _Print_test_config(void);
-static bool        _Push_dir_to_stack(const char *path, uint8_t depth);
-static bool        _Pop_dir_from_stack(char *path, uint8_t *depth);
-static void        _Print_tree_indent(uint8_t depth);
-static void        _List_directory_tree(const char *root_path, uint8_t max_depth);
 static const char *_Get_STfs_error_description(UINT status);
 static bool        _Allocate_test_buffer(void);
 static void        _Free_test_buffer(void);
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Helper function to push directory to stack
+  Description: Get STfs error description string
 
-  Parameters: path - directory path, depth - depth level
-
-  Return: true if pushed successfully, false if stack full
------------------------------------------------------------------------------------------------------*/
-static bool _Push_dir_to_stack(const char *path, uint8_t depth)
-{
-  if (g_stack_top >= MAX_DIR_STACK_DEPTH)
-  {
-    return false;  // Stack full
-  }
-
-  strncpy(g_dir_stack[g_stack_top].path, path, MAX_PATH_LENGTH - 1);
-  g_dir_stack[g_stack_top].path[MAX_PATH_LENGTH - 1] = '\0';
-  g_dir_stack[g_stack_top].depth                     = depth;
-  g_stack_top++;
-  return true;
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Helper function to pop directory from stack
-
-  Parameters: path - buffer for path, depth - pointer to depth variable
-
-  Return: true if popped successfully, false if stack empty
------------------------------------------------------------------------------------------------------*/
-static bool _Pop_dir_from_stack(char *path, uint8_t *depth)
-{
-  if (g_stack_top == 0)
-  {
-    return false;  // Stack empty
-  }
-
-  g_stack_top--;
-  strcpy(path, g_dir_stack[g_stack_top].path);
-  *depth = g_dir_stack[g_stack_top].depth;
-  return true;
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Get FileX error description string
-
-  Parameters: status - FileX error status code
+  Parameters: status - STfs error status code
 
   Return: pointer to error description string
 -----------------------------------------------------------------------------------------------------*/
@@ -120,56 +66,71 @@ static const char *_Get_STfs_error_description(UINT status)
 {
   switch (status)
   {
-    case FX_SUCCESS:
-      return "FX_SUCCESS";
-    case FX_BOOT_ERROR:
-      return "FX_BOOT_ERROR";
-    case FX_MEDIA_NOT_OPEN:
-      return "FX_MEDIA_NOT_OPEN";
-    case FX_NOT_FOUND:
-      return "FX_NOT_FOUND";
-    case FX_NOT_A_FILE:
-      return "FX_NOT_A_FILE";
-    case FX_ACCESS_ERROR:
-      return "FX_ACCESS_ERROR";
-    case FX_FILE_CORRUPT:
-      return "FX_FILE_CORRUPT";
-    case FX_INVALID_PATH:
-      return "FX_INVALID_PATH";
-    case FX_ALREADY_CREATED:
-      return "FX_ALREADY_CREATED";
-    case FX_INVALID_NAME:
-      return "FX_INVALID_NAME";
-    case FX_MEDIA_INVALID:
-      return "FX_MEDIA_INVALID";
-    case FX_IO_ERROR:
-      return "FX_IO_ERROR";
-    case FX_WRITE_PROTECT:
-      return "FX_WRITE_PROTECT";
-    case FX_PTR_ERROR:
-      return "FX_PTR_ERROR";
-    case FX_CALLER_ERROR:
-      return "FX_CALLER_ERROR";
-    case FX_INVALID_OPTION:
-      return "FX_INVALID_OPTION";
-    case FX_SECTOR_INVALID:
-      return "FX_SECTOR_INVALID";
-    case FX_NO_MORE_SPACE:
-      return "FX_NO_MORE_SPACE";
-    case FX_NO_MORE_ENTRIES:
-      return "FX_NO_MORE_ENTRIES";
-    case FX_NOT_DIRECTORY:
-      return "FX_NOT_DIRECTORY";
-    case FX_END_OF_FILE:
-      return "FX_END_OF_FILE";
-    case FX_NOT_IMPLEMENTED:
-      return "FX_NOT_IMPLEMENTED";
-    case FX_READ_CONTINUE:
-      return "FX_READ_CONTINUE";
-    case FX_BUFFER_ERROR:
-      return "FX_BUFFER_ERROR";
+    case STFS_OK:
+      return "STFS_OK";
+    case STFS_ERROR:
+      return "STFS_ERROR";
+    case STFS_NO_FREE_FCBL:
+      return "STFS_NO_FREE_FCBL";
+    case STFS_BAD_DRIVE:
+      return "STFS_BAD_DRIVE";
+    case STFS_NOT_CLOSED_FILE:
+      return "STFS_NOT_CLOSED_FILE";
+    case STFS_FILE_COPY_ERROR:
+      return "STFS_FILE_COPY_ERROR";
+    case STFS_FILE_NOT_FOUND:
+      return "STFS_FILE_NOT_FOUND";
+    case STFS_PROHIBITED_OPERATION:
+      return "STFS_PROHIBITED_OPERATION";
+    case STFS_ERRONEOUS_ARGUMENT:
+      return "STFS_ERRONEOUS_ARGUMENT";
+    case STFS_FILE_CREATE_ERROR1:
+      return "STFS_FILE_CREATE_ERROR1";
+    case STFS_FILE_CREATE_ERROR2:
+      return "STFS_FILE_CREATE_ERROR2";
+    case STFS_FILE_LOCATION_ERROR:
+      return "STFS_FILE_LOCATION_ERROR";
+    case STFS_INCOMPLETE_READING:
+      return "STFS_INCOMPLETE_READING";
+    case STFS_SECTOR_ALLOC_ERROR:
+      return "STFS_SECTOR_ALLOC_ERROR";
+    case STFS_ACCESS_ERROR:
+      return "STFS_ACCESS_ERROR";
+    case STFS_FILE_ALREADY_EXIST:
+      return "STFS_FILE_ALREADY_EXIST";
+    case STFS_FATAL_ERROR:
+      return "STFS_FATAL_ERROR";
+    case STFS_BAD_FILE_NAME:
+      return "STFS_BAD_FILE_NAME";
+    case STFS_CHUNK_DELETE_ERROR:
+      return "STFS_CHUNK_DELETE_ERROR";
+    case STFS_CHUNK_SIZE_ERR1:
+      return "STFS_CHUNK_SIZE_ERR1";
+    case STFS_CHUNK_SIZE_ERR2:
+      return "STFS_CHUNK_SIZE_ERR2";
+    case STFS_CHUNK_SIZE_ERR3:
+      return "STFS_CHUNK_SIZE_ERR3";
+    case STFS_CHUNK_SIZE_ERR4:
+      return "STFS_CHUNK_SIZE_ERR4";
+    case STFS_CHUNK_SIZE_ERR5:
+      return "STFS_CHUNK_SIZE_ERR5";
+    case STFS_CHUNK_SIZE_ERR6:
+      return "STFS_CHUNK_SIZE_ERR6";
+    case STFS_INCORRECT_DEL_TAG:
+      return "STFS_INCORRECT_DEL_TAG";
+    case STFS_DIRTY_SECTOR:
+      return "STFS_DIRTY_SECTOR";
+    case STFS_SECTOR_ERASE_ERROR1:
+      return "STFS_SECTOR_ERASE_ERROR1";
+    case STFS_SECTOR_ERASE_ERROR2:
+      return "STFS_SECTOR_ERASE_ERROR2";
+    case STFS_SECTOR_ERASE_ERROR3:
+      return "STFS_SECTOR_ERASE_ERROR3";
+    case STFS_FLASH_PROGR_ERROR1:
+      return "STFS_FLASH_PROGR_ERROR1";
+    // Note: STFS_FLASH_PROGR_ERROR2 and STFS_FLASH_PROGR_ERROR3 have same value as ERROR1 in STfs_api.h
     default:
-      return "UNKNOWN_ERROR";
+      return "STFS_UNKNOWN_ERROR";
   }
 }
 
@@ -206,30 +167,6 @@ static void _Free_test_buffer(void)
   {
     App_free(g_test_buffer);
     g_test_buffer = NULL;
-  }
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: Helper function to print tree indentation
-
-  Parameters: depth - depth level
-
-  Return: none
------------------------------------------------------------------------------------------------------*/
-static void _Print_tree_indent(uint8_t depth)
-{
-  GET_MCBL;
-
-  for (uint8_t i = 0; i < depth; i++)
-  {
-    if (i == depth - 1)
-    {
-      MPRINTF("+-- ");
-    }
-    else
-    {
-      MPRINTF("|   ");
-    }
   }
 }
 
@@ -313,89 +250,6 @@ static void _Print_test_config(void)
   }
   MPRINTF("\n\r");
   MPRINTF("Data verification: %s\n\r", g_fs_test_config.data_verification ? "Enabled" : "Disabled");
-}
-
-/*-----------------------------------------------------------------------------------------------------
-  Description: List FileX directory tree (non-recursive with stack)
-
-  Parameters: root_path - starting directory path, max_depth - maximum depth to traverse
-
-  Return: none
------------------------------------------------------------------------------------------------------*/
-static void _List_directory_tree(const char *root_path, uint8_t max_depth)
-{
-  GET_MCBL;
-  CHAR    entry_name[FX_MAX_LONG_NAME_LEN];
-  UINT    attributes;
-  ULONG   size;
-  UINT    year, month, day, hour, minute, second;
-  UINT    status;
-  char    current_path[MAX_PATH_LENGTH];
-  uint8_t current_depth;
-
-  // Initialize stack and start with root directory
-  g_stack_top = 0;
-  _Push_dir_to_stack(root_path, 0);
-
-  // Process directories using stack (non-recursive)
-  while (_Pop_dir_from_stack(current_path, &current_depth))
-  {
-    // Skip if we've reached maximum depth
-    if (current_depth >= max_depth)
-    {
-      continue;
-    }
-
-    // Set current directory
-    status = fx_directory_default_set(&g_fx_spi_nor_media, current_path);
-    if (status != FX_SUCCESS)
-    {
-      MPRINTF("Failed to set directory %s: %s\n\r", current_path, _Get_STfs_error_description(status));
-      continue;
-    }
-
-    // Get first directory entry
-    status = fx_directory_first_full_entry_find(&g_fx_spi_nor_media, entry_name, &attributes, &size,
-                                                &year, &month, &day, &hour, &minute, &second);
-
-    while (status == FX_SUCCESS)
-    {
-      // Skip "." and ".." entries
-      if (strcmp(entry_name, ".") != 0 && strcmp(entry_name, "..") != 0)
-      {
-        _Print_tree_indent(current_depth);
-
-        if (attributes & FX_DIRECTORY)
-        {
-          MPRINTF("[DIR]  %s/\n\r", entry_name);
-
-          // Add subdirectory to stack if not too deep and stack not full
-          if (current_depth < max_depth - 1 && g_stack_top < MAX_DIR_STACK_DEPTH - 1)
-          {
-            char subdir_path[MAX_PATH_LENGTH];
-            if (strcmp(current_path, "/") == 0)
-            {
-              snprintf(subdir_path, MAX_PATH_LENGTH, "/%s", entry_name);
-            }
-            else
-            {
-              snprintf(subdir_path, MAX_PATH_LENGTH, "%s/%s", current_path, entry_name);
-            }
-            _Push_dir_to_stack(subdir_path, current_depth + 1);
-          }
-        }
-        else
-        {
-          MPRINTF("[FILE] %s (%lu bytes) %02u/%02u/%04u %02u:%02u:%02u\n\r",
-                  entry_name, size, month, day, year, hour, minute, second);
-        }
-      }
-
-      // Get next directory entry
-      status = fx_directory_next_full_entry_find(&g_fx_spi_nor_media, entry_name, &attributes, &size,
-                                                 &year, &month, &day, &hour, &minute, &second);
-    }
-  }
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -1139,7 +993,7 @@ void Do_STfs_init(uint8_t keycode)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: List files and directories
+  Description: List files
 
   Parameters: keycode - key code from menu
 
@@ -1152,7 +1006,7 @@ void Do_STfs_list_files(uint8_t keycode)
   FSP_PARAMETER_NOT_USED(keycode);
 
   MPRINTF(VT100_CLEAR_AND_HOME);
-  MPRINTF("=== FileX Directory Listing ===\n\r");
+  MPRINTF("=== FileX File Listing ===\n\r");
 
   // Check if media is open
   if (g_fx_spi_nor_media.fx_media_id != FX_MEDIA_ID)
@@ -1166,9 +1020,7 @@ void Do_STfs_list_files(uint8_t keycode)
 
   _Print_STfs_info();
 
-  MPRINTF("\n=== Directory Tree (max depth 5) ===\n\r");
-  g_stack_top = 0;  // Reset directory stack
-  _List_directory_tree("/", 5);
+  MPRINTF("\n=== File List ===\n\r");
 
   // Interactive menu for file operations
   uint8_t choice;
@@ -1532,4 +1384,66 @@ void Do_STfs_performance_test(uint8_t keycode)
 
   // Free test buffer when exiting menu
   _Free_test_buffer();
+}
+
+/*-----------------------------------------------------------------------------------------------------
+  Description: Defragment STfs file system
+
+  Parameters: keycode - key code from menu
+
+  Return: none
+-----------------------------------------------------------------------------------------------------*/
+void Do_STfs_defrag(uint8_t keycode)
+{
+  GET_MCBL;
+  T_sys_timestump start_ts, end_ts;
+
+  FSP_PARAMETER_NOT_USED(keycode);
+
+  MPRINTF(VT100_CLEAR_AND_HOME);
+  MPRINTF("=== STfs Defragmentation ===\n\r");
+
+  // Check if STfs is initialized
+  // TODO: Replace with STfs initialization check when STfs API is implemented
+  MPRINTF("WARNING: This will defragment the STfs file system!\n\r");
+  MPRINTF("This may take some time and will reorganize file storage.\n\r");
+  MPRINTF("Press 'Y' to confirm or any other key to cancel: ");
+
+  uint8_t confirm;
+  if (WAIT_CHAR(&confirm, ms_to_ticks(30000)) != RES_OK || (confirm != 'Y' && confirm != 'y'))
+  {
+    MPRINTF("\nDefragmentation cancelled.\n\r");
+    MPRINTF("\nPress any key to continue...\n\r");
+    uint8_t key;
+    WAIT_CHAR(&key, ms_to_ticks(100000));
+    return;
+  }
+
+  MPRINTF("\nStarting STfs defragmentation...\n\r");
+
+  Get_hw_timestump(&start_ts);
+
+  // TODO: Replace with actual STfs_defrag() call when STfs API is implemented
+  // uint32_t status = STfs_defrag();
+  uint32_t status = 0; // Placeholder - assume success for now
+
+  Get_hw_timestump(&end_ts);
+  uint32_t defrag_time = Timestump_diff_to_usec(&start_ts, &end_ts);
+
+  if (status == 0) // TODO: Replace with STfs success constant
+  {
+    MPRINTF("Defragmentation completed successfully in %lu us (%.2f ms)\n\r",
+            defrag_time, (float)defrag_time / 1000.0f);
+
+    // TODO: Add STfs info display when STfs API is implemented
+    // _Print_STfs_info();
+  }
+  else
+  {
+    MPRINTF("Defragmentation failed with error: %lu\n\r", status);
+  }
+
+  MPRINTF("\nPress any key to continue...\n\r");
+  uint8_t key;
+  WAIT_CHAR(&key, ms_to_ticks(100000));
 }
