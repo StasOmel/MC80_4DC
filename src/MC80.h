@@ -333,6 +333,7 @@ typedef struct
 #include "Monitor_LittleFS.h"
 #include "Monitor_FileX.h"
 #include "Monitor_YFFS2.h"
+#include "Monitor_STfs.h"
 #include "Monitor_OSPI.h"
 #include "Monitor_RTT.h"
 #include "CAN_protocol.h"

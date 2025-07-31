@@ -73,6 +73,7 @@ const T_DataFlash_configuration Simulator_DataFlash_Config =
   #define  MX25UM25645G_SECTORS_NUM     (MC80_NOR_FLASH_TOTAL_SIZE_BYTES / MC80_NOR_FLASH_BLOCK_SIZE_BYTES)
   #define  MX25UM25645G_SECTOR_SIZE     MC80_NOR_FLASH_BLOCK_SIZE_BYTES    // 64 KB STfs sectors
   #define  MX25UM25645G_FLASH_BASE_ADDR BSP_FEATURE_OSPI_B_DEVICE_0_START_ADDRESS   // OSPI memory mapped base address
+  #define  STFS_OSPI_PROTOCOL           MC80_OSPI_PROTOCOL_8D_8D_8D        // Use Octal DDR mode for high performance
 
 // Dynamic sector map for MX25UM25645G (32MB NOR Flash)
 T_flash_sect_map      MX25UM25645G_DataFlash_map[MX25UM25645G_SECTORS_NUM];
@@ -1095,7 +1096,15 @@ uint32_t STfs_flash_driver_init(void)
   }
 
   // Initialize OSPI flash if needed
-  if (MX25UM25645G_init() != MX25UM25645G_OK)
+  if (Mc80_ospi_open(&g_OSPI_ctrl, &g_OSPI_cfg) != FSP_SUCCESS)
+  {
+    tx_event_flags_delete(&stfs_flag_grp);
+    tx_mutex_delete(&stfs_mutex);
+    return STFS_ERROR;
+  }
+
+  // Set OSPI protocol for STfs operations
+  if (Mc80_ospi_spi_protocol_switch_safe(&g_OSPI_ctrl, STFS_OSPI_PROTOCOL) != FSP_SUCCESS)
   {
     tx_event_flags_delete(&stfs_flag_grp);
     tx_mutex_delete(&stfs_mutex);
@@ -1148,7 +1157,7 @@ int32_t FlashDriver_erase_sector(uint32_t sector)
   Get_hw_timestump(&tstmp1);
 
   // Erase 64KB block (16 x 4KB sectors in MX25UM25645G)
-  if (MX25UM25645G_block_erase_64k(sector_address) != MX25UM25645G_OK)
+  if (Mc80_ospi_erase(&g_OSPI_ctrl, sector_address, MX25UM25645G_SECTOR_SIZE) != FSP_SUCCESS)
   {
     stfs_drv_stat.stfs_last_sec_erasing_err = STFS_SECTOR_ERASE_ERROR1;
     stfs_drv_stat.sector = sector;
@@ -1222,7 +1231,7 @@ int32_t FlashDriver_program_pages(uint32_t addr, uint32_t data_size, uint8_t *bu
     memcpy(&prgwrd_buf[rem], buf, sz);
 
     // Program the modified word to flash
-    if (MX25UM25645G_page_program(curr_addr, prgwrd_buf, STFS_FLASH_WORD_SIZE) != MX25UM25645G_OK)
+    if (Mc80_ospi_direct_write(&g_OSPI_ctrl, prgwrd_buf, curr_addr, STFS_FLASH_WORD_SIZE, false) != FSP_SUCCESS)
     {
       return STFS_ERROR;
     }
@@ -1249,7 +1258,7 @@ int32_t FlashDriver_program_pages(uint32_t addr, uint32_t data_size, uint8_t *bu
     }
     else
     {
-      if (MX25UM25645G_page_program(curr_addr, buf, STFS_FLASH_WORD_SIZE) != MX25UM25645G_OK)
+      if (Mc80_ospi_direct_write(&g_OSPI_ctrl, buf, curr_addr, STFS_FLASH_WORD_SIZE, false) != FSP_SUCCESS)
       {
         return STFS_ERROR;
       }
@@ -1275,7 +1284,7 @@ int32_t FlashDriver_program_aligned_pages(uint32_t addr, uint32_t bufsz, uint8_t
 {
   while (bufsz != 0)
   {
-    if (MX25UM25645G_page_program(addr, buf, STFS_FLASH_WORD_SIZE) != MX25UM25645G_OK)
+    if (Mc80_ospi_direct_write(&g_OSPI_ctrl, buf, addr, STFS_FLASH_WORD_SIZE, false) != FSP_SUCCESS)
     {
       return STFS_ERROR;
     }

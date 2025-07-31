@@ -618,6 +618,7 @@
                     <state>$PROJ_DIR$\src\NV_store</state>
                     <state>$PROJ_DIR$\src\Parameters</state>
                     <state>$PROJ_DIR$\src\SEGGER_RTT</state>
+                    <state>$PROJ_DIR$\src\STfs</state>
                     <state>$PROJ_DIR$\src\USB</state>
                     <state>$PROJ_DIR$\src\Utils</state>
                     <state>$PROJ_DIR$\src\VT100</state>
@@ -1865,6 +1866,7 @@
                     <state>$PROJ_DIR$\src\NV_store</state>
                     <state>$PROJ_DIR$\src\Parameters</state>
                     <state>$PROJ_DIR$\src\SEGGER_RTT</state>
+                    <state>$PROJ_DIR$\src\STfs</state>
                     <state>$PROJ_DIR$\src\USB</state>
                     <state>$PROJ_DIR$\src\Utils</state>
                     <state>$PROJ_DIR$\src\VT100</state>
@@ -14172,6 +14174,27 @@
                 </file>
             </group>
             <group>
+                <name>STfs</name>
+                <file>
+                    <name>$PROJ_DIR$\src\STfs\Flash_media_driver.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\STfs\Flash_media_driver.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\STfs\STfs_api.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\STfs\STfs_api.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\STfs\STfs_int.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\src\STfs\STfs_int.h</name>
+                </file>
+            </group>
+            <group>
                 <name>USB</name>
                 <file>
                     <name>$PROJ_DIR$\src\USB\Monitor_USB_drv.c</name>
@@ -14429,6 +14452,9 @@
                     </file>
                     <file>
                         <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_hweight.h</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_list.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\src\YAFFS2\YAFFS_direct\yaffs_nameval.c</name>

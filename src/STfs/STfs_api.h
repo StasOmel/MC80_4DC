@@ -1,6 +1,8 @@
 ﻿#ifndef __SFFS_API
   #define __SFFS_API
 
+#include "STfs_int.h"
+
   #ifdef __cplusplus
 extern "C"
 {

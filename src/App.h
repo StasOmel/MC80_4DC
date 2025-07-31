@@ -45,7 +45,7 @@
 
 #include "lfs.h"
 #include "littlefs_adapter.h"
-
+#include "STfs_api.h"
 
 #define SEGGER_INDEX            (0)
 #define LVL_ERR                 (1u)  /* error conditions   */
