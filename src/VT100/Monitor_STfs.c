@@ -171,7 +171,7 @@ static void _Free_test_buffer(void)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Print FileX media information
+  Description: Print STfs file system information
 
   Parameters: none
 
@@ -180,51 +180,43 @@ static void _Free_test_buffer(void)
 static void _Print_STfs_info(void)
 {
   GET_MCBL;
-  ULONG total_clusters, available_bytes;
-  ULONG sectors_per_cluster, bytes_per_sector;
+  T_stfs_info stfs_info;
 
-  MPRINTF("\n=== FileX Media Information ===\n\r");
+  MPRINTF("\n=== STfs File System Information ===\n\r");
 
-  // Get media information - fx_media_space_available returns available bytes, not clusters
-  UINT status = fx_media_space_available(&g_fx_spi_nor_media, &available_bytes);
-  if (status == FX_SUCCESS)
+  // Get STfs information using STfs_check function
+  int32_t status = STfs_check(0, &stfs_info); // Using drive_id = 0
+  if (status == STFS_OK)
   {
-    total_clusters             = g_fx_spi_nor_media.fx_media_total_clusters;
-    sectors_per_cluster        = g_fx_spi_nor_media.fx_media_sectors_per_cluster;
-    bytes_per_sector           = g_fx_spi_nor_media.fx_media_bytes_per_sector;
+    uint32_t used_space_bytes = stfs_info.valid_aria_size;
+    uint32_t free_space_bytes = stfs_info.empty_aria_size;
+    uint32_t total_space_bytes = stfs_info.media_size;
 
-    // Calculate sizes in bytes first to avoid overflow
-    ULONG cluster_size_bytes   = sectors_per_cluster * bytes_per_sector;
+    MPRINTF("Total space          : %lu KB (%lu MB)\n\r", total_space_bytes / 1024, total_space_bytes / (1024 * 1024));
+    MPRINTF("Used space           : %lu KB (%lu MB)\n\r", used_space_bytes / 1024, used_space_bytes / (1024 * 1024));
+    MPRINTF("Free space           : %lu KB (%lu MB)\n\r", free_space_bytes / 1024, free_space_bytes / (1024 * 1024));
+    MPRINTF("Invalid space        : %lu KB (%lu MB)\n\r", stfs_info.invalid_aria_size / 1024, stfs_info.invalid_aria_size / (1024 * 1024));
 
-    // Use data cluster count from media structure (this is the actual user data area)
-    ULONG data_clusters        = g_fx_spi_nor_media.fx_media_available_clusters;
+    MPRINTF("Active files         : %lu\n\r", stfs_info.file_count);
+    MPRINTF("Invalid files        : %lu\n\r", stfs_info.invalid_file_count);
+    MPRINTF("Valid chunks         : %lu\n\r", stfs_info.valid_chunks_count);
+    MPRINTF("Invalid chunks       : %lu\n\r", stfs_info.invalid_chunks_count);
 
-    // Calculate sizes based on data clusters from media structure
-    ULONG total_size_bytes     = total_clusters * cluster_size_bytes;
-    ULONG data_size_bytes      = data_clusters * cluster_size_bytes;
-    ULONG used_size_bytes      = total_size_bytes - available_bytes;
-
-    MPRINTF("Media ID             : 0x%lX\n\r", g_fx_spi_nor_media.fx_media_id);
-    MPRINTF("Total clusters       : %lu\n\r", total_clusters);
-    MPRINTF("Data clusters        : %lu\n\r", data_clusters);
-    MPRINTF("Sectors per cluster  : %lu\n\r", sectors_per_cluster);
-    MPRINTF("Bytes per sector     : %lu\n\r", bytes_per_sector);
-    MPRINTF("Cluster size         : %lu bytes\n\r", cluster_size_bytes);
-    MPRINTF("Total space          : %lu KB (%lu MB)\n\r", total_size_bytes / 1024, total_size_bytes / (1024 * 1024));
-    MPRINTF("Data space           : %lu KB (%lu MB)\n\r", data_size_bytes / 1024, data_size_bytes / (1024 * 1024));
-    MPRINTF("Available space      : %lu KB (%lu MB)\n\r", available_bytes / 1024, available_bytes / (1024 * 1024));
-    MPRINTF("Used space           : %lu KB (%lu MB)\n\r", used_size_bytes / 1024, used_size_bytes / (1024 * 1024));
+    MPRINTF("Sectors count        : %lu\n\r", stfs_info.sectors_num);
+    MPRINTF("Physical sector size : %lu bytes\n\r", stfs_info.phiz_sector_size);
+    MPRINTF("Descriptor size      : %lu bytes\n\r", stfs_info.descriptor_size);
 
     // Calculate and display usage percentage based on total disk space
-    if (total_size_bytes > 0)
+    if (total_space_bytes > 0)
     {
-      ULONG usage_percent = (used_size_bytes * 100) / total_size_bytes;
-      MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, 100 - usage_percent);
+      uint32_t usage_percent = (used_space_bytes * 100) / total_space_bytes;
+      uint32_t free_percent = (free_space_bytes * 100) / total_space_bytes;
+      MPRINTF("Usage                : %lu%% used, %lu%% free\n\r", usage_percent, free_percent);
     }
   }
   else
   {
-    MPRINTF("Error getting media information: %s\n\r", _Get_STfs_error_description(status));
+    MPRINTF("Error getting STfs information: %s\n\r", _Get_STfs_error_description(status));
   }
 }
 
@@ -282,14 +274,6 @@ static void _Do_write_test(void)
   }
 
   Get_hw_timestump(&start_ts);
-
-  // Ensure we're in root directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
-  if (status != FX_SUCCESS)
-  {
-    MPRINTF("Error changing to root directory: %s\n\r", _Get_STfs_error_description(status));
-    return;
-  }
 
   MPRINTF("Writing %lu files of %lu bytes each...\n\r", g_fs_test_config.files_count, g_fs_test_config.file_size);
 
@@ -446,9 +430,6 @@ static void _Do_write_test(void)
   // Finalize statistics calculations
   Performance_stats_finalize(&stats);
 
-  // Return to root directory
-  fx_directory_default_set(&g_fx_spi_nor_media, "/");
-
   MPRINTF("\n\r");
   Performance_stats_print("Write Test", &stats, g_fs_test_config.data_verification);
 }
@@ -480,14 +461,6 @@ static void _Do_read_test(void)
   if (!_Allocate_test_buffer())
   {
     MPRINTF("Error: Failed to allocate test buffer\n\r");
-    return;
-  }
-
-  // Change to root directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
-  if (status != FX_SUCCESS)
-  {
-    MPRINTF("Error: Could not access root directory. Run write test first.\n\r");
     return;
   }
 
@@ -653,9 +626,6 @@ static void _Do_read_test(void)
   // Finalize statistics calculations
   Performance_stats_finalize(&stats);
 
-  // Return to root directory
-  fx_directory_default_set(&g_fx_spi_nor_media, "/");
-
   MPRINTF("\n\r");
   Performance_stats_print("Read Test", &stats, g_fs_test_config.data_verification);
 }
@@ -679,14 +649,6 @@ static void _Do_delete_test(void)
 
   // Initialize statistics for delete operations (limited fields used)
   Performance_stats_init_delete(&stats);
-
-  // Change to root directory
-  status = fx_directory_default_set(&g_fx_spi_nor_media, "/");
-  if (status != FX_SUCCESS)
-  {
-    MPRINTF("Error: Could not access root directory. Run write test first.\n\r");
-    return;
-  }
 
   Get_hw_timestump(&start_ts);
 
@@ -741,7 +703,7 @@ static void _Do_delete_test(void)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Perform format test
+  Description: Perform STfs format test
 
   Parameters: none
 
@@ -751,10 +713,10 @@ static void _Do_format_test(void)
 {
   GET_MCBL;
   T_sys_timestump start_ts, end_ts;
-  UINT            status;
+  int32_t         status;
 
-  MPRINTF("\n=== FileX Format Test ===\n\r");
-  MPRINTF("WARNING: This will erase all data on the media!\n\r");
+  MPRINTF("\n=== STfs Format Test ===\n\r");
+  MPRINTF("WARNING: This will erase all data on the STfs!\n\r");
   MPRINTF("Press 'Y' to confirm or any other key to cancel: ");
 
   uint8_t confirm;
@@ -764,54 +726,25 @@ static void _Do_format_test(void)
     return;
   }
 
-  // Allocate test buffer
-  if (!_Allocate_test_buffer())
-  {
-    MPRINTF("\nError: Failed to allocate test buffer\n\r");
-    return;
-  }
-
-  MPRINTF("\nFormatting media...\n\r");
+  MPRINTF("\nFormatting STfs...\n\r");
 
   Get_hw_timestump(&start_ts);
 
-  // Close media first
-  fx_media_close(&g_fx_spi_nor_media);
-
-  // Format the media using LevelX NOR driver
-  status = fx_media_format(&g_fx_spi_nor_media,
-                           MC80_STfs_LevelX_DeviceDriver,           // Driver function
-                           (void *)&g_rm_STfs_levelx_NOR_instance,  // Driver info pointer
-                           (UCHAR *)g_test_buffer,                   // Memory pointer for work area
-                           STFS_TEST_BUFFER_SIZE,                   // Memory size
-                           G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
-                           G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
-                           G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
-                           G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
-                           G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
-                           G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
-                           G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
-                           1,                                        // Heads
-                           1);                                       // Sectors per track
-
-  if (status == FX_SUCCESS)
-  {
-    // Reopen the media with the saved memory buffer
-    status = fx_media_open(&g_fx_spi_nor_media, "FileX Media", MC80_STfs_LevelX_DeviceDriver,
-                           (void *)&g_rm_STfs_levelx_NOR_instance, g_STfs_memory_buffer, STFS_MEMORY_BUFFER_SIZE);
-  }
+  // Format the STfs file system
+  status = STfs_format(0); // Using drive_id = 0
 
   Get_hw_timestump(&end_ts);
   uint32_t format_time = Timestump_diff_to_usec(&start_ts, &end_ts);
 
-  if (status == FX_SUCCESS)
+  if (status == STFS_OK)
   {
-    MPRINTF("Format completed successfully in %lu us\n\r", format_time);
+    MPRINTF("STfs format completed successfully in %lu us (%.2f ms)\n\r",
+            format_time, (float)format_time / 1000.0f);
     _Print_STfs_info();
   }
   else
   {
-    MPRINTF("Format failed with error: %s\n\r", _Get_STfs_error_description(status));
+    MPRINTF("STfs format failed with error: %s\n\r", _Get_STfs_error_description(status));
   }
 }
 
@@ -858,7 +791,7 @@ static void _Do_full_test(void)
 }
 
 /*-----------------------------------------------------------------------------------------------------
-  Description: Initialize FileX media
+  Description: Initialize STfs file system
 
   Parameters: keycode - key code from menu
 
@@ -867,124 +800,65 @@ static void _Do_full_test(void)
 void Do_STfs_init(uint8_t keycode)
 {
   GET_MCBL;
-  UINT            status;
+  int32_t         status;
   T_sys_timestump start_ts, end_ts;
-  uint8_t        *media_memory;
+  T_stfs_info     stfs_info;
 
   FSP_PARAMETER_NOT_USED(keycode);
 
   MPRINTF(VT100_CLEAR_AND_HOME);
-  MPRINTF("=== FileX with LevelX Initialization ===\n\r");
-
-  // Check if media is already open
-  if (g_fx_spi_nor_media.fx_media_id == FX_MEDIA_ID)
-  {
-    MPRINTF("FileX media is already initialized and open.\n\r");
-    _Print_STfs_info();
-    MPRINTF("\nPress any key to continue...\n\r");
-    uint8_t key;
-    WAIT_CHAR(&key, ms_to_ticks(100000));
-    return;
-  }
-
-  // Allocate memory for FileX operations
-  media_memory = App_malloc(STFS_MEMORY_BUFFER_SIZE);
-  if (media_memory == NULL)
-  {
-    MPRINTF("Error: Failed to allocate memory for FileX operations\n\r");
-    MPRINTF("\nPress any key to continue...\n\r");
-    uint8_t key;
-    WAIT_CHAR(&key, ms_to_ticks(100000));
-    return;
-  }
+  MPRINTF("=== STfs Initialization ===\n\r");
 
   Get_hw_timestump(&start_ts);
 
-  // Initialize FileX media
-  status = fx_media_open(&g_fx_spi_nor_media, "FileX NOR Media",
-                         MC80_STfs_LevelX_DeviceDriver,
-                         (void *)&g_rm_STfs_levelx_NOR_instance,
-                         media_memory, STFS_MEMORY_BUFFER_SIZE);
+  // Initialize STfs file system
+  status = STfs_init(0, &stfs_info); // Using drive_id = 0
 
   Get_hw_timestump(&end_ts);
-  uint32_t init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;  // Convert to ms
+  uint32_t init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000; // Convert to ms
 
-  if (status == FX_SUCCESS)
+  if (status == STFS_OK)
   {
-    MPRINTF("FileX media initialized successfully in %lu ms\n\r", init_time);
-    g_STfs_memory_buffer = media_memory;  // Save pointer for later use
+    MPRINTF("STfs initialized successfully in %lu ms\n\r", init_time);
     _Print_STfs_info();
   }
-  else if (status == FX_BOOT_ERROR)
+  else
   {
-    MPRINTF("FileX media initialization failed: %s\n\r", _Get_STfs_error_description(status));
-    MPRINTF("Media appears to be unformatted. Attempting to format...\n\r");
+    MPRINTF("STfs initialization failed: %s\n\r", _Get_STfs_error_description(status));
+    MPRINTF("Attempting to format STfs...\n\r");
 
-    // Allocate test buffer for formatting
-    if (!_Allocate_test_buffer())
+    Get_hw_timestump(&start_ts);
+
+    // Try to format the STfs
+    int32_t format_status = STfs_format(0); // Using drive_id = 0
+
+    Get_hw_timestump(&end_ts);
+    uint32_t format_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000; // Convert to ms
+
+    if (format_status == STFS_OK)
     {
-      MPRINTF("Error: Failed to allocate test buffer for formatting\n\r");
-      App_free(media_memory);
-      MPRINTF("\nPress any key to continue...\n\r");
-      uint8_t key;
-      WAIT_CHAR(&key, ms_to_ticks(100000));
-      return;
-    }
+      MPRINTF("STfs format completed successfully in %lu ms\n\r", format_time);
 
-    // Close media first
-    fx_media_close(&g_fx_spi_nor_media);
+      // Try to initialize again after format
+      Get_hw_timestump(&start_ts);
+      status = STfs_init(0, &stfs_info);
+      Get_hw_timestump(&end_ts);
+      init_time = Timestump_diff_to_usec(&start_ts, &end_ts) / 1000;
 
-    // Try to format the media
-    UINT format_status = fx_media_format(&g_fx_spi_nor_media,
-                                         MC80_STfs_LevelX_DeviceDriver,
-                                         (void *)&g_rm_STfs_levelx_NOR_instance,
-                                         (UCHAR *)g_test_buffer,
-                                         STFS_TEST_BUFFER_SIZE,
-                                         G_FX_MEDIA_OSPI_NOR_VOLUME_NAME,          // Volume name
-                                         G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS,       // Number of FATs
-                                         G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES,    // Directory entries
-                                         G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS,       // Hidden sectors
-                                         G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS,        // Total sectors
-                                         G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR,     // Bytes per sector
-                                         G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER,  // Sectors per cluster
-                                         1,                                        // Heads
-                                         1);                                       // Sectors per track
-
-    if (format_status == FX_SUCCESS)
-    {
-      MPRINTF("Format successful! Reopening media...\n\r");
-
-      // Try to reopen the formatted media
-      status = fx_media_open(&g_fx_spi_nor_media, "FileX NOR Media",
-                             MC80_STfs_LevelX_DeviceDriver,
-                             (void *)&g_rm_STfs_levelx_NOR_instance,
-                             media_memory, STFS_MEMORY_BUFFER_SIZE);
-
-      if (status == FX_SUCCESS)
+      if (status == STFS_OK)
       {
-        MPRINTF("FileX media formatted and opened successfully!\n\r");
-        g_STfs_memory_buffer = media_memory;
+        MPRINTF("STfs initialized successfully after format in %lu ms\n\r", init_time);
         _Print_STfs_info();
       }
       else
       {
-        MPRINTF("Failed to reopen formatted media: %s\n\r", _Get_STfs_error_description(status));
-        App_free(media_memory);
-        _Free_test_buffer();
+        MPRINTF("STfs initialization failed after format: %s\n\r", _Get_STfs_error_description(status));
       }
     }
     else
     {
-      MPRINTF("Format failed: %s\n\r", _Get_STfs_error_description(format_status));
-      App_free(media_memory);
-      _Free_test_buffer();
+      MPRINTF("STfs format failed: %s\n\r", _Get_STfs_error_description(format_status));
     }
-  }
-  else
-  {
-    MPRINTF("FileX media initialization failed: %s\n\r", _Get_STfs_error_description(status));
-    // Free allocated memory on failure
-    App_free(media_memory);
   }
 
   MPRINTF("\nPress any key to continue...\n\r");
