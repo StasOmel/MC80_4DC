@@ -1,24 +1,27 @@
 #ifndef LEVELX_CONFIG_H
 #define LEVELX_CONFIG_H
 
+#include "mx25um25645g.h"
+
+
 #define G_FX_MEDIA_OSPI_NOR_MEDIA_MEMORY_SIZE    (2048)  // Increased buffer size for better performance
 #define G_FX_MEDIA_OSPI_NOR_VOLUME_NAME          ("Volume 1")
 #define G_FX_MEDIA_OSPI_NOR_NUMBER_OF_FATS       (1)
 #define G_FX_MEDIA_OSPI_NOR_DIRECTORY_ENTRIES    (2048)   // Increased for more files
 #define G_FX_MEDIA_OSPI_NOR_HIDDEN_SECTORS       (0)
-#define G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS        (65536) // Corrected: 32MB / 512 bytes per sector
+#define G_FX_MEDIA_OSPI_NOR_TOTAL_SECTORS        (MC80_NOR_FLASH_TOTAL_SIZE_BYTES / G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR)
 #define G_FX_MEDIA_OSPI_NOR_BYTES_PER_SECTOR     (512)
 #define G_FX_MEDIA_OSPI_NOR_SECTORS_PER_CLUSTER  (1)
 #define G_FX_MEDIA_OSPI_NOR_VOLUME_SERIAL_NUMBER (12345)
 #define G_FX_MEDIA_OSPI_NOR_BOUNDARY_UNIT        (128)
 
 // === LevelX NOR Flash Memory Configuration ===
-// Hardware configuration for MX25UM25645G (32MB OSPI Flash)
-#define LEVELX_FLASH_TOTAL_SIZE_BYTES    (33554432)  // 32MB = 33,554,432 bytes
-#define LEVELX_BLOCK_SIZE_BYTES          (65536)     // 64KB per block (LevelX block size)
-#define LEVELX_BYTES_PER_WORD            (4)         // 4 bytes per ULONG word
-#define LEVELX_TOTAL_BLOCKS              (LEVELX_FLASH_TOTAL_SIZE_BYTES / LEVELX_BLOCK_SIZE_BYTES)  // 512 blocks
-#define LEVELX_WORDS_PER_BLOCK           (LEVELX_BLOCK_SIZE_BYTES / LEVELX_BYTES_PER_WORD)          // 16384 words per block
+// Hardware configuration based on global MC80 NOR Flash macros
+#define LEVELX_FLASH_TOTAL_SIZE_BYTES    MC80_NOR_FLASH_TOTAL_SIZE_BYTES     // Use global NOR Flash size
+#define LEVELX_BLOCK_SIZE_BYTES          MC80_NOR_FLASH_BLOCK_SIZE_BYTES     // Use global block size (64KB)
+#define LEVELX_BYTES_PER_WORD            (4)                                 // 4 bytes per ULONG word
+#define LEVELX_TOTAL_BLOCKS              MC80_NOR_FLASH_TOTAL_BLOCKS         // Use global block count
+#define LEVELX_WORDS_PER_BLOCK           (LEVELX_BLOCK_SIZE_BYTES / LEVELX_BYTES_PER_WORD)
 
 // OSPI Protocol Selection
 // Choose one of the following protocols for OSPI communication:

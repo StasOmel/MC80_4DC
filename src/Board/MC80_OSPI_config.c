@@ -75,8 +75,8 @@ static T_mc80_ospi_timing_setting g_OSPI_timing_settings = {
 
 // Erase commands for Standard SPI mode (1S-1S-1S)
 static const T_mc80_ospi_erase_command g_OSPI_command_set_initial_erase_commands[] = {
-  { .command = MX25_CMD_SE4B, .size = MX25UM25645G_SECTOR_SIZE },       // 4KB Sector Erase with 4-byte address
-  { .command = MX25_CMD_BE4B, .size = MX25UM25645G_BLOCK_SIZE },        // 64KB Block Erase with 4-byte address
+  { .command = MX25_CMD_SE4B, .size = MC80_NOR_FLASH_SECTOR_SIZE_BYTES },       // 4KB Sector Erase with 4-byte address
+  { .command = MX25_CMD_BE4B, .size = MC80_NOR_FLASH_BLOCK_SIZE_BYTES },        // 64KB Block Erase with 4-byte address
   { .command = MX25_CMD_CE, .size = MC80_OSPI_ERASE_SIZE_CHIP_ERASE },  // Chip Erase
 };
 
@@ -88,8 +88,8 @@ const T_mc80_ospi_table g_OSPI_command_set_initial_erase_table = {
 
 // Erase commands for Octal DDR mode (8D-8D-8D)
 static const T_mc80_ospi_erase_command g_OSPI_command_set_high_speed_erase_commands[] = {
-  { .command = MX25_OPI_SE4B_DTR, .size = MX25UM25645G_SECTOR_SIZE },       // 4KB Sector Erase with 4-byte address (DTR)
-  { .command = MX25_OPI_BE4B_DTR, .size = MX25UM25645G_BLOCK_SIZE },        // 64KB Block Erase with 4-byte address (DTR)
+  { .command = MX25_OPI_SE4B_DTR, .size = MC80_NOR_FLASH_SECTOR_SIZE_BYTES },       // 4KB Sector Erase with 4-byte address (DTR)
+  { .command = MX25_OPI_BE4B_DTR, .size = MC80_NOR_FLASH_BLOCK_SIZE_BYTES },        // 64KB Block Erase with 4-byte address (DTR)
   { .command = MX25_OPI_CE_DTR, .size = MC80_OSPI_ERASE_SIZE_CHIP_ERASE },  // Chip Erase (DTR)
 };
 
@@ -177,7 +177,7 @@ const T_mc80_ospi_extended_cfg g_OSPI_extended_cfg = {
 // === MC80 OSPI Configuration ===
 const T_mc80_ospi_cfg g_OSPI_cfg = {
   .spi_protocol      = MC80_OSPI_PROTOCOL_1S_1S_1S,  // Starting protocol (Standard SPI)
-  .page_size_bytes   = MX25UM25645G_PAGE_SIZE,       // Page size for MX25UM25645G
+  .page_size_bytes   = MC80_NOR_FLASH_PAGE_SIZE_BYTES,       // Page size for MX25UM25645G
   .write_status_bit  = 0,                            // Status register write protection bit
   .write_enable_bit  = 1,                            // Write enable bit position
   .xip_enter_command = 0,                            // XIP enter command (handled by driver)

@@ -119,7 +119,6 @@
 #define STANDBY_SECURE_SRAM_START            (0x26000000)
 #define STANDBY_SECURE_SRAM_SIZE             (0x00000400)
 
-
 // OSPI Flash memory addresses
 #define OSPI_BASE_ADDRESS        BSP_FEATURE_OSPI_B_DEVICE_0_START_ADDRESS  // Unified base address
 

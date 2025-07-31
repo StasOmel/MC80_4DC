@@ -259,8 +259,8 @@ static void _Print_YAFFS2_info(void)
   if (free_space >= 0)
   {
     // For YAFFS2, we can estimate total space based on device configuration
-    // This is a simplified approach - in real implementation you'd get this from device config
-    uint64_t total_space = 32 * 1024 * 1024;  // 32MB estimated (adjust based on your NOR Flash size)
+    // Using global NOR Flash size macro from mx25um25645g.h
+    uint64_t total_space = MC80_NOR_FLASH_TOTAL_SIZE_BYTES;  // Use global NOR Flash size
     uint64_t used_space  = total_space - free_space;
 
     MPRINTF("Mount point          : /\n\r");
@@ -600,6 +600,9 @@ static void _Do_write_test(void)
 
   MPRINTF("\n\r");
   Performance_stats_print("Write Test", &stats, g_fs_test_config.data_verification);
+
+  // Free test buffer
+  _Free_test_buffer();
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -798,6 +801,9 @@ static void _Do_read_test(void)
 
   MPRINTF("\n\r");
   Performance_stats_print("Read Test", &stats, g_fs_test_config.data_verification);
+
+  // Free test buffer
+  _Free_test_buffer();
 }
 
 /*-----------------------------------------------------------------------------------------------------
@@ -1227,6 +1233,9 @@ void Do_YAFFS2_list_files(uint8_t keycode)
                   }
 
                   MPRINTF("Successfully read %lu bytes total\n\r", total_bytes_read);
+
+                  // Free test buffer after use
+                  _Free_test_buffer();
                 }
               }
             }

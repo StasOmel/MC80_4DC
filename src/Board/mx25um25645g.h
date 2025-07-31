@@ -8,6 +8,24 @@
  * All SPI and OPI commands from datasheet, with address/dummy/data byte info.
  */
 
+#define MX25UM25645G_JEDEC_ID       0xC2, 0x80, 0x39
+
+// NOR Flash Global Configuration (MX25UM25645G)
+// These macros define the global hardware parameters for the installed NOR Flash
+// All modules should use these macros instead of hardcoded values
+#define MC80_NOR_FLASH_TOTAL_SIZE_BYTES      (32 * 1024 * 1024)  // 32MB total capacity
+#define MC80_NOR_FLASH_PAGE_SIZE_BYTES       256                 // Page size for programming
+#define MC80_NOR_FLASH_SECTOR_SIZE_BYTES     (4 * 1024)          // 4KB sector (minimum erase unit)
+#define MC80_NOR_FLASH_BLOCK_SIZE_BYTES      (64 * 1024)         // 64KB block size
+#define MC80_NOR_FLASH_TOTAL_SECTORS         (MC80_NOR_FLASH_TOTAL_SIZE_BYTES / MC80_NOR_FLASH_SECTOR_SIZE_BYTES)
+#define MC80_NOR_FLASH_TOTAL_BLOCKS          (MC80_NOR_FLASH_TOTAL_SIZE_BYTES / MC80_NOR_FLASH_BLOCK_SIZE_BYTES)
+#define MC80_NOR_FLASH_PAGES_PER_SECTOR      (MC80_NOR_FLASH_SECTOR_SIZE_BYTES / MC80_NOR_FLASH_PAGE_SIZE_BYTES)
+#define MC80_NOR_FLASH_PAGES_PER_BLOCK       (MC80_NOR_FLASH_BLOCK_SIZE_BYTES / MC80_NOR_FLASH_PAGE_SIZE_BYTES)
+#define MC80_NOR_FLASH_SECTORS_PER_BLOCK     (MC80_NOR_FLASH_BLOCK_SIZE_BYTES / MC80_NOR_FLASH_SECTOR_SIZE_BYTES)
+
+
+
+
 /* ==== SPI COMMAND SET (1-byte opcodes) ==== */
 
 /* --- Array Access --- */
@@ -158,14 +176,6 @@
 
 /* Add other commands from the datasheet as needed for your firmware */
 
-/* ==== Memory Map/Constants ==== */
-#define MX25UM25645G_TOTAL_SIZE     (32 * 1024 * 1024)
-#define MX25UM25645G_PAGE_SIZE      256
-#define MX25UM25645G_SECTOR_SIZE    (4 * 1024)
-#define MX25UM25645G_BLOCK_SIZE     (64 * 1024)
-#define MX25UM25645G_NUM_BLOCKS     512
-#define MX25UM25645G_NUM_SECTORS    8192
-#define MX25UM25645G_JEDEC_ID       0xC2, 0x80, 0x39
 
 // =============================================================================
 // Read Identification (RDID) Instruction for MX25UM25645G

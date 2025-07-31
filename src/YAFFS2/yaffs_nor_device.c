@@ -16,57 +16,53 @@
   This structure defines the complete configuration for a YAFFS2 filesystem
   running on NOR Flash with deterministic timing guarantees.
 -----------------------------------------------------------------------------------------------------*/
-static struct yaffs_dev g_yaffs_nor_device =
-{
-  .param =
-  {
-    // Device identification
-    .name = "/",
-    .total_bytes_per_chunk = YAFFS_NOR_PAGE_DATA_SIZE,
-    .chunks_per_block = YAFFS_NOR_PAGES_PER_BLOCK,
-    .spare_bytes_per_chunk = YAFFS_NOR_PAGE_OOB_SIZE,
-    .start_block = YAFFS_NOR_START_BLOCK,
-    .end_block = YAFFS_NOR_END_BLOCK,
-    .n_reserved_blocks = YAFFS_NOR_RESERVED_BLOCKS,
+static struct yaffs_dev g_yaffs_nor_device = {
+  .param = {
+   // Device identification
+   .name                  = "/",
+   .total_bytes_per_chunk = YAFFS_NOR_PAGE_DATA_SIZE,
+   .chunks_per_block      = YAFFS_NOR_PAGES_PER_BLOCK,
+   .spare_bytes_per_chunk = YAFFS_NOR_PAGE_OOB_SIZE,
+   .start_block           = YAFFS_NOR_START_BLOCK,
+   .end_block             = YAFFS_NOR_END_BLOCK,
+   .n_reserved_blocks     = YAFFS_NOR_RESERVED_BLOCKS,
 
-    // YAFFS2 feature configuration
-    .is_yaffs2 = 1,                               // Enable YAFFS2 features
-    .use_header_file_size = YAFFS_NOR_USE_HEADER_FILE_SIZE,
-    .refresh_period = YAFFS_NOR_REFRESH_PERIOD,
-    .n_caches = YAFFS_NOR_CACHE_SIZE,
+   // YAFFS2 feature configuration
+   .is_yaffs2             = 1,  // Enable YAFFS2 features
+   .use_header_file_size  = YAFFS_NOR_USE_HEADER_FILE_SIZE,
+   .refresh_period        = YAFFS_NOR_REFRESH_PERIOD,
+   .n_caches              = YAFFS_NOR_CACHE_SIZE,
 
-    // Deterministic behavior settings
-    .empty_lost_n_found = YAFFS_NOR_EMPTY_LOST_AND_FOUND,
+   // Deterministic behavior settings
+   .empty_lost_n_found    = YAFFS_NOR_EMPTY_LOST_AND_FOUND,
 
-    // ECC and reliability settings
-    .no_tags_ecc = YAFFS_NOR_NO_TAGS_ECC,         // Disable ECC for metadata
-    .inband_tags = YAFFS_NOR_INBAND_TAGS,         // Store tags inside data area
+   // ECC and reliability settings
+   .no_tags_ecc           = YAFFS_NOR_NO_TAGS_ECC,  // Disable ECC for metadata
+   .inband_tags           = YAFFS_NOR_INBAND_TAGS,  // Store tags inside data area
   },
 
   // Driver functions for hardware interface
-  .drv =
-  {
-    .drv_write_chunk_fn = Yaffs_nor_write_chunk,     // Basic write function (required)
-    .drv_read_chunk_fn = Yaffs_nor_read_chunk,       // Basic read function (required)
-    .drv_erase_fn = Yaffs_nor_erase_block,
-    .drv_mark_bad_fn = Yaffs_nor_mark_bad_block,
-    .drv_check_bad_fn = Yaffs_nor_check_bad_block,
-    .drv_initialise_fn = Yaffs_nor_initialise,
-    .drv_deinitialise_fn = Yaffs_nor_deinitialise,
+  .drv = {
+   .drv_write_chunk_fn  = Yaffs_nor_write_chunk,  // Basic write function (required)
+   .drv_read_chunk_fn   = Yaffs_nor_read_chunk,   // Basic read function (required)
+   .drv_erase_fn        = Yaffs_nor_erase_block,
+   .drv_mark_bad_fn     = Yaffs_nor_mark_bad_block,
+   .drv_check_bad_fn    = Yaffs_nor_check_bad_block,
+   .drv_initialise_fn   = Yaffs_nor_initialise,
+   .drv_deinitialise_fn = Yaffs_nor_deinitialise,
   },
 
   // Tags handler for metadata operations (NOT USED in inband tags mode)
-  .tagger =
-  {
-    .write_chunk_tags_fn = NULL,                  // Not used in inband tags mode
-    .read_chunk_tags_fn = NULL,                   // Not used in inband tags mode
-    .query_block_fn = NULL,                       // Optional
-    .mark_bad_fn = NULL,                          // Not used in inband tags mode
+  .tagger = {
+   .write_chunk_tags_fn = NULL,  // Not used in inband tags mode
+   .read_chunk_tags_fn  = NULL,  // Not used in inband tags mode
+   .query_block_fn      = NULL,  // Optional
+   .mark_bad_fn         = NULL,  // Not used in inband tags mode
   },
 
   // Runtime state (initialized by YAFFS2)
-  .is_mounted = 0,
-  .read_only = 0,
+  .is_mounted      = 0,
+  .read_only       = 0,
   .is_checkpointed = 0,
 };
 
@@ -182,10 +178,10 @@ int Yaffs_nor_device_unmount(const char *mount_point)
 int Yaffs_nor_device_garbage_collect(const char *mount_point, int urgency)
 {
   struct yaffs_dev *dev;
-  int blocks_collected = 0;
-  int total_collected = 0;
-  int iterations = 0;
-  int max_iterations;
+  int               blocks_collected = 0;
+  int               total_collected  = 0;
+  int               iterations       = 0;
+  int               max_iterations;
 
   if (NULL == mount_point)
   {
@@ -244,7 +240,7 @@ int Yaffs_nor_device_garbage_collect(const char *mount_point, int urgency)
   Return:
     Pointer to YAFFS2 device structure
 -----------------------------------------------------------------------------------------------------*/
-struct yaffs_dev* Yaffs_nor_get_device(void)
+struct yaffs_dev *Yaffs_nor_get_device(void)
 {
   return &g_yaffs_nor_device;
 }
@@ -304,7 +300,7 @@ int Yaffs_nor_device_auto_gc(const char *mount_point, uint32_t usage_threshold)
   if (total_space > 0)
   {
     uint64_t used_space = total_space - free_space;
-    usage_percent = (uint32_t)((used_space * 100) / total_space);
+    usage_percent       = (uint32_t)((used_space * 100) / total_space);
   }
   else
   {

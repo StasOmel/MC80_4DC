@@ -61,16 +61,16 @@ typedef unsigned int       dev_t;   // Device ID type
 -----------------------------------------------------------------------------------------------------*/
 
 // Flash geometry configuration
-#define YAFFS_NOR_PAGE_TOTAL_SIZE       (1024)                                                   // Total page size (exactly 4KB) - matches NOR Flash sector size
+#define YAFFS_NOR_PAGE_TOTAL_SIZE       (1024)                                                   // Total page size (1KB) - optimized for YAFFS2 performance
 #define YAFFS_NOR_PAGE_OOB_SIZE         (0)                                                      // No separate OOB area (inband tags mode)
-#define YAFFS_NOR_PAGE_DATA_SIZE        (YAFFS_NOR_PAGE_TOTAL_SIZE - YAFFS_NOR_PAGE_OOB_SIZE)    // Data area per page (4096 bytes, includes 16-byte inband tags)
+#define YAFFS_NOR_PAGE_DATA_SIZE        (YAFFS_NOR_PAGE_TOTAL_SIZE - YAFFS_NOR_PAGE_OOB_SIZE)    // Data area per page (1024 bytes, includes 16-byte inband tags)
 
 #define YAFFS_NOR_PAGES_PER_BLOCK       (64)                                                     // Pages per block (minimum 2 pages required by YAFFS2)
-#define YAFFS_NOR_BLOCK_SIZE            (YAFFS_NOR_PAGE_TOTAL_SIZE * YAFFS_NOR_PAGES_PER_BLOCK)  // 8192 bytes per block (8KB)
+#define YAFFS_NOR_BLOCK_SIZE            (YAFFS_NOR_PAGE_TOTAL_SIZE * YAFFS_NOR_PAGES_PER_BLOCK)  // 65536 bytes per block (64KB)
 
 // Filesystem layout configuration
-#define YAFFS_NOR_TOTAL_BLOCKS          (4000)  // Total blocks available (~32MB filesystem, 4000 × 8KB = 32MB)
-#define YAFFS_NOR_RESERVED_BLOCKS       (100)   // Reserved blocks for wear leveling and bad block management
+#define YAFFS_NOR_TOTAL_BLOCKS          (MC80_NOR_FLASH_TOTAL_SIZE_BYTES / YAFFS_NOR_BLOCK_SIZE)  // Total blocks based on global Flash size
+#define YAFFS_NOR_RESERVED_BLOCKS       (25)    // Reserved blocks for wear leveling and bad block management (~5% of total)
 #define YAFFS_NOR_START_BLOCK           (0)     // First block used by filesystem
 #define YAFFS_NOR_END_BLOCK             (YAFFS_NOR_TOTAL_BLOCKS - 1)
 
@@ -104,14 +104,14 @@ typedef unsigned int       dev_t;   // Device ID type
 // Page structure with inband tags (no separate OOB area)
 typedef struct
 {
-  uint8_t data[YAFFS_NOR_PAGE_DATA_SIZE];  // Data area (4096 bytes) - user data + 16-byte inband tags at end
+  uint8_t data[YAFFS_NOR_PAGE_DATA_SIZE];  // Data area (1024 bytes) - user data + 16-byte inband tags at end
   uint8_t oob[YAFFS_NOR_PAGE_OOB_SIZE];    // No separate OOB area (0 bytes)
 } T_yaffs_nor_page;
 
-// Block structure (contains 2 pages since YAFFS2 requires minimum 2 chunks per block)
+// Block structure (contains 64 pages per block)
 typedef struct
 {
-  T_yaffs_nor_page pages[YAFFS_NOR_PAGES_PER_BLOCK];  // Two pages per block (8KB total)
+  T_yaffs_nor_page pages[YAFFS_NOR_PAGES_PER_BLOCK];  // 64 pages per block (64KB total)
 } T_yaffs_nor_block;
 
 // Address conversion macros

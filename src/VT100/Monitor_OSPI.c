@@ -665,8 +665,8 @@ void OSPI_chip_erase_full(uint8_t keycode)
   }
 
   // Calculate erase parameters
-  const uint32_t block_size = MX25UM25645G_BLOCK_SIZE;  // 64KB
-  const uint32_t total_blocks = MX25UM25645G_TOTAL_SIZE / block_size;  // 512 blocks
+  const uint32_t block_size = MC80_NOR_FLASH_BLOCK_SIZE_BYTES;  // 64KB
+  const uint32_t total_blocks = MC80_NOR_FLASH_TOTAL_SIZE_BYTES / block_size;  // 512 blocks
 
   // Statistics variables
   uint32_t min_erase_time_us = UINT32_MAX;
@@ -677,7 +677,7 @@ void OSPI_chip_erase_full(uint8_t keycode)
   uint32_t blocks_erased = 0;
 
   MPRINTF("\n\r===== Starting 64KB Block Erase =====\n\r");
-  MPRINTF("Flash size: %d MB (%d bytes)\n\r", MX25UM25645G_TOTAL_SIZE / (1024 * 1024), MX25UM25645G_TOTAL_SIZE);
+  MPRINTF("Flash size: %d MB (%d bytes)\n\r", MC80_NOR_FLASH_TOTAL_SIZE_BYTES / (1024 * 1024), MC80_NOR_FLASH_TOTAL_SIZE_BYTES);
   MPRINTF("Block size: %d KB (%d bytes)\n\r", block_size / 1024, block_size);
   MPRINTF("Total blocks: %d\n\r", total_blocks);
   MPRINTF("\n\r");
@@ -799,14 +799,14 @@ void OSPI_chip_erase_full(uint8_t keycode)
     MPRINTF("Block erase operation         : SUCCESS\n\r");
     MPRINTF("Total blocks erased           : %d / %d\n\r", blocks_erased, total_blocks);
     MPRINTF("Total size erased             : %d MB (%d bytes)\n\r",
-            MX25UM25645G_TOTAL_SIZE / (1024 * 1024), MX25UM25645G_TOTAL_SIZE);
+            MC80_NOR_FLASH_TOTAL_SIZE_BYTES / (1024 * 1024), MC80_NOR_FLASH_TOTAL_SIZE_BYTES);
     MPRINTF("Total elapsed time            : %d minutes %d seconds (%d ms)\n\r",
             total_elapsed_minutes, total_elapsed_seconds % 60, total_elapsed_ms);
 
     // Calculate overall erase speed
     if (total_elapsed_ms > 0)
     {
-      uint32_t overall_speed_kbps = (MX25UM25645G_TOTAL_SIZE / 1024) * 1000 / total_elapsed_ms;
+      uint32_t overall_speed_kbps = (MC80_NOR_FLASH_TOTAL_SIZE_BYTES / 1024) * 1000 / total_elapsed_ms;
       MPRINTF("Overall erase speed           : %d KB/s\n\r", overall_speed_kbps);
     }
 
@@ -836,12 +836,12 @@ void OSPI_chip_erase_full(uint8_t keycode)
       uint32_t verify_start_time   = tx_time_get();
 
       // Verify entire chip in 128KB chunks
-      for (uint32_t offset = 0; offset < MX25UM25645G_TOTAL_SIZE && verification_passed; offset += verify_buffer_size)
+      for (uint32_t offset = 0; offset < MC80_NOR_FLASH_TOTAL_SIZE_BYTES && verification_passed; offset += verify_buffer_size)
       {
         uint32_t current_chunk_size = verify_buffer_size;
-        if ((offset + verify_buffer_size) > MX25UM25645G_TOTAL_SIZE)
+        if ((offset + verify_buffer_size) > MC80_NOR_FLASH_TOTAL_SIZE_BYTES)
         {
-          current_chunk_size = MX25UM25645G_TOTAL_SIZE - offset;
+          current_chunk_size = MC80_NOR_FLASH_TOTAL_SIZE_BYTES - offset;
         }
 
         // Read current chunk
@@ -878,9 +878,9 @@ void OSPI_chip_erase_full(uint8_t keycode)
         // Progress indicator every 4MB
         if ((offset % (4 * 1024 * 1024)) == 0)
         {
-          uint32_t progress_percent = (offset * 100) / MX25UM25645G_TOTAL_SIZE;
+          uint32_t progress_percent = (offset * 100) / MC80_NOR_FLASH_TOTAL_SIZE_BYTES;
           MPRINTF("Verification progress: %d%% (%d MB / %d MB)\n\r",
-                  progress_percent, offset / (1024 * 1024), MX25UM25645G_TOTAL_SIZE / (1024 * 1024));
+                  progress_percent, offset / (1024 * 1024), MC80_NOR_FLASH_TOTAL_SIZE_BYTES / (1024 * 1024));
         }
       }
 
@@ -906,7 +906,7 @@ void OSPI_chip_erase_full(uint8_t keycode)
       if (verification_passed && error_count == 0)
       {
         MPRINTF("Erase verification            : SUCCESS\n\r");
-        MPRINTF("All %d MB verified as 0xFF    : CONFIRMED\n\r", MX25UM25645G_TOTAL_SIZE / (1024 * 1024));
+        MPRINTF("All %d MB verified as 0xFF    : CONFIRMED\n\r", MC80_NOR_FLASH_TOTAL_SIZE_BYTES / (1024 * 1024));
         MPRINTF("\n\rFull chip erase and verification completed successfully!\n\r");
         MPRINTF("The entire flash chip is confirmed to be in erased state (0xFF).\n\r");
       }

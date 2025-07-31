@@ -1333,8 +1333,8 @@ fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl *p_ctrl, uint32_t const addr
     return FSP_ERR_ASSERTION;                                                                         // Address overflow detected
   }
 
-  start_address    = start_address & ~(MX25UM25645G_SECTOR_SIZE - 1);                                 // Round down to 4KB boundary
-  end_address      = (end_address + MX25UM25645G_SECTOR_SIZE - 1) & ~(MX25UM25645G_SECTOR_SIZE - 1);  // Round up to 4KB boundary
+  start_address    = start_address & ~(MC80_NOR_FLASH_SECTOR_SIZE_BYTES - 1);                                 // Round down to 4KB boundary
+  end_address      = (end_address + MC80_NOR_FLASH_SECTOR_SIZE_BYTES - 1) & ~(MC80_NOR_FLASH_SECTOR_SIZE_BYTES - 1);  // Round up to 4KB boundary
 
   // Calculate total size to erase and set starting address
   total_erase_size = end_address - start_address;
@@ -1356,11 +1356,11 @@ fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl *p_ctrl, uint32_t const addr
 
   for (index = 0; index < erase_list_length; index++)
   {
-    if (p_erase_list[index].size == MX25UM25645G_BLOCK_SIZE)
+    if (p_erase_list[index].size == MC80_NOR_FLASH_BLOCK_SIZE_BYTES)
     {
       block_erase_command = p_erase_list[index].command;  // 64KB block erase
     }
-    else if (p_erase_list[index].size == MX25UM25645G_SECTOR_SIZE)
+    else if (p_erase_list[index].size == MC80_NOR_FLASH_SECTOR_SIZE_BYTES)
     {
       sector_erase_command = p_erase_list[index].command;  // 4KB sector erase
     }
@@ -1374,19 +1374,19 @@ fsp_err_t Mc80_ospi_erase(T_mc80_ospi_instance_ctrl *p_ctrl, uint32_t const addr
     uint16_t erase_command;
     uint32_t erase_size;
 
-    if (total_erase_size >= MX25UM25645G_BLOCK_SIZE &&
-        (current_address & (MX25UM25645G_BLOCK_SIZE - 1)) == 0 &&
+    if (total_erase_size >= MC80_NOR_FLASH_BLOCK_SIZE_BYTES &&
+        (current_address & (MC80_NOR_FLASH_BLOCK_SIZE_BYTES - 1)) == 0 &&
         block_erase_command != 0)
     {
       // Use 64KB block erase (optimal for large areas)
       erase_command = block_erase_command;
-      erase_size    = MX25UM25645G_BLOCK_SIZE;
+      erase_size    = MC80_NOR_FLASH_BLOCK_SIZE_BYTES;
     }
     else if (sector_erase_command != 0)
     {
       // Use 4KB sector erase (for remaining areas)
       erase_command = sector_erase_command;
-      erase_size    = MX25UM25645G_SECTOR_SIZE;
+      erase_size    = MC80_NOR_FLASH_SECTOR_SIZE_BYTES;
     }
     else
     {

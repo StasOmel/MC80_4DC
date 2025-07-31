@@ -6,17 +6,19 @@ extern "C"
 {
 #endif
 
-// Maximum size for LittleFS configuration based on MX25UM25645G datasheet
-// MX25UM25645G: 256Mbit (32MB) OSPI NOR Flash Memory
-#define LITTLEFS_BLOCK_SIZE     4096        // 4KB sectors (matches flash erase sector size)
-#define LITTLEFS_BLOCK_COUNT    8192        // 32MB total = 8192 blocks of 4KB each (32MB / 4KB = 8192)
-#define LITTLEFS_CACHE_SIZE     1024        // Cache size (must be <= block_size and multiple of read/prog sizes)
-                                            // NOTE: Reducing from 2048 to 1024 has minimal performance impact
-                                            // NOTE: Reducing from 2048 to 64 decreases read performance by ~20%
-#define LITTLEFS_LOOKAHEAD_SIZE 1024        // Lookahead buffer size (8192/8 = 1024)
-#define LITTLEFS_BLOCK_CYCLES   1000        //
-#define LITTLEFS_READ_SIZE      64          // Minimum read size (optimized for OSPI flash)
-#define LITTLEFS_PROG_SIZE      64          //
+#include "mx25um25645g.h"
+
+// LittleFS configuration based on global MC80 NOR Flash macros
+// Uses MC80_NOR_FLASH_* macros defined in src\MC80.h for hardware abstraction
+#define LITTLEFS_BLOCK_SIZE     MC80_NOR_FLASH_SECTOR_SIZE_BYTES    // Use global sector size (4KB)
+#define LITTLEFS_BLOCK_COUNT    MC80_NOR_FLASH_TOTAL_SECTORS        // Use global sector count
+#define LITTLEFS_CACHE_SIZE     1024                                // Cache size (must be <= block_size and multiple of read/prog sizes)
+                                                                    // NOTE: Reducing from 2048 to 1024 has minimal performance impact
+                                                                    // NOTE: Reducing from 2048 to 64 decreases read performance by ~20%
+#define LITTLEFS_LOOKAHEAD_SIZE (MC80_NOR_FLASH_TOTAL_SECTORS / 8)  // Lookahead buffer size (sectors/8)
+#define LITTLEFS_BLOCK_CYCLES   1000                                // Maximum erase cycles per block
+#define LITTLEFS_READ_SIZE      64                                  // Minimum read size (optimized for OSPI flash)
+#define LITTLEFS_PROG_SIZE      64                                  // Minimum program size (optimized for OSPI flash)
 
 // Data integrity and performance settings
 #define LITTLEFS_NAME_MAX       LFS_NAME_MAX  // Maximum filename length (default 255)
